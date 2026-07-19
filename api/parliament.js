@@ -9,8 +9,6 @@ import { sql, formatCrore, pct } from './_lib/db.js';
    centre's expenditure and a state's are voted by different houses and
    reported on different heads, and they do not sum. */
 
-const FY = '2025-26';
-
 const ACCENT_KINDS = new Set(['audit', 'underspend', 'shortfall']);
 
 function serialiseSource(row) {
@@ -51,7 +49,20 @@ export default async function handler(req, res) {
   }
 
   try {
-    const [headlines, ministries, schemes, findingRows, sourceRows] = await Promise.all([
+    /* Read the year from the data rather than pinning it in code. A constant
+       here goes stale the day a new Union Budget is ingested: this route
+       would keep asking for the superseded year and 404, on a page whose
+       rows were sitting in the table all along. */
+    const [{ fiscal_year: FY } = {}] = await sql`
+      SELECT max(fiscal_year) AS fiscal_year FROM union_budget_headlines
+    `;
+
+    if (!FY) {
+      return res.status(404).json({ error: 'No union budget records published' });
+    }
+
+    const [headlines, ministries, schemes, findingRows, sourceRows, [presented]] =
+      await Promise.all([
       sql`SELECT label, amount_cr, qualifier FROM union_budget_headlines
           WHERE fiscal_year = ${FY} ORDER BY display_order`,
 
@@ -81,6 +92,16 @@ export default async function handler(req, res) {
             UNION SELECT source_id FROM findings WHERE state_id IS NULL
           )
           ORDER BY src.document_date DESC`,
+
+      // The date the budget document itself carries, so the page can say when
+      // it was presented without that date being typed into the markup where
+      // it would outlive the year it belongs to.
+      sql`SELECT src.document_date::text AS presented_on,
+                 src.document_date_is_inferred
+          FROM union_budget_headlines h JOIN sources src ON src.id = h.source_id
+          WHERE h.fiscal_year = ${FY}
+          ORDER BY h.display_order
+          LIMIT 1`,
     ]);
 
     if (headlines.length === 0) {
@@ -97,6 +118,10 @@ export default async function handler(req, res) {
     const payload = {
       scope: 'union',
       fiscalYear: FY,
+
+      // Null where the document carried no date of its own. The page drops
+      // the clause entirely rather than asserting one.
+      presentedOn: presented?.document_date_is_inferred ? null : (presented?.presented_on ?? null),
 
       headlines: headlines.map((h) => ({
         label: h.label,

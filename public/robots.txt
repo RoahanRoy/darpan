@@ -1,0 +1,11 @@
+# Public records. Everything here is meant to be found and quoted.
+User-agent: *
+Allow: /
+
+# The API serves the same figures the pages show, as JSON. Crawling it adds
+# nothing to an index and costs database round trips.
+Disallow: /api/
+
+# A Sitemap line is appended at build time by scripts/build-sitemap.js when
+# SITE_URL is set. The directive requires an absolute URL, so it is not
+# written here where the domain is unknown.

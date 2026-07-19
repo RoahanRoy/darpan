@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Yojana Darpan">
+  <!-- A bar chart reduced to three rules on the accent fill: the zero-radius,
+       rule-driven language the rest of the site is built from. -->
+  <rect width="32" height="32" fill="#c25e00" />
+  <rect x="6" y="8" width="20" height="4" fill="#f3f2f2" />
+  <rect x="6" y="14" width="13" height="4" fill="#f3f2f2" />
+  <rect x="6" y="20" width="17" height="4" fill="#f3f2f2" />
+</svg>

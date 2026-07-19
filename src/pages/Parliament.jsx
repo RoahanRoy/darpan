@@ -1,4 +1,6 @@
 import useJson from '../hooks/useJson.js';
+import useDocumentMeta from '../hooks/useDocumentMeta.js';
+import formatDate from '../lib/formatDate.js';
 import NavBar from '../components/NavBar.jsx';
 import Feed from '../components/Feed.jsx';
 import BudgetSeriesTable from '../components/BudgetSeriesTable.jsx';
@@ -16,9 +18,21 @@ import { parliamentNavLinks } from '../data/homeContent.js';
 export default function Parliament() {
   const { data, error, loading } = useJson('/api/parliament');
 
-  // The API carries the year as the documents write it ('2025-26'); the
-  // page sets it with an en dash, as every other year range here does.
-  const fy = data?.fiscalYear.replace('-', '–');
+  // The API carries the year as the documents write it ('2025-26'); the page
+  // sets it with an en dash, as every other year range here does.
+  //
+  // The optional chain has to cover `fiscalYear` too, not just `data`: on the
+  // error and loading paths there is no payload at all, and `data?.x.replace`
+  // still throws on the property access.
+  const fy = data?.fiscalYear?.replace('-', '–');
+
+  useDocumentMeta({
+    title: fy
+      ? `Union Budget ${fy} — what Parliament voted · Yojana Darpan`
+      : 'Union Budget · Yojana Darpan',
+    description:
+      'Central government expenditure by ministry and scheme, with each budget estimate set against the revised estimate, taken from the documents laid before Parliament.',
+  });
 
   return (
     <div className="page">
@@ -27,10 +41,11 @@ export default function Parliament() {
       <div className="wrap">
         <section className="split split-masthead" id="top">
           <div className="split-main">
-            <div className="kicker">Union Government · FY 2025–26</div>
+            <div className="kicker">Union Government{fy ? ` · FY ${fy}` : ''}</div>
             <h1 className="masthead-title">What Parliament voted, and what the centre spent</h1>
             <p className="text-muted masthead-lede">
-              The Union Budget as presented to Parliament on 1 February 2025, with last
+              The Union Budget as presented to Parliament
+              {data?.presentedOn ? ` on ${formatDate(data.presentedOn)}` : ''}, with last
               year's budget set against last year's revised estimate. Every figure is
               from the document linked at the foot of this page.
             </p>
@@ -48,10 +63,15 @@ export default function Parliament() {
               actually spend. The gap between them, for a year that has already run, is
               the closest thing here to an outcome.
             </p>
-            <p className="text-muted spend-sub">
-              2025–26 figures are allocations. Nothing on this page reports what has been
-              spent in 2025–26, because that document has not been published.
-            </p>
+            {/* The masthead renders before the payload arrives, and this
+                sentence is meaningless without the year — so it waits for it
+                rather than briefly reading "figures are allocations". */}
+            {fy ? (
+              <p className="text-muted spend-sub">
+                {fy} figures are allocations. Nothing on this page reports what has been
+                spent in {fy}, because that document has not been published.
+              </p>
+            ) : null}
           </div>
         </section>
 

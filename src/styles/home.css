@@ -158,6 +158,15 @@
 .poster .source-item .text-muted,
 .poster .source-note { color: #fff; opacity: 0.85; }
 
+/* — running prose (the method page) —
+     Everywhere else on the site text is a label beside a figure. This is the
+     one place with paragraphs to actually read, so it gets a measure and a
+     line height set for reading rather than for scanning. */
+.prose { max-width: 68ch; }
+.prose p { font-size: 14px; line-height: 1.6; margin: 0 0 var(--space-4); }
+.prose p:last-child { margin-bottom: 0; }
+.prose strong { font-weight: 700; }
+
 /* — clickable India map (alongside the dropdowns) — */
 .map-label {
   display: block; font-size: 12px; font-weight: 600; margin-bottom: var(--space-2);

@@ -5,12 +5,22 @@ import './styles/home.css';
 import useRoute from './hooks/useRoute.js';
 import Home from './pages/Home.jsx';
 import Parliament from './pages/Parliament.jsx';
+import About from './pages/About.jsx';
 
 function App() {
-  const path = useRoute();
-  // Anything that is not /parliament is the state page, including an
-  // unknown path — there is no content behind a 404 worth building.
-  return path === '/parliament' ? <Parliament /> : <Home />;
+  const route = useRoute();
+
+  switch (route.page) {
+    case 'parliament':
+      return <Parliament />;
+    case 'about':
+      return <About />;
+    default:
+      // Everything else names a state, real or not. Home decides which, once
+      // /api/regions has told it which states exist — an unknown slug gets a
+      // "no records for this state" page rather than a silent fallback.
+      return <Home route={route} />;
+  }
 }
 
 createRoot(document.getElementById('root')).render(

@@ -12,6 +12,14 @@ export default function Masthead({
   const activeState = regions.find((s) => s.slug === stateSlug);
   const areas = activeState?.districts ?? [];
 
+  /* A <select> whose value matches no option silently displays the first one.
+     On a URL naming a state we do not hold, that made the picker read "Delhi"
+     directly above a page saying there are no records for Bihar — the control
+     asserting a selection the page was denying. A placeholder option carries
+     the empty value instead, so nothing is claimed. */
+  const stateUnresolved = !activeState;
+  const areaUnresolved = areas.length > 0 && !areas.some((d) => d.slug === areaSlug);
+
   // Delhi's areas are municipal bodies, Uttarakhand's are revenue districts.
   // Labelling both "District" would misname half the picker.
   const unitLabel = activeState?.unitType === 'urban_local_body' ? 'Municipal body' : 'District';
@@ -36,9 +44,14 @@ export default function Masthead({
           <select
             id="state"
             className="input"
-            value={stateSlug}
+            value={stateUnresolved ? '' : stateSlug}
             onChange={(e) => onStateChange(e.target.value)}
           >
+            {stateUnresolved ? (
+              <option value="" disabled>
+                {regions.length === 0 ? 'Loading…' : 'Select a state'}
+              </option>
+            ) : null}
             {regions.map((s) => (
               <option key={s.slug} value={s.slug}>
                 {s.name}
@@ -51,18 +64,27 @@ export default function Masthead({
           <select
             id="area"
             className="input"
-            value={areaSlug}
+            value={areaUnresolved ? '' : areaSlug}
             onChange={(e) => onAreaChange(e.target.value)}
             disabled={areas.length === 0}
           >
             {areas.length === 0 ? (
-              <option>Nothing tracked yet</option>
+              <option value="">
+                {stateUnresolved ? 'Select a state first' : 'Nothing tracked yet'}
+              </option>
             ) : (
-              areas.map((d) => (
-                <option key={d.slug} value={d.slug}>
-                  {d.name}
-                </option>
-              ))
+              <>
+                {areaUnresolved ? (
+                  <option value="" disabled>
+                    {`Select a ${unitLabel.toLowerCase()}`}
+                  </option>
+                ) : null}
+                {areas.map((d) => (
+                  <option key={d.slug} value={d.slug}>
+                    {d.name}
+                  </option>
+                ))}
+              </>
             )}
           </select>
         </div>

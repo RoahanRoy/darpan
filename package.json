@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node scripts/build-sitemap.js",
     "preview": "vite preview",
     "db:migrate": "node db/migrate.js",
     "db:seed": "node db/seed.js",

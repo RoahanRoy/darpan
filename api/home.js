@@ -9,7 +9,6 @@ import { sql, formatCrore, formatCount, pct } from './_lib/db.js';
    scope label so the page cannot blur the two. */
 
 const DEFAULT_DISTRICT = 'dehradun';
-const FY = '2025-26';
 
 // Which finding kinds read as accent-coloured tags: the ones describing
 // something going wrong, rather than a plain allocation.
@@ -38,9 +37,21 @@ export default async function handler(req, res) {
   const districtSlug = (url.searchParams.get('district') || DEFAULT_DISTRICT).toLowerCase();
 
   try {
+    /* The fiscal year is read from the data rather than pinned in code. A
+       constant here goes stale the moment a new budget is ingested: the page
+       would keep asking for last year's rows and quietly render nothing,
+       which looks identical to a state having no budget at all.
+
+       Both year-bearing tables are consulted because a state may be seeded
+       with scheme allocations before its headline rows, or the reverse. */
     const [area] = await sql`
       SELECT d.id, d.name, d.slug, d.unit_type, d.unit_note,
-             s.id AS state_id, s.name AS state_name, s.slug AS state_slug, s.kind AS state_kind
+             s.id AS state_id, s.name AS state_name, s.slug AS state_slug, s.kind AS state_kind,
+             (SELECT max(fy) FROM (
+                SELECT max(fiscal_year) AS fy FROM state_budget_headlines WHERE state_id = s.id
+                UNION ALL
+                SELECT max(fiscal_year) FROM state_scheme_allocations WHERE state_id = s.id
+              ) years) AS fiscal_year
       FROM districts d JOIN states s ON s.id = d.state_id
       WHERE d.slug = ${districtSlug}
     `;
@@ -48,6 +59,11 @@ export default async function handler(req, res) {
     if (!area) {
       return res.status(404).json({ error: `Unknown area: ${districtSlug}` });
     }
+
+    // A state with delivery records but no budget yet is a real state to
+    // render — the money blocks come back empty and the page says so — so
+    // this is not an error, but it must not be reported as a year either.
+    const FY = area.fiscal_year;
 
     const [headlines, sectors, allocations, progress, findingRows, sourceRows] =
       await Promise.all([
@@ -112,7 +128,12 @@ export default async function handler(req, res) {
       spending: {
         scope: 'state',
         scopeLabel: area.state_name,
-        period: `${area.state_name} budget · FY ${FY.replace('-', '–')}`,
+        // No year means no budget rows for this state, so the label must not
+        // name one. It reads as the state's budget with the year withheld
+        // rather than "FY null".
+        period: FY
+          ? `${area.state_name} budget · FY ${FY.replace('-', '–')}`
+          : `${area.state_name} budget`,
         total: totalExpenditure ? formatCrore(totalExpenditure.amount_cr) : null,
         headlines: headlines.map((h) => ({
           label: h.label,
