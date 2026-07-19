@@ -124,6 +124,38 @@
 .poster .source-item .text-muted,
 .poster .source-note { color: #fff; opacity: 0.85; }
 
+/* — clickable India map (alongside the dropdowns) — */
+.map-label {
+  display: block; font-size: 12px; font-weight: 600; margin-bottom: var(--space-2);
+  color: var(--color-neutral-700);
+}
+.india-map {
+  width: 100%; height: auto; max-height: 340px; display: block;
+  /* Keeps the portrait shape from stretching the rail on tall screens. */
+}
+.map-state {
+  stroke: var(--color-bg); stroke-width: 0.6; transition: fill 0.12s ease;
+}
+/* States with no sourced records: present for context, not interactive. */
+.map-state.is-inert { fill: var(--color-neutral-300); pointer-events: none; }
+/* States we hold data for: clickable. */
+.map-state.is-available { fill: var(--color-accent-300); cursor: pointer; }
+.map-state.is-available:hover { fill: var(--color-accent-500); }
+.map-state.is-available:focus-visible { outline: none; fill: var(--color-accent-500); }
+/* The state currently in view. */
+.map-state.is-active { fill: var(--color-accent); cursor: pointer; }
+
+/* Marker dot for states too small to click on their outline (e.g. Delhi). */
+.map-marker {
+  fill: var(--color-accent-500); stroke: var(--color-bg); stroke-width: 1.5;
+  cursor: pointer; transition: fill 0.12s ease;
+}
+.map-marker:hover { fill: var(--color-accent-700); }
+.map-marker:focus-visible { outline: none; fill: var(--color-accent-700); }
+.map-marker.is-active { fill: var(--color-accent); }
+
+.map-credit { font-size: 10px; margin-top: var(--space-3); opacity: 0.7; }
+
 /* — narrow viewports: the vertical rules become horizontal ones — */
 @media (max-width: 900px) {
   .split-masthead, .split-feed { grid-template-columns: 1fr; }

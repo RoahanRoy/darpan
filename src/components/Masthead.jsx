@@ -1,3 +1,5 @@
+import IndiaMap from './IndiaMap.jsx';
+
 export default function Masthead({
   regions,
   stateSlug,
@@ -64,6 +66,8 @@ export default function Masthead({
             )}
           </select>
         </div>
+
+        <IndiaMap regions={regions} activeSlug={stateSlug} onSelect={onStateChange} />
       </div>
     </section>
   );

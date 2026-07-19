@@ -39,6 +39,20 @@ export default function PosterBanner({ sources = [] }) {
             </ul>
           </>
         )}
+
+        {/* Map geometry is third-party and CC-BY-4.0, so it is credited
+            here rather than left implicit. */}
+        <p className="poster-meta map-credit">
+          India map geometry:{' '}
+          <a
+            href="https://github.com/VictorCazanave/svg-maps"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            @svg-maps/india
+          </a>{' '}
+          by Victor Cazanave, CC-BY-4.0.
+        </p>
       </div>
     </section>
   );
