@@ -1,0 +1,87 @@
+# Scheduled ingestion. Stages proposals; it cannot promote them.
+#
+# Cadence is annual-shaped, not monthly. State budgets are presented in
+# February and March and PRS publishes its analysis within a few weeks, so
+# this checks weekly through that window and not at all for the rest of the
+# year. A monthly cron over annual data is eleven no-op runs and eleven
+# chances to break unnoticed.
+#
+# Requires the DATABASE_URL repository secret.
+
+name: ingest
+
+on:
+  workflow_dispatch:
+    inputs:
+      state:
+        description: State slug (must already exist in `states`)
+        required: true
+        default: uttarakhand
+      fiscal_year:
+        description: Fiscal year, e.g. 2025-26
+        required: true
+        default: 2025-26
+      url:
+        description: PRS Budget Analysis PDF URL
+        required: true
+  schedule:
+    # 06:00 UTC every Monday, February through May only.
+    - cron: '0 6 * 2-5 1'
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      # Runs first and against the live PDFs. If PRS has changed the layout,
+      # this fails before anything reaches the database, and the parsed
+      # figures are checked against the ones a human transcribed by hand.
+      - name: Verify parser against known-good figures
+        run: npm run ingest:verify
+
+      - name: Stage proposals
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          npm run ingest -- prs-state-budget \
+            --state "${{ inputs.state }}" \
+            --fiscal-year "${{ inputs.fiscal_year }}" \
+            --url "${{ inputs.url }}"
+
+      # Scheduled runs only check that the parser still works against the
+      # documents we already have. Discovering and staging a NEW year's paper
+      # is a deliberate act, because it starts with confirming the URL is the
+      # document we think it is.
+      - name: Open an issue if the parser has drifted
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = 'Ingestion parser drift: prs-state-budget';
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo,
+              state: 'open', labels: 'ingestion',
+            });
+            if (existing.data.some(i => i.title === title)) return;
+            await github.rest.issues.create({
+              owner: context.repo.owner, repo: context.repo.repo,
+              title,
+              labels: ['ingestion'],
+              body: [
+                'The PRS budget-analysis parser no longer reproduces the figures',
+                'pinned in `ingest/verify.js`.',
+                '',
+                'This usually means PRS changed the paper\'s layout. Nothing has',
+                'been written to the database — staging is gated and the run',
+                'failed before it reached the promoter.',
+                '',
+                `[Failed run](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`,
+              ].join('\n'),
+            });
