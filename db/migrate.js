@@ -39,7 +39,10 @@ try {
             (SELECT count(*) FROM state_sector_budgets) AS sector_rows,
             (SELECT count(*) FROM state_scheme_allocations) AS scheme_allocations,
             (SELECT count(*) FROM district_scheme_progress) AS district_progress,
-            (SELECT count(*) FROM findings) AS findings`
+            (SELECT count(*) FROM union_ministry_budgets) AS union_ministries,
+            (SELECT count(*) FROM union_scheme_allocations) AS union_schemes,
+            (SELECT count(*) FROM findings WHERE state_id IS NOT NULL) AS state_findings,
+            (SELECT count(*) FROM findings WHERE state_id IS NULL) AS union_findings`
   );
   console.log('row counts:', rows[0]);
 } finally {

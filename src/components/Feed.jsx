@@ -1,9 +1,13 @@
 import Tag from './Tag.jsx';
 
-/* Audit findings and budget gaps for the selected state. Replaces the
-   design's "Raised this week" feed: there is no weekly wire of sourced
+/* Audit findings and budget gaps, for a state or for the centre. Replaces
+   the design's "Raised this week" feed: there is no weekly wire of sourced
    district records to fill it, and a feed that refreshes on nothing is a
-   claim of freshness the data cannot support. */
+   claim of freshness the data cannot support.
+
+   The heading is passed in rather than derived, because the caller is the
+   only one that knows whose findings these are — and a union finding
+   labelled with a state's name would be a false attribution. */
 
 function FeedItem({ item }) {
   return (
@@ -31,16 +35,16 @@ function FeedItem({ item }) {
   );
 }
 
-export default function Feed({ items = [], stateName }) {
+export default function Feed({ items = [], heading, lede, emptyNote }) {
   return (
     <div className="split-main">
-      <h3 className="feed-heading">Findings for {stateName}</h3>
+      <h3 className="feed-heading">{heading}</h3>
       <p className="text-muted feed-body feed-lede">
-        Audit observations and gaps between what was budgeted and what was spent.
-        Every item links to the document it came from.
+        {lede ??
+          'Audit observations and gaps between what was budgeted and what was spent. Every item links to the document it came from.'}
       </p>
       {items.length === 0 ? (
-        <p className="text-muted feed-body">No findings recorded for this state yet.</p>
+        <p className="text-muted feed-body">{emptyNote ?? 'No findings recorded yet.'}</p>
       ) : (
         <div className="feed">
           {items.map((item) => (

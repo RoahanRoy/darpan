@@ -7,6 +7,7 @@ import SpendingRail from '../components/SpendingRail.jsx';
 import SchemeGrid from '../components/SchemeGrid.jsx';
 import StatusTable from '../components/StatusTable.jsx';
 import PosterBanner from '../components/PosterBanner.jsx';
+import { homeNavLinks } from '../data/homeContent.js';
 
 const DEFAULT_STATE = 'uttarakhand';
 const DEFAULT_AREA = 'dehradun';
@@ -42,7 +43,7 @@ export default function Home() {
 
   return (
     <div className="page">
-      <NavBar />
+      <NavBar links={homeNavLinks} currentPath="/" />
 
       <div className="wrap">
         <Masthead
@@ -74,7 +75,11 @@ export default function Home() {
         ) : (
           <>
             <section id="findings" className="split split-feed">
-              <Feed items={data.findings} stateName={data.state.name} />
+              <Feed
+                items={data.findings}
+                heading={`Findings for ${data.state.name}`}
+                emptyNote="No findings recorded for this state yet."
+              />
               <SpendingRail spending={data.spending} />
             </section>
 
@@ -92,7 +97,7 @@ export default function Home() {
         )}
       </div>
 
-      <PosterBanner sources={data?.sources ?? []} />
+      <PosterBanner sources={data?.sources ?? []} creditMap />
     </div>
   );
 }

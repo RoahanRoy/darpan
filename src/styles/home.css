@@ -16,6 +16,9 @@
 }
 .nav-brand-lg { font-size: 20px; font-weight: 800; letter-spacing: -0.01em; }
 .nav-links { display: flex; gap: var(--space-4); margin-left: auto; }
+.nav-group { display: flex; gap: var(--space-4); }
+/* The cross-page link sits apart from the in-page jump list. */
+.nav-routes a { font-weight: 600; }
 
 /* — shared editorial bits — */
 .kicker {
@@ -92,6 +95,37 @@
 .status-col { width: 1%; }
 .status-table a { color: var(--color-text); }
 
+/* — parliament: budget-at-a-glance cells — */
+.headline-grid { display: grid; grid-template-columns: repeat(3, 1fr); row-gap: var(--space-6); }
+.headline-cell { display: flex; flex-direction: column; gap: var(--space-1); }
+/* .grid-cells clears the rule on the first cell only, which is right for a
+   single row. At three columns every row starts a new first column. */
+.headline-grid > *:nth-child(3n + 1) { border-left: 0; padding-left: 0; }
+.headline-label {
+  font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--color-accent);
+}
+.headline-amount { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; }
+.headline-qual { font-size: 12px; }
+
+/* — parliament: the budgeted → revised series tables — */
+/* Fourteen ministries across seven columns will not fit a phone. The table
+   scrolls inside its own box rather than pushing the page sideways. */
+.table-scroll { overflow-x: auto; }
+/* Revealed by the narrow-viewport block below, where the table clips. */
+.table-hint { display: none; font-size: 12px; margin-bottom: var(--space-2); }
+.series-table { min-width: 760px; }
+.series-table .num { text-align: right; }
+/* A row header, not a column header: it inherits .table th, so the
+   uppercase small-caps treatment has to be undone. */
+.series-table tbody .series-name {
+  font-weight: 600; font-size: 13.5px; white-space: nowrap;
+  text-transform: none; letter-spacing: normal; color: var(--color-text);
+  border-bottom: 1px solid var(--color-divider);
+}
+.series-delivered { width: 132px; }
+.series-pct { font-size: 13px; margin-bottom: 4px; }
+
 /* — poster — */
 .poster { background: var(--color-accent); color: var(--color-bg); padding: var(--space-8) 0; }
 .poster-line {
@@ -164,11 +198,17 @@
     border-left: 0; border-top: 2px solid var(--color-divider);
     padding: var(--space-6) 0;
   }
-  .scheme-grid { grid-template-columns: repeat(2, 1fr); row-gap: var(--space-6); }
+  .scheme-grid, .headline-grid { grid-template-columns: repeat(2, 1fr); row-gap: var(--space-6); }
   .grid-cells > *:nth-child(odd) { border-left: 0; padding-left: 0; }
+  /* Two columns now, so the three-column rule would clear the wrong edges. */
+  .headline-grid > *:nth-child(3n + 1) { border-left: 2px solid var(--color-divider); padding-left: var(--space-3); }
+  .headline-grid > *:nth-child(odd) { border-left: 0; padding-left: 0; }
   .masthead-title { font-size: 40px; }
   .poster-line { font-size: 32px; }
-  .nav-links { display: none; }
+  /* The in-page jump list goes; the link to the other page stays, or that
+     page has no entrance on a phone. */
+  .nav-anchors { display: none; }
+  .table-hint { display: block; }
 }
 
 @media (max-width: 560px) {

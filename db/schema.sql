@@ -11,7 +11,16 @@
 -- deliberately no district_budgets table: district-level allocation and
 -- spending is not a published artifact in India, and inventing one is how
 -- this page previously carried numbers that did not exist.
+--
+-- The union tables sit alongside rather than above the state ones. The
+-- centre's budget is voted by Parliament and reported by ministry; a state's
+-- is voted by its legislature and reported by sector. They are not two
+-- levels of one hierarchy and the totals do not nest, so nothing here
+-- attempts to roll a state's figures up into the centre's.
 
+DROP TABLE IF EXISTS union_scheme_allocations CASCADE;
+DROP TABLE IF EXISTS union_ministry_budgets CASCADE;
+DROP TABLE IF EXISTS union_budget_headlines CASCADE;
 DROP TABLE IF EXISTS district_scheme_progress CASCADE;
 DROP TABLE IF EXISTS state_scheme_allocations CASCADE;
 DROP TABLE IF EXISTS state_sector_budgets CASCADE;
@@ -135,14 +144,67 @@ CREATE TABLE district_scheme_progress (
   UNIQUE (district_id, scheme_name, as_of_date)
 );
 
+-- ------------------------------------------------------- union (centre)
+
+-- Top-line facts from the Union Budget, per year.
+CREATE TABLE union_budget_headlines (
+  id            SERIAL PRIMARY KEY,
+  fiscal_year   TEXT NOT NULL,
+  label         TEXT NOT NULL,
+  amount_cr     NUMERIC(14,2),
+  qualifier     TEXT,             -- e.g. '4.4% of GDP'
+  source_id     INTEGER NOT NULL REFERENCES sources(id),
+  display_order INTEGER NOT NULL DEFAULT 0,
+  UNIQUE (fiscal_year, label)
+);
+
+-- The centre reports expenditure by MINISTRY, not by the sector headings
+-- states use. The two cannot be joined or compared line for line, so this
+-- is a separate table rather than a `state_id IS NULL` row in the sector
+-- one.
+--
+-- Column meanings match state_sector_budgets exactly: prior-year actuals,
+-- current-year budget and revised, next-year budget. The budget-to-revised
+-- gap is the same accountability signal here as it is there.
+CREATE TABLE union_ministry_budgets (
+  id              SERIAL PRIMARY KEY,
+  ministry        TEXT NOT NULL UNIQUE,
+  actuals_prev_cr NUMERIC(14,2),
+  budgeted_cr     NUMERIC(14,2),
+  revised_cr      NUMERIC(14,2),
+  next_budget_cr  NUMERIC(14,2),
+  source_id       INTEGER NOT NULL REFERENCES sources(id),
+  display_order   INTEGER NOT NULL DEFAULT 0
+);
+
+-- Unlike the state scheme table, which the state documents give as a single
+-- allocation, the Union analysis publishes the full four-year series per
+-- scheme. Keeping all four columns means a scheme that was budgeted and
+-- then not spent cannot be shown as though it were only ever an allocation.
+CREATE TABLE union_scheme_allocations (
+  id              SERIAL PRIMARY KEY,
+  scheme_name     TEXT NOT NULL UNIQUE,
+  actuals_prev_cr NUMERIC(12,2),  -- NULL where the scheme did not yet exist
+  budgeted_cr     NUMERIC(12,2),
+  revised_cr      NUMERIC(12,2),
+  next_budget_cr  NUMERIC(12,2),
+  source_id       INTEGER NOT NULL REFERENCES sources(id),
+  display_order   INTEGER NOT NULL DEFAULT 0
+);
+
 -- Audit findings and budget gaps. `kind` drives tag colour.
 -- `computed_from_source` marks rows whose number is arithmetic we did on
 -- published figures (a budget-to-revised drop) rather than a sentence
 -- lifted from the document. A reader deserves to know which they are
 -- looking at.
+--
+-- `state_id` is nullable, and NULL means the finding is about the Union
+-- budget rather than any one state. A union finding is not a finding about
+-- every state, so it must never fall out of a state's query: `state_id = $1`
+-- excludes NULLs, and the parliament query asks for `state_id IS NULL`.
 CREATE TABLE findings (
   id                   SERIAL PRIMARY KEY,
-  state_id             INTEGER NOT NULL REFERENCES states(id) ON DELETE CASCADE,
+  state_id             INTEGER REFERENCES states(id) ON DELETE CASCADE,
   kind                 TEXT NOT NULL CHECK (kind IN ('audit', 'underspend', 'allocation', 'shortfall')),
   tag_label            TEXT NOT NULL,
   headline             TEXT NOT NULL,
@@ -156,3 +218,5 @@ CREATE INDEX districts_state_idx ON districts (state_id, display_order);
 CREATE INDEX sector_state_idx ON state_sector_budgets (state_id, display_order);
 CREATE INDEX progress_district_idx ON district_scheme_progress (district_id);
 CREATE INDEX findings_state_idx ON findings (state_id, display_order);
+CREATE INDEX union_ministry_idx ON union_ministry_budgets (display_order);
+CREATE INDEX union_scheme_idx ON union_scheme_allocations (display_order);

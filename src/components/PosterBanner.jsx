@@ -4,7 +4,7 @@ import formatDate from '../lib/formatDate.js';
    this is load-bearing rather than a footer credit: without it a reader
    cannot check any number shown above. */
 
-export default function PosterBanner({ sources = [] }) {
+export default function PosterBanner({ sources = [], creditMap = false }) {
   return (
     <section className="poster">
       <div className="wrap">
@@ -40,19 +40,23 @@ export default function PosterBanner({ sources = [] }) {
           </>
         )}
 
-        {/* Map geometry is third-party and CC-BY-4.0, so it is credited
-            here rather than left implicit. */}
-        <p className="poster-meta map-credit">
-          India map geometry:{' '}
-          <a
-            href="https://github.com/VictorCazanave/svg-maps"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            @svg-maps/india
-          </a>{' '}
-          by Victor Cazanave, CC-BY-4.0.
-        </p>
+        {/* Map geometry is third-party and CC-BY-4.0, so it is credited here
+            rather than left implicit — but only on pages that draw the map.
+            A credit for an asset the page does not use is noise, and it
+            makes the honest credits easier to skim past. */}
+        {creditMap ? (
+          <p className="poster-meta map-credit">
+            India map geometry:{' '}
+            <a
+              href="https://github.com/VictorCazanave/svg-maps"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              @svg-maps/india
+            </a>{' '}
+            by Victor Cazanave, CC-BY-4.0.
+          </p>
+        ) : null}
       </div>
     </section>
   );

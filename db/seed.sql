@@ -34,7 +34,14 @@ INSERT INTO sources (slug, title, publisher, url, document_date, document_date_i
    'Ministry of Housing and Urban Affairs',
    'https://pmay-urban.gov.in/State-district-wise-phy-LSUSQ2471.pdf',
    '2023-07-31', TRUE, '2026-07-19',
-   'The annexure states no date on its face; document_date is the PDF generation timestamp in the file metadata, hence inferred. Covers PMAY-Urban only, not PMAY-Gramin.');
+   'The annexure states no date on its face; document_date is the PDF generation timestamp in the file metadata, hence inferred. Covers PMAY-Urban only, not PMAY-Gramin.'),
+
+  ('prs-union-2025-26',
+   'Union Budget 2025-26 Analysis',
+   'PRS Legislative Research',
+   'https://prsindia.org/files/budget/budget_parliament/2025/Union_Budget_Analysis_2025-26.pdf',
+   '2025-02-01', FALSE, '2026-07-19',
+   'Analyses the Union Budget presented to Parliament on 1 Feb 2025. Figures are Rs crore. The 2024-25 columns are that year''s budget and revised estimates; 2025-26 is a budget estimate, not an outcome.');
 
 -- ----------------------------------------------------------------- states
 
@@ -218,6 +225,69 @@ FROM districts d, sources src, (VALUES
 ) AS v(slug, sanctioned, grounded, completed)
 WHERE d.slug = v.slug AND src.slug = 'pmay-u-lsusq-2471';
 
+-- --------------------------------------------------- union (centre)
+
+-- Budget at a Glance, Table 2 of the source. Deficits are carried as the
+-- rupee figure with the GDP ratio as the qualifier, because the ratio alone
+-- is what gets quoted and the absolute number is what gets borrowed.
+INSERT INTO union_budget_headlines (fiscal_year, label, amount_cr, qualifier, source_id, display_order)
+SELECT '2025-26', v.label, v.amt, v.qual, src.id, v.ord
+FROM sources src, (VALUES
+  ('Total expenditure',                5065345.00, 'up 7.4% on revised 2024-25',    1),
+  ('Receipts (excluding borrowings)',  3496409.00, 'up 11.1% on revised 2024-25',   2),
+  ('Fiscal deficit',                   1568936.00, '4.4% of GDP',                   3),
+  ('Revenue deficit',                   523846.00, '1.5% of GDP',                   4),
+  ('Interest payments',                1276338.00, '25.2% of total expenditure',    5),
+  ('Transfers to states',              2559764.00, 'up 12.5% on revised 2024-25',   6)
+) AS v(label, amt, qual, ord)
+WHERE src.slug = 'prs-union-2025-26';
+
+-- Table 5, ministry-wise expenditure, in the order the source lists it
+-- (descending by 2025-26 allocation). 'Other Ministries' is the source's
+-- own residual row and is kept so the column sums to the published total
+-- rather than to the thirteen ministries alone.
+INSERT INTO union_ministry_budgets (ministry, actuals_prev_cr, budgeted_cr, revised_cr, next_budget_cr, source_id, display_order)
+SELECT v.ministry, v.a, v.b, v.r, v.n, src.id, v.ord
+FROM sources src, (VALUES
+  ('Defence',                                     609504.00,  621941.00,  641060.00,  681210.00,  1),
+  ('Road Transport and Highways',                 275986.00,  278000.00,  280519.00,  287333.00,  2),
+  ('Railways',                                    245791.00,  255393.00,  255348.00,  255445.00,  3),
+  ('Home Affairs',                                196872.00,  219643.00,  220371.00,  233211.00,  4),
+  ('Consumer Affairs, Food and Public Distribution', 232496.00, 223323.00, 212820.00,  215767.00,  5),
+  ('Rural Development',                           163642.00,  180233.00,  175878.00,  190406.00,  6),
+  ('Chemicals and Fertilisers',                   191165.00,  168500.00,  186653.00,  161965.00,  7),
+  ('Agriculture and Farmers'' Welfare',           118147.00,  132470.00,  141352.00,  137757.00,  8),
+  ('Education',                                   123365.00,  120628.00,  114054.00,  128650.00,  9),
+  ('Communications',                              111339.00,  137294.00,  150201.00,  108105.00, 10),
+  ('Health and Family Welfare',                    83149.00,   90959.00,   89974.00,   99859.00, 11),
+  ('Jal Shakti',                                   95109.00,   98714.00,   51558.00,   99503.00, 12),
+  ('Housing and Urban Affairs',                    68565.00,   82577.00,   63670.00,   96777.00, 13),
+  ('Other Ministries',                           1928316.00, 2210838.00, 2133030.00, 2369358.00, 14)
+) AS v(ministry, a, b, r, n, ord)
+WHERE src.slug = 'prs-union-2025-26';
+
+-- Table 7, scheme-wise allocation. The two NULLs are printed as '-' in the
+-- source: those schemes did not exist in 2023-24, which is not the same as
+-- having been allocated nothing, so they are not seeded as zero.
+INSERT INTO union_scheme_allocations (scheme_name, actuals_prev_cr, budgeted_cr, revised_cr, next_budget_cr, source_id, display_order)
+SELECT v.scheme, v.a, v.b, v.r, v.n, src.id, v.ord
+FROM sources src, (VALUES
+  ('MGNREGS',                                                    89154.00, 86000.00, 86000.00, 86000.00,  1),
+  ('Jal Jeevan Mission / National Rural Drinking Water Mission',  69992.00, 70163.00, 22694.00, 67000.00,  2),
+  ('PM-KISAN',                                                    61441.00, 60000.00, 63500.00, 63500.00,  3),
+  ('Pradhan Mantri Awas Yojana - Rural',                          21770.00, 54500.00, 32426.00, 54832.00,  4),
+  ('Samagra Shiksha',                                             32830.00, 37500.00, 37010.00, 41250.00,  5),
+  ('National Health Mission',                                     33043.00, 36000.00, 36000.00, 37227.00,  6),
+  ('Pradhan Mantri Awas Yojana - Urban',                          21684.00, 30171.00, 15170.00, 23294.00,  7),
+  ('Modified Interest Subvention Scheme',                         14252.00, 22600.00, 22600.00, 22600.00,  8),
+  ('Saksham Anganwadi and POSHAN 2.0',                            21810.00, 21200.00, 20071.00, 21960.00,  9),
+  ('New Employment Generation Scheme',                                NULL, 10000.00,  6799.00, 20000.00, 10),
+  ('PM Surya Ghar Muft Bijli Yojana',                                 NULL,  6250.00, 11100.00, 20000.00, 11),
+  ('National Livelihood Mission - Ajeevika',                      13934.00, 15047.00, 15047.00, 19005.00, 12),
+  ('Pradhan Mantri Gram Sadak Yojana',                            15380.00, 19000.00, 14500.00, 19000.00, 13)
+) AS v(scheme, a, b, r, n, ord)
+WHERE src.slug = 'prs-union-2025-26';
+
 -- ---------------------------------------------------------- findings
 
 -- Uttarakhand. The CAG items are quoted from the source's own summary; the
@@ -282,3 +352,55 @@ FROM states s, sources src, (VALUES
    FALSE, 5)
 ) AS v(kind, tag, headline, body, computed, ord)
 WHERE s.slug = 'delhi' AND src.slug = 'prs-delhi-2025-26';
+
+-- Union. state_id is NULL: these are findings about the centre's budget, not
+-- about any state, and must not surface on a state page.
+INSERT INTO findings (state_id, kind, tag_label, headline, body, computed_from_source, source_id, display_order)
+SELECT NULL, v.kind, v.tag, v.headline, v.body, v.computed, src.id, v.ord
+FROM sources src, (VALUES
+  ('underspend', 'Budget gap',
+   'Centrally sponsored schemes came in Rs 90,622 crore below budget in 2024-25',
+   'Per the revised estimates, spending on centrally sponsored schemes is estimated to be 17.9% lower than the budget estimates for that year. The document attributes this primarily to reductions in Jal Jeevan Mission and Pradhan Mantri Awas Yojana. The 2025-26 budget nonetheless raises the head 30.5% over that revised figure, to Rs 5,41,850 crore.',
+   FALSE, 1),
+
+  ('underspend', 'Budget gap',
+   'Jal Jeevan Mission spent Rs 22,694 crore against a Rs 70,163 crore budget',
+   'The 2024-25 revised estimate is 68% below what was budgeted for the year. The scheme is allocated Rs 67,000 crore again in 2025-26 — close to the figure that went unspent.',
+   TRUE, 2),
+
+  ('underspend', 'Budget gap',
+   'Pradhan Mantri Awas Yojana spending expected to be 44% below budget in 2024-25',
+   'Taking the rural and urban components together, the scheme has an allocation of Rs 78,126 crore in 2025-26, an increase of 64% over the 2024-25 revised estimate.',
+   FALSE, 3),
+
+  ('underspend', 'Budget gap',
+   'Rs 62,593 crore budgeted for unspecified "New Schemes"; Rs 9,068 crore expected to be spent',
+   'The head sits with the Department of Economic Affairs. For 2025-26 it carries Rs 41,700 crore, and the source records that details are not available.',
+   FALSE, 4),
+
+  ('shortfall', 'Disinvestment',
+   'Disinvestment target missed for the fifth consecutive year',
+   'The government is estimated to meet 66% of its 2024-25 disinvestment target. Targets have been reduced for five years running and have not been achieved in any of them. The 2025-26 target is Rs 47,000 crore, below the Rs 50,000 crore budgeted for 2024-25.',
+   FALSE, 5),
+
+  ('underspend', 'Ministry',
+   'Jal Shakti spent Rs 51,558 crore against a Rs 98,714 crore budget',
+   'The ministry''s 2024-25 revised estimate is roughly half what it was budgeted, which the source attributes to Jal Jeevan Mission. Its 2025-26 allocation is restored to Rs 99,503 crore, a 93% rise over the revised figure.',
+   FALSE, 6),
+
+  ('underspend', 'Ministry',
+   'Housing and Urban Affairs revised down 23%, then budgeted up 52%',
+   'Budgeted Rs 82,577 crore for 2024-25 and revised to Rs 63,670 crore, against Rs 96,777 crore budgeted for 2025-26.',
+   TRUE, 7),
+
+  ('shortfall', 'Transfers to states',
+   'Post-devolution revenue deficit grants cut 44% to Rs 13,705 crore',
+   'The grant, paid to states whose revenue falls short after tax devolution, drops from Rs 24,483 crore in the 2024-25 revised estimates. It is the steepest fall in the centre''s transfers table.',
+   FALSE, 8),
+
+  ('allocation', 'Ministry',
+   'Communications allocation cut Rs 42,096 crore, or 28%',
+   'The allocation falls to Rs 1,08,105 crore in 2025-26, which the source attributes primarily to lower capital infusion in BSNL.',
+   FALSE, 9)
+) AS v(kind, tag, headline, body, computed, ord)
+WHERE src.slug = 'prs-union-2025-26';
