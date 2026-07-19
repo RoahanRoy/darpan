@@ -1,38 +1,51 @@
 import Bar from './Bar.jsx';
 
+/* State-level budget. The heading names the state, because these figures are
+   NOT the selected district's — India does not publish district allocation or
+   spending, so the design's original district-money block could only ever
+   have been filled with invented numbers. */
+
 export default function SpendingRail({ spending }) {
   if (!spending) {
     return (
       <div className="split-rail" id="spending">
-        <div className="kicker">District spending</div>
-        <p className="text-muted spend-sub">No budget filed for this district yet.</p>
+        <div className="kicker">Budget</div>
+        <p className="text-muted spend-sub">No budget records loaded.</p>
       </div>
     );
   }
 
+  const perUnit = spending.scopeLabel === 'Delhi' ? 'per municipal body' : 'per district';
+
   return (
     <div className="split-rail" id="spending">
       <div className="kicker">{spending.period}</div>
-      <div className="spend-total">{spending.spent}</div>
-      <p className="text-muted spend-sub">{spending.summary}</p>
-      <Bar pct={spending.releasedPct} className="spend-bar" />
+      <div className="spend-total">{spending.total}</div>
+      <p className="text-muted spend-sub">
+        total expenditure budgeted, excluding debt repayment. State-wide figure — not {perUnit}.
+      </p>
 
-      <div className="kicker kicker-neutral">By scheme</div>
+      <div className="kicker kicker-neutral">Delivered against budget, 2024–25</div>
+      <p className="text-muted spend-sub">
+        What each sector was budgeted, against what the revised estimate expected to
+        actually be spent. Under 100% is money announced and then not spent.
+      </p>
       <div className="spend-list">
-        {spending.byScheme.map((row) => (
-          <div key={row.slug}>
+        {spending.sectors.map((row) => (
+          <div key={row.name}>
             <div className="spend-row">
               <span>{row.name}</span>
-              <span className="tnum">{row.pct}%</span>
+              <span className="tnum">{row.deliveredPct}%</span>
             </div>
-            <Bar pct={row.pct} />
+            {/* Sectors can be revised UP; the bar caps at 100 so it stays
+                readable, but the printed percentage is not clamped. */}
+            <Bar pct={Math.min(row.deliveredPct, 100)} />
+            <div className="text-muted spend-detail">
+              {row.budgeted} budgeted → {row.revised} revised
+            </div>
           </div>
         ))}
       </div>
-
-      <a href="/schemes/jal-jeevan" className="btn btn-ghost spend-drill">
-        Drill into Jal Jeevan →
-      </a>
     </div>
   );
 }

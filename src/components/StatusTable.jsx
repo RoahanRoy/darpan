@@ -1,37 +1,62 @@
-import Tag from './Tag.jsx';
+import formatDate from '../lib/formatDate.js';
 
-export default function StatusTable({ rows = [], districtName }) {
+/* District-level physical delivery. This is the only block whose figures are
+   genuinely per-district, and the only one where a scheme's progress can be
+   compared across areas. */
+
+export default function StatusTable({ rows = [], areaName, unitType }) {
+  const unitWord = unitType === 'urban_local_body' ? '' : ' district';
+
   return (
     <section id="status" className="section-block">
-      <h3 className="section-title">Rollout status across {districtName} district</h3>
-      <p className="text-muted section-note">
-        Targets vs. progress reported this financial year.
-      </p>
+      <h3 className="section-title">
+        Delivery in {areaName}
+        {unitWord}
+      </h3>
+
       {rows.length === 0 ? (
-        <p className="text-muted section-note">No rollout figures filed for this district yet.</p>
+        <p className="text-muted section-note">
+          No district-level delivery figures are published for this area yet.
+        </p>
       ) : (
-        <table className="table status-table">
-          <thead>
-            <tr>
-              <th>Scheme</th>
-              <th>Target</th>
-              <th>Reached</th>
-              <th className="status-col">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.scheme}>
-                <td>{row.href ? <a href={row.href}>{row.scheme}</a> : row.scheme}</td>
-                <td className="tnum">{row.target}</td>
-                <td className="tnum">{row.reached}</td>
-                <td>
-                  <Tag tone={row.status === 'On track' ? 'neutral' : 'accent'}>{row.status}</Tag>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        rows.map((row) => (
+          <div key={row.scheme} className="progress-block">
+            <p className="text-muted section-note">
+              {row.scheme} · figures as of {formatDate(row.asOf)}
+              {row.asOfIsInferred ? ' (date taken from the file, not stated in the document)' : ''}
+              {row.sourceUrl ? (
+                <>
+                  {' · '}
+                  <a href={row.sourceUrl} target="_blank" rel="noopener noreferrer">
+                    source
+                  </a>
+                </>
+              ) : null}
+            </p>
+            <table className="table status-table">
+              <thead>
+                <tr>
+                  {row.metrics.map((m) => (
+                    <th key={m.label}>{m.label}</th>
+                  ))}
+                  <th className="status-col">Completed</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  {row.metrics.map((m) => (
+                    <td key={m.label} className="tnum">
+                      {m.value}
+                    </td>
+                  ))}
+                  <td className="tnum">
+                    {row.completionPct == null ? '—' : `${row.completionPct}%`}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        ))
       )}
     </section>
   );

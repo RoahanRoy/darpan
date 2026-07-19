@@ -1,24 +1,33 @@
 export default function Masthead({
   regions,
   stateSlug,
-  districtSlug,
-  districtName,
+  areaSlug,
+  areaName,
+  unitNote,
   onStateChange,
-  onDistrictChange,
+  onAreaChange,
 }) {
   const activeState = regions.find((s) => s.slug === stateSlug);
-  const districts = activeState?.districts ?? [];
+  const areas = activeState?.districts ?? [];
+
+  // Delhi's areas are municipal bodies, Uttarakhand's are revenue districts.
+  // Labelling both "District" would misname half the picker.
+  const unitLabel = activeState?.unitType === 'urban_local_body' ? 'Municipal body' : 'District';
 
   return (
     <section className="split split-masthead" id="top">
       <div className="split-main">
-        <div className="kicker">This week · {districtName} district</div>
+        <div className="kicker">
+          {activeState?.name ?? '—'} · {areaName}
+        </div>
         <h1 className="masthead-title">Where the money goes, and who is asking</h1>
         <p className="text-muted masthead-lede">
-          A weekly read of what {districtName} is raising in Parliament and under RTI, matched to
-          the schemes and the rupees behind them. Public records only — no login.
+          Budget and delivery records for {activeState?.name ?? 'this state'}, taken from
+          published documents and linked back to them. Public records only — no login.
         </p>
+        {unitNote ? <p className="text-muted masthead-note">{unitNote}</p> : null}
       </div>
+
       <div className="split-rail masthead-controls">
         <div className="field">
           <label htmlFor="state">State</label>
@@ -36,18 +45,18 @@ export default function Masthead({
           </select>
         </div>
         <div className="field">
-          <label htmlFor="district">District</label>
+          <label htmlFor="area">{unitLabel}</label>
           <select
-            id="district"
+            id="area"
             className="input"
-            value={districtSlug}
-            onChange={(e) => onDistrictChange(e.target.value)}
-            disabled={districts.length === 0}
+            value={areaSlug}
+            onChange={(e) => onAreaChange(e.target.value)}
+            disabled={areas.length === 0}
           >
-            {districts.length === 0 ? (
-              <option>No districts tracked yet</option>
+            {areas.length === 0 ? (
+              <option>Nothing tracked yet</option>
             ) : (
-              districts.map((d) => (
+              areas.map((d) => (
                 <option key={d.slug} value={d.slug}>
                   {d.name}
                 </option>
@@ -55,9 +64,6 @@ export default function Masthead({
             )}
           </select>
         </div>
-        <a href="/map" className="btn btn-primary btn-block">
-          View district map →
-        </a>
       </div>
     </section>
   );

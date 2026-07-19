@@ -100,6 +100,30 @@
 }
 .poster-meta { font-size: 13px; margin: var(--space-3) 0 0; opacity: 0.9; }
 
+/* — provenance — every figure on the page is traceable to a source, so the
+     citation furniture is part of the layout rather than a footnote — */
+
+.masthead-note { font-size: 12px; margin-top: var(--space-2); }
+.feed-lede { margin-bottom: var(--space-4); }
+
+/* The budgeted → revised line under each sector bar. */
+.spend-detail { font-size: 11px; margin: 2px 0 var(--space-3); font-feature-settings: 'tnum'; }
+
+.scheme-amount { font-size: 20px; font-weight: 700; margin-top: var(--space-2); }
+
+.progress-block { margin-bottom: var(--space-5); }
+
+.source-list { list-style: none; padding: 0; margin: var(--space-3) 0 0; }
+.source-item { font-size: 12px; line-height: 1.5; margin-bottom: var(--space-3); max-width: 90ch; }
+.source-note { font-size: 11px; margin-top: 2px; opacity: 0.85; }
+
+/* The poster sits on the accent fill, where the global link colour and
+   .text-muted both drop close to the background. Citations are the point of
+   this block, so they are forced back to full contrast. */
+.poster .source-item a { color: #fff; font-weight: 700; text-decoration: underline; }
+.poster .source-item .text-muted,
+.poster .source-note { color: #fff; opacity: 0.85; }
+
 /* — narrow viewports: the vertical rules become horizontal ones — */
 @media (max-width: 900px) {
   .split-masthead, .split-feed { grid-template-columns: 1fr; }

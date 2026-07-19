@@ -1,10 +1,13 @@
-/* Static UI chrome only. Everything that is district data — the feed,
-   spending, schemes and rollout status — now comes from /api/home. */
+/* Static UI chrome only. Every figure on the page comes from /api/home.
+
+   These labels track the sections that actually exist. The comp had a
+   "Parliament" link to a page that was never built and a "This week"
+   framing the annual source documents do not support. */
 
 export const navLinks = [
-  { label: 'This week', href: '#top', current: true },
-  { label: 'Schemes', href: '#schemes' },
+  { label: 'Overview', href: '#top', current: true },
+  { label: 'Findings', href: '#findings' },
   { label: 'Spending', href: '#spending' },
-  { label: 'Parliament', href: '/parliament' },
-  { label: 'District status', href: '#status' },
+  { label: 'Schemes', href: '#schemes' },
+  { label: 'Delivery', href: '#status' },
 ];

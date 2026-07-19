@@ -10,19 +10,30 @@ export default async function handler(req, res) {
 
   try {
     const rows = await sql`
-      SELECT s.name AS state, s.slug AS state_slug, d.name AS district, d.slug AS district_slug
+      SELECT s.name AS state, s.slug AS state_slug, s.kind AS state_kind,
+             d.name AS district, d.slug AS district_slug, d.unit_type
       FROM states s
       LEFT JOIN districts d ON d.state_id = s.id
-      ORDER BY s.name, d.name
+      ORDER BY s.name, d.display_order
     `;
 
     const byState = new Map();
     for (const row of rows) {
       if (!byState.has(row.state)) {
-        byState.set(row.state, { name: row.state, slug: row.state_slug, districts: [] });
+        byState.set(row.state, {
+          name: row.state,
+          slug: row.state_slug,
+          kind: row.state_kind,
+          // Delhi's areas are municipal bodies, Uttarakhand's are districts.
+          // The picker labels itself from this rather than assuming.
+          unitType: null,
+          districts: [],
+        });
       }
       if (row.district) {
-        byState.get(row.state).districts.push({ name: row.district, slug: row.district_slug });
+        const entry = byState.get(row.state);
+        entry.districts.push({ name: row.district, slug: row.district_slug });
+        entry.unitType ??= row.unit_type;
       }
     }
 

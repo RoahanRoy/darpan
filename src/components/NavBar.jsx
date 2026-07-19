@@ -12,7 +12,11 @@ export default function NavBar() {
             </a>
           ))}
         </nav>
-        <span className="tag tag-neutral">Refreshed weekly</span>
+        {/* The comp said "Refreshed weekly". Nothing refreshes weekly: the
+            budget documents are annual and the delivery annexure is from
+            2023. Claiming a cadence the data does not have is the same
+            failure as inventing the figures. */}
+        <span className="tag tag-neutral">Sourced documents</span>
       </div>
     </header>
   );

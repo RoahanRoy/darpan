@@ -33,9 +33,13 @@ try {
     console.log(`applied ${file}`);
   }
   const { rows } = await pool.query(
-    `SELECT (SELECT count(*) FROM districts) AS districts,
-            (SELECT count(*) FROM schemes) AS schemes,
-            (SELECT count(*) FROM feed_items) AS feed_items`
+    `SELECT (SELECT count(*) FROM sources) AS sources,
+            (SELECT count(*) FROM states) AS states,
+            (SELECT count(*) FROM districts) AS districts,
+            (SELECT count(*) FROM state_sector_budgets) AS sector_rows,
+            (SELECT count(*) FROM state_scheme_allocations) AS scheme_allocations,
+            (SELECT count(*) FROM district_scheme_progress) AS district_progress,
+            (SELECT count(*) FROM findings) AS findings`
   );
   console.log('row counts:', rows[0]);
 } finally {

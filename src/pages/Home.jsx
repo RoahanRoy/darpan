@@ -8,38 +8,37 @@ import SchemeGrid from '../components/SchemeGrid.jsx';
 import StatusTable from '../components/StatusTable.jsx';
 import PosterBanner from '../components/PosterBanner.jsx';
 
-const DEFAULT_STATE = 'maharashtra';
-const DEFAULT_DISTRICT = 'pune';
+const DEFAULT_STATE = 'uttarakhand';
+const DEFAULT_AREA = 'dehradun';
 
 export default function Home() {
   const [stateSlug, setStateSlug] = useState(DEFAULT_STATE);
-  const [districtSlug, setDistrictSlug] = useState(DEFAULT_DISTRICT);
+  const [areaSlug, setAreaSlug] = useState(DEFAULT_AREA);
 
   const regionsReq = useJson('/api/regions');
   const homeReq = useJson(
-    districtSlug ? `/api/home?district=${encodeURIComponent(districtSlug)}` : null
+    areaSlug ? `/api/home?district=${encodeURIComponent(areaSlug)}` : null
   );
 
   const regions = useMemo(() => regionsReq.data?.states ?? [], [regionsReq.data]);
 
-  // Picking a state moves the district selection to that state's first
-  // district; states with nothing tracked yet leave it empty rather than
-  // stranding a district that belongs to the previous state.
+  // Picking a state moves the selection to that state's first area; states
+  // with nothing tracked leave it empty rather than stranding an area that
+  // belongs to the previous state.
   function handleStateChange(nextStateSlug) {
     setStateSlug(nextStateSlug);
     const next = regions.find((s) => s.slug === nextStateSlug)?.districts?.[0];
-    setDistrictSlug(next ? next.slug : '');
+    setAreaSlug(next ? next.slug : '');
   }
 
-  // Keep the state dropdown honest if the districts arrive after first paint.
+  // Keep the state dropdown honest if the areas arrive after first paint.
   useEffect(() => {
     if (!regions.length) return;
-    const owner = regions.find((s) => s.districts.some((d) => d.slug === districtSlug));
+    const owner = regions.find((s) => s.districts.some((d) => d.slug === areaSlug));
     if (owner && owner.slug !== stateSlug) setStateSlug(owner.slug);
-  }, [regions, districtSlug, stateSlug]);
+  }, [regions, areaSlug, stateSlug]);
 
   const data = homeReq.data;
-  const districtName = data?.district?.name ?? '—';
 
   return (
     <div className="page">
@@ -49,42 +48,51 @@ export default function Home() {
         <Masthead
           regions={regions}
           stateSlug={stateSlug}
-          districtSlug={districtSlug}
-          districtName={districtName}
+          areaSlug={areaSlug}
+          areaName={data?.area?.name ?? '—'}
+          unitNote={data?.area?.unitNote}
           onStateChange={handleStateChange}
-          onDistrictChange={setDistrictSlug}
+          onAreaChange={setAreaSlug}
         />
 
         {homeReq.error ? (
           <section className="section-block">
-            <h3 className="section-title">This district could not be loaded</h3>
+            <h3 className="section-title">This area could not be loaded</h3>
             <p className="text-muted section-note">{homeReq.error}</p>
           </section>
         ) : homeReq.loading ? (
           <section className="section-block">
-            <p className="text-muted section-note">Loading district records…</p>
+            <p className="text-muted section-note">Loading records…</p>
           </section>
         ) : !data ? (
           <section className="section-block">
-            <h3 className="section-title">No district selected</h3>
+            <h3 className="section-title">Nothing selected</h3>
             <p className="text-muted section-note">
               Nothing is tracked in this state yet. Pick another state to see its records.
             </p>
           </section>
         ) : (
           <>
-            <section id="parliament" className="split split-feed">
-              <Feed items={data.feed} />
+            <section id="findings" className="split split-feed">
+              <Feed items={data.findings} stateName={data.state.name} />
               <SpendingRail spending={data.spending} />
             </section>
 
-            <SchemeGrid schemes={data.schemes} districtName={districtName} />
-            <StatusTable rows={data.rollout} districtName={districtName} />
+            <SchemeGrid
+              schemes={data.schemes}
+              stateName={data.state.name}
+              fiscalYear={data.fiscalYear}
+            />
+            <StatusTable
+              rows={data.progress}
+              areaName={data.area.name}
+              unitType={data.area.unitType}
+            />
           </>
         )}
       </div>
 
-      <PosterBanner lastUpdated={data?.lastUpdated} />
+      <PosterBanner sources={data?.sources ?? []} />
     </div>
   );
 }
