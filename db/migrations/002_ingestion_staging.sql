@@ -1,15 +1,13 @@
--- Yojana Darpan — ingestion staging schema (Neon Postgres).
+-- 002 — ingestion staging schema.
 --
--- These tables are deliberately NOT part of schema.sql. That file drops and
--- recreates the public tables on every migrate; staging holds review history
--- that must outlive a reseed, so it lives here and is created if-not-exists.
+-- Nothing in this file has a foreign key into the public tables, and that is
+-- deliberate: staging holds review history that must outlive any rebuild of
+-- the public tables, so a cascade from `sources` must not be able to reach
+-- it. db/reset.js relies on this — it rebuilds the public tables and leaves
+-- the ingestion record standing.
 --
--- Nothing in this file has a foreign key into the public tables, for the same
--- reason: `DROP TABLE sources CASCADE` in schema.sql would take the staging
--- history with it.
---
--- The governing rule from schema.sql still holds, and this is the machinery
--- that enforces it: an adapter cannot write to the public tables. It can only
+-- The governing rule from 001 still holds, and this is the machinery that
+-- enforces it: an adapter cannot write to the public tables. It can only
 -- propose. A human approves, and only then does a promoter move the row
 -- across. Scraped figures are exactly the kind of number that used to end up
 -- on the page without a document behind it, so the gate is structural rather

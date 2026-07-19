@@ -8,11 +8,13 @@
     "build": "vite build",
     "preview": "vite preview",
     "db:migrate": "node db/migrate.js",
-    "db:staging": "node db/migrate-staging.js",
+    "db:seed": "node db/seed.js",
+    "db:reset": "node db/reset.js",
     "ingest": "node ingest/run.js",
     "ingest:review": "node ingest/review.js",
     "ingest:verify": "node ingest/verify.js",
-    "dev:full": "vercel dev"
+    "dev:full": "vercel dev",
+    "test": "node --test \"test/*.test.js\""
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",

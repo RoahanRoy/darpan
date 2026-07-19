@@ -1,0 +1,58 @@
+# Build and test on every push and pull request.
+#
+# Vercel deploys whatever lands on main, and until now nothing checked that
+# main compiled. Vite only builds src/, so a broken api/ handler or a
+# mistyped import in an ingest script would ship without anyone noticing
+# until a reader hit a 500.
+#
+# No DATABASE_URL is provided, and none is needed: the tests exercise the
+# formatters and the handlers' method guards, all of which return before any
+# query. Nothing in CI can reach the production database, which is the point.
+
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A newer push makes an in-flight run redundant.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # `npm ci` rather than `npm install`: it fails if package-lock.json and
+      # package.json have drifted, which is a real defect worth catching here.
+      - run: npm ci
+
+      - name: Build the frontend
+        run: npm run build
+
+      # Vite never parses these, so a syntax error in a serverless function or
+      # an ingest script survives the build. This is the cheapest possible
+      # check that they are at least loadable.
+      - name: Syntax-check the server and ingest code
+        run: |
+          find api db ingest -name '*.js' -print0 | xargs -0 -n1 node --check
+
+      - name: Test
+        run: npm test
+
+      # Migrations are applied in filename order and their checksums are
+      # recorded, so a duplicate number or a rename silently changes what runs
+      # against production. Catch it before merge rather than at deploy.
+      - name: Check migration filenames
+        run: node scripts/check-migrations.js

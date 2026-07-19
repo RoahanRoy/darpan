@@ -1,4 +1,4 @@
--- Yojana Darpan — primary schema (Neon Postgres).
+-- 001 — baseline public schema (Neon Postgres).
 --
 -- Governing rule: every figure shown to the public traces to a row in
 -- `sources`. There is no column in this file for a number that someone
@@ -17,29 +17,14 @@
 -- is voted by its legislature and reported by sector. They are not two
 -- levels of one hierarchy and the totals do not nest, so nothing here
 -- attempts to roll a state's figures up into the centre's.
+--
+-- This file is the former schema.sql with every DROP removed and every
+-- CREATE made conditional. It is written to be a no-op against the database
+-- that schema.sql already built, so an existing deployment adopts the
+-- migration system without its data being touched. Nothing in db/migrations
+-- may ever destroy data; that is what db/reset.js is for, and it is gated.
 
-DROP TABLE IF EXISTS union_scheme_allocations CASCADE;
-DROP TABLE IF EXISTS union_ministry_budgets CASCADE;
-DROP TABLE IF EXISTS union_budget_headlines CASCADE;
-DROP TABLE IF EXISTS district_scheme_progress CASCADE;
-DROP TABLE IF EXISTS state_scheme_allocations CASCADE;
-DROP TABLE IF EXISTS state_sector_budgets CASCADE;
-DROP TABLE IF EXISTS state_budget_headlines CASCADE;
-DROP TABLE IF EXISTS findings CASCADE;
-DROP TABLE IF EXISTS districts CASCADE;
-DROP TABLE IF EXISTS states CASCADE;
-DROP TABLE IF EXISTS sources CASCADE;
-
--- Tables from the mock-data build. Dropped rather than migrated: every
--- row in them was invented.
-DROP TABLE IF EXISTS district_scheme_spending CASCADE;
-DROP TABLE IF EXISTS district_budgets CASCADE;
-DROP TABLE IF EXISTS scheme_rollout CASCADE;
-DROP TABLE IF EXISTS feed_items CASCADE;
-DROP TABLE IF EXISTS refresh_log CASCADE;
-DROP TABLE IF EXISTS schemes CASCADE;
-
-CREATE TABLE sources (
+CREATE TABLE IF NOT EXISTS sources (
   id            SERIAL PRIMARY KEY,
   slug          TEXT NOT NULL UNIQUE,
   title         TEXT NOT NULL,
@@ -57,7 +42,7 @@ CREATE TABLE sources (
   note          TEXT
 );
 
-CREATE TABLE states (
+CREATE TABLE IF NOT EXISTS states (
   id    SERIAL PRIMARY KEY,
   slug  TEXT NOT NULL UNIQUE,
   name  TEXT NOT NULL,
@@ -66,7 +51,7 @@ CREATE TABLE states (
   kind  TEXT NOT NULL CHECK (kind IN ('state', 'ut_with_legislature'))
 );
 
-CREATE TABLE districts (
+CREATE TABLE IF NOT EXISTS districts (
   id            SERIAL PRIMARY KEY,
   state_id      INTEGER NOT NULL REFERENCES states(id) ON DELETE CASCADE,
   slug          TEXT NOT NULL UNIQUE,
@@ -82,7 +67,7 @@ CREATE TABLE districts (
 );
 
 -- Top-line budget facts per state per year.
-CREATE TABLE state_budget_headlines (
+CREATE TABLE IF NOT EXISTS state_budget_headlines (
   id            SERIAL PRIMARY KEY,
   state_id      INTEGER NOT NULL REFERENCES states(id) ON DELETE CASCADE,
   fiscal_year   TEXT NOT NULL,
@@ -100,7 +85,7 @@ CREATE TABLE state_budget_headlines (
 -- Keeping budgeted AND revised for the same year is the point. The gap
 -- between them is the strongest accountability signal in the dataset, and
 -- it is arithmetic on published figures rather than editorial judgement.
-CREATE TABLE state_sector_budgets (
+CREATE TABLE IF NOT EXISTS state_sector_budgets (
   id              SERIAL PRIMARY KEY,
   state_id        INTEGER NOT NULL REFERENCES states(id) ON DELETE CASCADE,
   sector          TEXT NOT NULL,
@@ -114,7 +99,7 @@ CREATE TABLE state_sector_budgets (
   UNIQUE (state_id, sector)
 );
 
-CREATE TABLE state_scheme_allocations (
+CREATE TABLE IF NOT EXISTS state_scheme_allocations (
   id            SERIAL PRIMARY KEY,
   state_id      INTEGER NOT NULL REFERENCES states(id) ON DELETE CASCADE,
   scheme_name   TEXT NOT NULL,
@@ -129,7 +114,7 @@ CREATE TABLE state_scheme_allocations (
 -- Physical delivery per district. Column names are generic because
 -- different schemes count different things; the metric_*_label columns
 -- carry the published wording so nothing is silently relabelled.
-CREATE TABLE district_scheme_progress (
+CREATE TABLE IF NOT EXISTS district_scheme_progress (
   id             SERIAL PRIMARY KEY,
   district_id    INTEGER NOT NULL REFERENCES districts(id) ON DELETE CASCADE,
   scheme_name    TEXT NOT NULL,
@@ -147,7 +132,7 @@ CREATE TABLE district_scheme_progress (
 -- ------------------------------------------------------- union (centre)
 
 -- Top-line facts from the Union Budget, per year.
-CREATE TABLE union_budget_headlines (
+CREATE TABLE IF NOT EXISTS union_budget_headlines (
   id            SERIAL PRIMARY KEY,
   fiscal_year   TEXT NOT NULL,
   label         TEXT NOT NULL,
@@ -166,7 +151,7 @@ CREATE TABLE union_budget_headlines (
 -- Column meanings match state_sector_budgets exactly: prior-year actuals,
 -- current-year budget and revised, next-year budget. The budget-to-revised
 -- gap is the same accountability signal here as it is there.
-CREATE TABLE union_ministry_budgets (
+CREATE TABLE IF NOT EXISTS union_ministry_budgets (
   id              SERIAL PRIMARY KEY,
   ministry        TEXT NOT NULL UNIQUE,
   actuals_prev_cr NUMERIC(14,2),
@@ -181,7 +166,7 @@ CREATE TABLE union_ministry_budgets (
 -- allocation, the Union analysis publishes the full four-year series per
 -- scheme. Keeping all four columns means a scheme that was budgeted and
 -- then not spent cannot be shown as though it were only ever an allocation.
-CREATE TABLE union_scheme_allocations (
+CREATE TABLE IF NOT EXISTS union_scheme_allocations (
   id              SERIAL PRIMARY KEY,
   scheme_name     TEXT NOT NULL UNIQUE,
   actuals_prev_cr NUMERIC(12,2),  -- NULL where the scheme did not yet exist
@@ -202,7 +187,7 @@ CREATE TABLE union_scheme_allocations (
 -- budget rather than any one state. A union finding is not a finding about
 -- every state, so it must never fall out of a state's query: `state_id = $1`
 -- excludes NULLs, and the parliament query asks for `state_id IS NULL`.
-CREATE TABLE findings (
+CREATE TABLE IF NOT EXISTS findings (
   id                   SERIAL PRIMARY KEY,
   state_id             INTEGER REFERENCES states(id) ON DELETE CASCADE,
   kind                 TEXT NOT NULL CHECK (kind IN ('audit', 'underspend', 'allocation', 'shortfall')),
@@ -214,9 +199,9 @@ CREATE TABLE findings (
   display_order        INTEGER NOT NULL DEFAULT 0
 );
 
-CREATE INDEX districts_state_idx ON districts (state_id, display_order);
-CREATE INDEX sector_state_idx ON state_sector_budgets (state_id, display_order);
-CREATE INDEX progress_district_idx ON district_scheme_progress (district_id);
-CREATE INDEX findings_state_idx ON findings (state_id, display_order);
-CREATE INDEX union_ministry_idx ON union_ministry_budgets (display_order);
-CREATE INDEX union_scheme_idx ON union_scheme_allocations (display_order);
+CREATE INDEX IF NOT EXISTS districts_state_idx ON districts (state_id, display_order);
+CREATE INDEX IF NOT EXISTS sector_state_idx ON state_sector_budgets (state_id, display_order);
+CREATE INDEX IF NOT EXISTS progress_district_idx ON district_scheme_progress (district_id);
+CREATE INDEX IF NOT EXISTS findings_state_idx ON findings (state_id, display_order);
+CREATE INDEX IF NOT EXISTS union_ministry_idx ON union_ministry_budgets (display_order);
+CREATE INDEX IF NOT EXISTS union_scheme_idx ON union_scheme_allocations (display_order);
