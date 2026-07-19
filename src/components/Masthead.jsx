@@ -1,14 +1,22 @@
-import { states, districts } from '../data/homeContent.js';
+export default function Masthead({
+  regions,
+  stateSlug,
+  districtSlug,
+  districtName,
+  onStateChange,
+  onDistrictChange,
+}) {
+  const activeState = regions.find((s) => s.slug === stateSlug);
+  const districts = activeState?.districts ?? [];
 
-export default function Masthead({ state, district, onStateChange, onDistrictChange }) {
   return (
     <section className="split split-masthead" id="top">
       <div className="split-main">
-        <div className="kicker">This week · {district} district</div>
+        <div className="kicker">This week · {districtName} district</div>
         <h1 className="masthead-title">Where the money goes, and who is asking</h1>
         <p className="text-muted masthead-lede">
-          A weekly read of what {district} is raising in Parliament and under RTI, matched to the
-          schemes and the rupees behind them. Public records only — no login.
+          A weekly read of what {districtName} is raising in Parliament and under RTI, matched to
+          the schemes and the rupees behind them. Public records only — no login.
         </p>
       </div>
       <div className="split-rail masthead-controls">
@@ -17,11 +25,13 @@ export default function Masthead({ state, district, onStateChange, onDistrictCha
           <select
             id="state"
             className="input"
-            value={state}
+            value={stateSlug}
             onChange={(e) => onStateChange(e.target.value)}
           >
-            {states.map((s) => (
-              <option key={s}>{s}</option>
+            {regions.map((s) => (
+              <option key={s.slug} value={s.slug}>
+                {s.name}
+              </option>
             ))}
           </select>
         </div>
@@ -30,12 +40,19 @@ export default function Masthead({ state, district, onStateChange, onDistrictCha
           <select
             id="district"
             className="input"
-            value={district}
+            value={districtSlug}
             onChange={(e) => onDistrictChange(e.target.value)}
+            disabled={districts.length === 0}
           >
-            {districts.map((d) => (
-              <option key={d}>{d}</option>
-            ))}
+            {districts.length === 0 ? (
+              <option>No districts tracked yet</option>
+            ) : (
+              districts.map((d) => (
+                <option key={d.slug} value={d.slug}>
+                  {d.name}
+                </option>
+              ))
+            )}
           </select>
         </div>
         <a href="/map" className="btn btn-primary btn-block">

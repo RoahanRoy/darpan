@@ -1,7 +1,15 @@
 import Bar from './Bar.jsx';
-import { spending } from '../data/homeContent.js';
 
-export default function SpendingRail() {
+export default function SpendingRail({ spending }) {
+  if (!spending) {
+    return (
+      <div className="split-rail" id="spending">
+        <div className="kicker">District spending</div>
+        <p className="text-muted spend-sub">No budget filed for this district yet.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="split-rail" id="spending">
       <div className="kicker">{spending.period}</div>
@@ -12,7 +20,7 @@ export default function SpendingRail() {
       <div className="kicker kicker-neutral">By scheme</div>
       <div className="spend-list">
         {spending.byScheme.map((row) => (
-          <div key={row.name}>
+          <div key={row.slug}>
             <div className="spend-row">
               <span>{row.name}</span>
               <span className="tnum">{row.pct}%</span>

@@ -1,5 +1,4 @@
 import Tag from './Tag.jsx';
-import { feedItems } from '../data/homeContent.js';
 
 function FeedItem({ item }) {
   return (
@@ -16,15 +15,19 @@ function FeedItem({ item }) {
   );
 }
 
-export default function Feed() {
+export default function Feed({ items = [] }) {
   return (
     <div className="split-main">
       <h3 className="feed-heading">Raised this week</h3>
-      <div className="feed">
-        {feedItems.map((item) => (
-          <FeedItem key={item.id} item={item} />
-        ))}
-      </div>
+      {items.length === 0 ? (
+        <p className="text-muted feed-body">Nothing filed for this district yet.</p>
+      ) : (
+        <div className="feed">
+          {items.map((item) => (
+            <FeedItem key={item.id} item={item} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
