@@ -1,13 +1,22 @@
 import { sql, formatCrore, formatCount, pct } from './_lib/db.js';
 
-/* GET /api/home?district=dehradun
+/* GET /api/home?state=uttarakhand&district=dehradun
    Everything the home page renders, in one round trip.
 
    Note the shape: `spending` and `schemes` describe the STATE, `progress`
    describes the district. That asymmetry is not an accident of the query —
    it is what the underlying records support, and each block carries its own
-   scope label so the page cannot blur the two. */
+   scope label so the page cannot blur the two.
 
+   `state` is required in all but the legacy case below, because district
+   slugs are only unique within a state. India has two Bilaspurs (Himachal
+   Pradesh and Chhattisgarh), two Hamirpurs (Himachal Pradesh and Uttar
+   Pradesh) and two Pratapgarhs (Rajasthan and Uttar Pradesh). Answering
+   `?district=bilaspur` with whichever row the planner reached first would
+   put one state's delivery figures under another state's budget — a page
+   that is internally consistent, sourced, and about nowhere. */
+
+const DEFAULT_STATE = 'uttarakhand';
 const DEFAULT_DISTRICT = 'dehradun';
 
 // Which finding kinds read as accent-coloured tags: the ones describing
@@ -35,8 +44,30 @@ export default async function handler(req, res) {
 
   const url = new URL(req.url, `http://${req.headers.host}`);
   const districtSlug = (url.searchParams.get('district') || DEFAULT_DISTRICT).toLowerCase();
+  const stateSlug = (url.searchParams.get('state') || '').toLowerCase() || null;
 
   try {
+    /* A request naming no state is answered only where the district slug
+       identifies exactly one district in the country. That keeps every
+       already-published link working — they were all written when slugs were
+       globally unique — without letting an ambiguous one resolve to a coin
+       toss. The three ambiguous slugs get a 400 naming the states to choose
+       between, which is a better answer than either of the two states. */
+    if (!stateSlug) {
+      const matches = await sql`
+        SELECT s.slug FROM districts d JOIN states s ON s.id = d.state_id
+        WHERE d.slug = ${districtSlug}
+      `;
+      if (matches.length > 1) {
+        return res.status(400).json({
+          error:
+            `"${districtSlug}" names a district in more than one state ` +
+            `(${matches.map((m) => m.slug).join(', ')}). Add &state= to say which.`,
+          states: matches.map((m) => m.slug),
+        });
+      }
+    }
+
     /* The fiscal year is read from the data rather than pinned in code. A
        constant here goes stale the moment a new budget is ingested: the page
        would keep asking for last year's rows and quietly render nothing,
@@ -46,6 +77,7 @@ export default async function handler(req, res) {
        with scheme allocations before its headline rows, or the reverse. */
     const [area] = await sql`
       SELECT d.id, d.name, d.slug, d.unit_type, d.unit_note,
+             d.effective_from::text AS effective_from,
              s.id AS state_id, s.name AS state_name, s.slug AS state_slug, s.kind AS state_kind,
              (SELECT max(fy) FROM (
                 SELECT max(fiscal_year) AS fy FROM state_budget_headlines WHERE state_id = s.id
@@ -54,10 +86,15 @@ export default async function handler(req, res) {
               ) years) AS fiscal_year
       FROM districts d JOIN states s ON s.id = d.state_id
       WHERE d.slug = ${districtSlug}
+        AND (${stateSlug}::text IS NULL OR s.slug = ${stateSlug})
     `;
 
     if (!area) {
-      return res.status(404).json({ error: `Unknown area: ${districtSlug}` });
+      return res.status(404).json({
+        error: stateSlug
+          ? `Unknown area: ${stateSlug}/${districtSlug}`
+          : `Unknown area: ${districtSlug}`,
+      });
     }
 
     // A state with delivery records but no budget yet is a real state to
@@ -120,6 +157,11 @@ export default async function handler(req, res) {
         slug: area.slug,
         unitType: area.unit_type,
         unitNote: area.unit_note,
+        // When the district was constituted, per LGD. Districts are created
+        // by bifurcation several times a year, and one younger than the
+        // documents we hold has no figures because it did not exist — not
+        // because they are missing. The page needs to be able to say which.
+        effectiveFrom: area.effective_from,
       },
       state: { name: area.state_name, slug: area.state_slug, kind: area.state_kind },
       fiscalYear: FY,

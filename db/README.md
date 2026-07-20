@@ -11,7 +11,43 @@ bundle, which would publish the credential.
 | `npm run db:migrate -- --dry` | Lists pending migrations. Touches nothing. |
 | `npm run db:migrate` | Applies pending migrations. Never destroys data. |
 | `npm run db:seed` | Loads `seed.sql`. Refuses if `sources` is non-empty. |
+| `npm run db:geography` | Loads `geography.sql`. Safe to re-run. |
 | `npm run db:reset` | Destroys and rebuilds. Gated — see below. |
+
+## Geography
+
+`geography.sql` holds all 36 states and union territories and their 784
+districts. It is **generated** — `npm run geography:fetch` rewrites it from
+the Local Government Directory, and `npm run geography:check` fails if it has
+drifted.
+
+The check is not in CI on purpose. It reaches lgdirectory.gov.in, so it goes
+red when that site is down and again, correctly, the day a state creates a
+district — neither of which should block a pull request that did not touch
+geography. Run it when you want to know, not on every commit.
+
+It is deliberately not a migration and not part of the seed. A migration is
+applied once and checksummed forever, which is right for a schema change and
+wrong for a district list: districts are created by bifurcation several times
+a year, and each change should be an ordinary diff-and-apply. The seed is
+figures and refuses to run twice, so coupling a refreshable table to it would
+make the refresh impossible.
+
+Rows are upserted on `lgd_code` and nothing is ever deleted. A district that
+disappears from LGD has published figures hanging off it, and dropping the row
+would take them with it — so a merger is left visible for a person to decide.
+
+Two things about the source are worth knowing before trusting a count:
+
+- LGD's district service returns only two of Puducherry's four districts.
+  Mahé and Yanam, the exclaves inside Kerala and Andhra Pradesh, are absent
+  from it and are therefore absent here. The generated file says so at the
+  Puducherry block rather than leaving the short count to be discovered.
+- Districts carry `effective_from`, the date LGD says they were constituted.
+  Several are younger than the documents this site cites — Goa's Kushavati and
+  three Delhi units date from December 2025 — and a district younger than a
+  document has no figures in it because it did not exist, which is not the
+  same as figures being missing.
 
 ## Adding a migration
 

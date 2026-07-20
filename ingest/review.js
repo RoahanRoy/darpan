@@ -104,6 +104,12 @@ async function show(runId) {
       }
     }
 
+    // Printed before anything else on the row, because it is the reason this
+    // row needs a person rather than a glance.
+    for (const w of p._warnings ?? []) {
+      console.log(`      ⚠ ${w}`);
+    }
+
     if (p._provision_fragments) {
       console.log(`      source text: ${p._provision_fragments}`);
     }

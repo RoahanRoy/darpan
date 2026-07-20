@@ -60,9 +60,33 @@ function findDocumentDate(lines) {
 function sliceSectorTable(lines) {
   const start = lines.findIndex((l) => /^Table\s+\d+:\s*Sector-wise expenditure/i.test(l));
   if (start === -1) {
+    /* Two very different situations reach here and the message has to tell
+       them apart, because one is a bug and the other is not.
+
+       If the paper has no numbered tables at all, we could not read it and
+       the parser is at fault. If it has tables but none of them is the
+       sector-wise one, the paper genuinely does not carry that table — the
+       Jammu and Kashmir 2026-27 analysis has five tables and no sector
+       breakdown — and there is nothing here to fix. */
+    const tables = lines.filter((l) => /^Table\s+\d+:/i.test(l));
+
+    if (tables.length) {
+      const err = new Error(
+        `This paper carries no sector-wise expenditure table. It has ` +
+          `${tables.length}: ${tables.map((t) => t.replace(/\s*\(in Rs crore\)\s*$/i, '')).join('; ')}. ` +
+          'That is a property of the document, not a parse failure — there are ' +
+          'no sector figures here to ingest.'
+      );
+      // Lets the batch runner separate "this source has nothing for us" from
+      // "this is broken". Both stop the run; only one is worth waking someone.
+      err.code = 'NO_SECTOR_TABLE';
+      throw err;
+    }
+
     throw new Error(
-      'Could not find the "Table N: Sector-wise expenditure" heading. ' +
-        'PRS has probably changed the paper\'s layout — check before touching this regex.'
+      'Could not find the "Table N: Sector-wise expenditure" heading, and no ' +
+        'numbered tables were found at all. PRS has probably changed the ' +
+        "paper's layout — check before touching this regex."
     );
   }
 

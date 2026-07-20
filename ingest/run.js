@@ -55,6 +55,16 @@ try {
     fiscalYear: opts['fiscal-year'],
   });
 
+  /* Recorded now that the adapter has said what this run was about. The
+     column has existed since 002 and was never written, which left every run
+     in the log identified only by adapter name and timestamp — so thirty
+     state budgets ingested in one batch were indistinguishable, and there
+     was no way to ask which run last read Bihar's paper. */
+  await pool.query(`UPDATE ingestion_runs SET target_key = $2 WHERE id = $1`, [
+    runId,
+    result.targetKey ?? null,
+  ]);
+
   const counts = await withTransaction(async (client) => {
     const doc = result.document;
 
@@ -89,23 +99,34 @@ try {
       byTable.get(fact.targetTable).push(fact);
     }
 
-    const tally = { new: 0, changed: 0, unchanged: 0, invalid: 0 };
+    const tally = { new: 0, changed: 0, unchanged: 0, flagged: 0 };
 
     for (const [targetTable, facts] of byTable) {
       const promoter = promoterFor(targetTable);
       const live = await promoter.currentRows(client);
 
       for (const fact of facts) {
-        const problems = promoter.validate(fact.payload);
-        if (problems.length) {
-          tally.invalid++;
-          // Refusing the whole run: a validation failure here means the
-          // parse is wrong, and the rows that happen to look fine are no
-          // more trustworthy than the ones that don't.
+        const { errors, warnings } = promoter.validate(fact.payload);
+
+        if (errors.length) {
+          // Refusing the whole run: an error here means the parse is wrong,
+          // and the rows that happen to look fine are no more trustworthy
+          // than the ones that don't.
           throw new Error(
             `${targetTable} "${fact.naturalKey}" failed validation:\n    - ` +
-              problems.join('\n    - ')
+              errors.join('\n    - ')
           );
+        }
+
+        /* A warning is the document disagreeing with itself, which is a
+           question for the reviewer rather than grounds to throw away the
+           other rows. It rides along on the payload under the `_` prefix that
+           marks diagnostics, so it shows up at review and is stripped before
+           diffing — a row must never read as "changed" because the note
+           attached to it changed. */
+        if (warnings.length) {
+          fact.payload._warnings = warnings;
+          tally.flagged++;
         }
 
         const proposed = promoter.comparable(fact.payload);
@@ -128,8 +149,9 @@ try {
             previous ? JSON.stringify(previous) : null,
             // An unchanged row needs no decision, so it is not put in front
             // of a human. It is recorded because "the source still says what
-            // it said" is worth being able to prove.
-            diffKind === 'unchanged' ? 'rejected' : 'pending',
+            // it said" is worth being able to prove. A warning overrides
+            // that: an unchanged row we have doubts about still needs a look.
+            diffKind === 'unchanged' && !warnings.length ? 'rejected' : 'pending',
           ]
         );
       }
@@ -146,7 +168,8 @@ try {
   });
 
   console.log(
-    `  ${counts.new} new, ${counts.changed} changed, ${counts.unchanged} unchanged`
+    `  ${counts.new} new, ${counts.changed} changed, ${counts.unchanged} unchanged` +
+      (counts.flagged ? `, ${counts.flagged} FLAGGED for review` : '')
   );
   if (counts.new + counts.changed > 0) {
     console.log(`  review with: npm run ingest:review -- show ${runId}`);
@@ -159,7 +182,13 @@ try {
       [runId, err.stack ?? String(err)]
     );
   }
-  process.exitCode = 1;
+  /* Exit 2 means the document was read fine and simply holds nothing this
+     adapter wants — the Jammu and Kashmir 2026-27 paper publishes no sector
+     table at all. The run is still recorded as failed, because no figures
+     came out of it, but a caller can tell it apart from a parser that broke.
+     Nobody should be paged for a state whose legislature published a shorter
+     paper this year. */
+  process.exitCode = err.code === 'NO_SECTOR_TABLE' ? 2 : 1;
 } finally {
   await pool.end();
 }

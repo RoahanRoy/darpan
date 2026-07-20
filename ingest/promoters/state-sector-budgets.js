@@ -37,9 +37,27 @@ export function comparable(payload) {
   return out;
 }
 
-/** Structural checks run at stage time. Returns a list of problems. */
+/** Checks run at stage time.
+ *
+ *  Returns two lists, and the split is the point. An `error` says the parse
+ *  itself is broken — a missing sector name, a figure that is not a number —
+ *  and the run is abandoned, because the rows that happen to look fine came
+ *  out of the same broken parse and are no more trustworthy than the ones
+ *  that don't.
+ *
+ *  A `warning` says the parse looks right but the document argues with
+ *  itself. That is a claim about one row, not about the parse, and the person
+ *  reviewing is the one who should weigh it. Warnings stage the row with the
+ *  disagreement attached so it cannot be approved without being read.
+ *
+ *  These were one list until Gujarat's 2026-27 paper, where the printed
+ *  change for Urban Development disagreed with its own figures and took the
+ *  state's other nine sectors down with it.
+ */
 export function validate(payload) {
   const errors = [];
+  const warnings = [];
+
   if (!payload.state_slug) errors.push('state_slug missing');
   if (!payload.sector) errors.push('sector missing');
 
@@ -54,20 +72,29 @@ export function validate(payload) {
     errors.push('budgeted_cr and revised_cr are both required — the gap between them is the point');
   }
 
-  // The paper prints its own % change from RE to BE. If our columns disagree
-  // with it, we have mapped the columns wrong, which is silent and total.
+  /* The paper prints its own % change from RE to BE, so we can check our
+     column mapping against the publisher's arithmetic. A mismatch has two
+     possible causes and this cannot tell them apart: either we read the
+     columns in the wrong order, or the paper's printed figure is wrong.
+
+     Both have happened. Gujarat 2026-27 prints 23% for Urban Development
+     against figures giving 11%, and the paper's own annexure of 2024-25
+     actuals confirms our reading of the first column — so there the printed
+     percentage is simply wrong. A reviewer can establish that in a minute
+     with the PDF open, and nothing else can. */
   const { revised_cr: re, next_budget_cr: be, _published_pct_change: published } = payload;
   if (published != null && re > 0 && be != null) {
     const computed = Math.round(((Number(be) - Number(re)) / Number(re)) * 100);
     if (Math.abs(computed - Number(published)) > 1) {
-      errors.push(
-        `column mapping suspect: paper prints ${published}% change from RE to BE, ` +
-          `our columns give ${computed}%`
+      warnings.push(
+        `paper prints ${published}% change from RE to BE, our columns give ` +
+          `${computed}%. Check the four figures against the PDF before approving: ` +
+          `either the columns are misread or the paper's own percentage is wrong.`
       );
     }
   }
 
-  return errors;
+  return { errors, warnings };
 }
 
 /** Rows currently live, keyed the same way the adapter keys its proposals. */

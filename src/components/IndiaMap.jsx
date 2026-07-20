@@ -4,13 +4,18 @@ import indiaMap from '@svg-maps/india';
 /* Clickable India map, shown alongside the state/area dropdowns.
 
    Deliberately data-driven, not a static picture: a state lights up and
-   becomes clickable ONLY if it exists in `regions` (i.e. has sourced records
-   in the database). Everything else renders inert and greyed. That keeps the
-   map honest with the rest of the page — we do not have data for 34 of these
-   36 shapes, and a fully clickable India would imply otherwise.
+   becomes clickable ONLY if we hold published figures for it. Everything else
+   renders inert and greyed. That keeps the map honest with the rest of the
+   page, and a fully clickable India would imply otherwise.
 
-   Matching is by normalised name so a new sourced state auto-lights-up: add
-   the row to the DB and its shape starts responding, no map edit needed.
+   The test is `hasRecords`, not mere presence in `regions`. All 36 states and
+   union territories are in `regions` — they are loaded from the Local
+   Government Directory so the picker can name every one of them — but holding
+   a state's NAME is not holding its BUDGET. Lighting a state up because we
+   know it exists would promise a page of figures and deliver an empty one.
+
+   Matching is by normalised name so a newly sourced state auto-lights-up:
+   promote its figures and its shape starts responding, no map edit needed.
 
    Small states (Delhi is the obvious one) are a few pixels wide on a map of
    India and near-impossible to click. Any available state whose bounding box
@@ -23,14 +28,42 @@ import indiaMap from '@svg-maps/india';
 
 const normalize = (name) => String(name).toLowerCase().replace(/[^a-z]/g, '');
 
+/* The base map's geometry predates two boundary changes and cannot express
+   the country as it now is:
+
+   - It draws Dadra and Nagar Haveli and Daman and Diu as two separate
+     shapes. They were merged into one union territory in January 2020, and
+     both shapes are aliased onto it so either is clickable and lands in the
+     right place.
+   - It has no Ladakh at all, which was separated from Jammu and Kashmir in
+     October 2019 — the J&K shape still covers both. Ladakh is therefore
+     reachable from the dropdown but not from the map, and its own shape
+     cannot be drawn without new geometry. It is left unaliased rather than
+     folded into J&K, because clicking Ladakh's actual territory and being
+     shown Jammu and Kashmir's budget would be worse than not responding. */
+const SHAPE_ALIASES = new Map([
+  ['dadraandnagarhaveli', 'dadraandnagarhavelianddamananddiu'],
+  ['damananddiu', 'dadraandnagarhavelianddamananddiu'],
+]);
+
+const shapeKey = (name) => {
+  const key = normalize(name);
+  return SHAPE_ALIASES.get(key) ?? key;
+};
+
 // In viewBox units (the map is 612 wide). A state narrower/shorter than this
 // on its larger side is too small to hit and earns a marker.
 const MARKER_THRESHOLD = 22;
 
 export default function IndiaMap({ regions = [], activeSlug, onSelect }) {
-  // normalised state name -> slug, for the states we actually hold.
+  // normalised state name -> slug, for the states we hold FIGURES for.
+  // Keyed on the canonical name, which is what shapeKey resolves a legacy
+  // shape name onto.
   const slugByName = useMemo(
-    () => new Map(regions.map((r) => [normalize(r.name), r.slug])),
+    () =>
+      new Map(
+        regions.filter((r) => r.hasRecords).map((r) => [normalize(r.name), r.slug])
+      ),
     [regions]
   );
 
@@ -42,7 +75,7 @@ export default function IndiaMap({ regions = [], activeSlug, onSelect }) {
   useLayoutEffect(() => {
     const next = [];
     for (const loc of indiaMap.locations) {
-      const slug = slugByName.get(normalize(loc.name));
+      const slug = slugByName.get(shapeKey(loc.name));
       const el = pathRefs.current.get(loc.id);
       if (!slug || !el) continue;
       const b = el.getBBox();
@@ -69,7 +102,7 @@ export default function IndiaMap({ regions = [], activeSlug, onSelect }) {
         aria-label="Map of India — states with published records are selectable"
       >
         {indiaMap.locations.map((loc) => {
-          const slug = slugByName.get(normalize(loc.name));
+          const slug = slugByName.get(shapeKey(loc.name));
           const available = Boolean(slug);
           const active = available && slug === activeSlug;
           const cls = active ? 'is-active' : available ? 'is-available' : 'is-inert';

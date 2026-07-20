@@ -46,7 +46,7 @@ jobs:
       # check that they are at least loadable.
       - name: Syntax-check the server and ingest code
         run: |
-          find api db ingest -name '*.js' -print0 | xargs -0 -n1 node --check
+          find api db ingest scripts -name '*.js' -print0 | xargs -0 -n1 node --check
 
       - name: Test
         run: npm test

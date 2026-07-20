@@ -39,9 +39,12 @@ function resolve(regions, stateSlug, areaSlug) {
   // No area named, or the bare path '/': send the reader to a full address
   // rather than leaving them on a URL that names less than the page shows.
   //
-  // Area slugs are unique across states, so looking for the preferred one in
-  // whichever state resolved cannot pull in an area belonging to another. A
-  // state that does not contain it falls back to its own first area.
+  // The lookup is confined to the state that resolved, which is what makes
+  // the fallback safe. Area slugs are NOT unique across states — Bilaspur is
+  // in both Himachal Pradesh and Chhattisgarh — so searching the whole
+  // country for the preferred one could land a reader in a state they did
+  // not ask for. A state that has no area of that name falls back to its own
+  // first.
   if (!areaSlug) {
     const preferred = state.districts.find((d) => d.slug === DEFAULT_AREA);
     return { status: 'canonicalise', state, area: preferred ?? state.districts[0] };
@@ -73,7 +76,15 @@ export default function Home({ route }) {
   }, [resolved]);
 
   const ready = resolved.status === 'ok';
-  const homeReq = useJson(ready ? `/api/home?district=${encodeURIComponent(areaSlug)}` : null);
+  // Both halves of the address are sent. The district slug alone no longer
+  // identifies a district: three of them name two states each, and the API
+  // refuses those rather than guessing.
+  const homeReq = useJson(
+    ready
+      ? `/api/home?state=${encodeURIComponent(resolved.state.slug)}` +
+          `&district=${encodeURIComponent(resolved.area.slug)}`
+      : null
+  );
   const data = homeReq.data;
 
   useDocumentMeta({
