@@ -3,6 +3,7 @@ import useJson from '../hooks/useJson.js';
 import useDocumentMeta from '../hooks/useDocumentMeta.js';
 import { navigate } from '../hooks/useRoute.js';
 import { homePath } from '../lib/routes.js';
+import { resolveRegion } from '../lib/resolveRegion.js';
 import NavBar from '../components/NavBar.jsx';
 import Masthead from '../components/Masthead.jsx';
 import Feed from '../components/Feed.jsx';
@@ -15,55 +16,18 @@ import { homeNavLinks } from '../data/homeContent.js';
 /* The state page. Which state and area it shows comes from the URL, so every
    view here is a link somebody can send.
 
-   The resolution below is the load-bearing part. A URL naming a state we do
-   not hold must say so. Quietly falling back to Uttarakhand would tell a
-   reader looking for Bihar that these are Bihar's figures, which is the same
-   class of failure as inventing them. */
-
-const DEFAULT_STATE = 'uttarakhand';
-// The capital, and the area most likely to be looked for. Without it the bare
-// path lands on whichever district the source annexure happens to list first,
-// which is Uttarkashi — an arbitrary front page.
-const DEFAULT_AREA = 'dehradun';
-
-function resolve(regions, stateSlug, areaSlug) {
-  if (regions.length === 0) return { status: 'pending' };
-
-  const state = stateSlug
-    ? regions.find((s) => s.slug === stateSlug)
-    : (regions.find((s) => s.slug === DEFAULT_STATE) ?? regions[0]);
-
-  if (!state) return { status: 'unknown-state' };
-  if (state.districts.length === 0) return { status: 'no-areas', state };
-
-  // No area named, or the bare path '/': send the reader to a full address
-  // rather than leaving them on a URL that names less than the page shows.
-  //
-  // The lookup is confined to the state that resolved, which is what makes
-  // the fallback safe. Area slugs are NOT unique across states — Bilaspur is
-  // in both Himachal Pradesh and Chhattisgarh — so searching the whole
-  // country for the preferred one could land a reader in a state they did
-  // not ask for. A state that has no area of that name falls back to its own
-  // first.
-  if (!areaSlug) {
-    const preferred = state.districts.find((d) => d.slug === DEFAULT_AREA);
-    return { status: 'canonicalise', state, area: preferred ?? state.districts[0] };
-  }
-
-  const area = state.districts.find((d) => d.slug === areaSlug);
-  if (!area) return { status: 'unknown-area', state };
-
-  return { status: 'ok', state, area };
-}
+   The URL-to-region decision lives in src/lib/resolveRegion.js, where it can
+   be tested without a renderer. This file renders the result. */
 
 export default function Home({ route }) {
   const { stateSlug, areaSlug } = route;
 
   const regionsReq = useJson('/api/regions');
   const regions = useMemo(() => regionsReq.data?.states ?? [], [regionsReq.data]);
+  const withRecords = useMemo(() => regions.filter((s) => s.hasRecords), [regions]);
 
   const resolved = useMemo(
-    () => resolve(regions, stateSlug, areaSlug),
+    () => resolveRegion(regions, stateSlug, areaSlug),
     [regions, stateSlug, areaSlug]
   );
 
@@ -92,15 +56,23 @@ export default function Home({ route }) {
       ? `${resolved.area.name}, ${resolved.state.name} — budget and delivery records · Yojana Darpan`
       : resolved.status === 'pending'
         ? null
-        : 'Records not found · Yojana Darpan',
+        : resolved.status === 'choose'
+          ? 'Yojana Darpan — budget and delivery records, by state'
+          : 'Records not found · Yojana Darpan',
     description: ready
       ? `Budget allocations and scheme delivery for ${resolved.area.name} in ${resolved.state.name}, taken from published government documents and linked back to them.`
-      : undefined,
+      : resolved.status === 'choose'
+        ? 'Budget allocations and scheme delivery for Indian states and union territories, taken from published government documents and linked back to them. Pick a state to begin.'
+        : undefined,
   });
 
+  /* Navigates to the bare state path and lets the canonicalise step above
+     choose the area. Picking one here too would be a second, disagreeing
+     answer to the same question: this used to take each state's first area,
+     which for Uttarakhand is Uttarkashi, while a typed /uttarakhand resolved
+     to Dehradun. Same state, two front pages, depending on how you arrived. */
   function handleStateChange(nextStateSlug) {
-    const next = regions.find((s) => s.slug === nextStateSlug);
-    navigate(homePath(nextStateSlug, next?.districts?.[0]?.slug));
+    navigate(homePath(nextStateSlug));
   }
 
   function handleAreaChange(nextAreaSlug) {
@@ -127,13 +99,21 @@ export default function Home({ route }) {
             <h3 className="section-title">The state list could not be loaded</h3>
             <p className="text-muted section-note">{regionsReq.error}</p>
           </section>
+        ) : resolved.status === 'choose' ? (
+          <section className="section-block">
+            <h3 className="section-title">Pick a state or union territory</h3>
+            <p className="text-muted section-note">
+              All {regions.length} are listed. {withRecords.length} of them have budget
+              figures published so far — those are the coloured ones on the map. The
+              rest are here by name while their documents are read.
+            </p>
+          </section>
         ) : resolved.status === 'unknown-state' ? (
           <section className="section-block">
             <h3 className="section-title">No records for “{stateSlug}”</h3>
             <p className="text-muted section-note">
-              Nothing is published here for that state. Coverage is currently{' '}
-              {regions.map((s) => s.name).join(' and ')} — pick one from the map or the
-              list above.
+              That is not a state or union territory we list. Pick one from the map or
+              the list above.
             </p>
           </section>
         ) : resolved.status === 'unknown-area' ? (

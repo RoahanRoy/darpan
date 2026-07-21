@@ -6,7 +6,7 @@
    only ever saw Dehradun. For a site whose entire claim is "check this
    yourself", the address bar has to name what is on screen.
 
-     /                      the default state and its first area
+     /                      names no state; the page asks for one
      /uttarakhand           a state; canonicalised to its first area
      /uttarakhand/dehradun  a state and one of its areas
      /parliament            the union budget

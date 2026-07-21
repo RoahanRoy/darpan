@@ -15,6 +15,29 @@ export default function SpendingRail({ spending }) {
     );
   }
 
+  /* Every state and union territory is now listed, so a reader can reach one
+     whose budget documents have not been read yet. The response is a real
+     `spending` object with nothing in it, which would otherwise render as a
+     heading, a blank total and an empty bar list — a block that looks broken
+     rather than one that is empty on purpose. Say which it is. */
+  const bare =
+    spending.total == null &&
+    spending.headlines.length === 0 &&
+    spending.sectors.length === 0;
+
+  if (bare) {
+    return (
+      <div className="split-rail" id="spending">
+        <div className="kicker">Budget</div>
+        <p className="text-muted spend-sub">
+          No budget figures are published here for {spending.scopeLabel} yet. Nothing
+          appears on this site until it has been read out of a government document and
+          linked back to it.
+        </p>
+      </div>
+    );
+  }
+
   const perUnit = spending.scopeLabel === 'Delhi' ? 'per municipal body' : 'per district';
 
   return (

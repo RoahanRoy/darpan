@@ -16,7 +16,10 @@ import { sql, formatCrore, formatCount, pct } from './_lib/db.js';
    put one state's delivery figures under another state's budget — a page
    that is internally consistent, sourced, and about nowhere. */
 
-const DEFAULT_STATE = 'uttarakhand';
+/* Only the district has a default, and only to keep the pre-existing bare
+   `/api/home` contract working. There is deliberately no default STATE: a
+   request naming neither is answered from the district slug alone, and only
+   where that slug is unambiguous. */
 const DEFAULT_DISTRICT = 'dehradun';
 
 // Which finding kinds read as accent-coloured tags: the ones describing

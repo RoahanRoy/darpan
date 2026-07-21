@@ -3,25 +3,32 @@ import indiaMap from '@svg-maps/india';
 
 /* Clickable India map, shown alongside the state/area dropdowns.
 
-   Deliberately data-driven, not a static picture: a state lights up and
-   becomes clickable ONLY if we hold published figures for it. Everything else
-   renders inert and greyed. That keeps the map honest with the rest of the
-   page, and a fully clickable India would imply otherwise.
+   Every state and union territory we list is clickable. The map is a picker,
+   and a picker that refuses half the country is broken however defensible its
+   reasons: a reader clicking Bihar and getting no response cannot tell a
+   deliberate omission from a bug, and reaches for the dropdown they were
+   given the map to avoid.
 
-   The test is `hasRecords`, not mere presence in `regions`. All 36 states and
-   union territories are in `regions` — they are loaded from the Local
-   Government Directory so the picker can name every one of them — but holding
-   a state's NAME is not holding its BUDGET. Lighting a state up because we
-   know it exists would promise a page of figures and deliver an empty one.
+   What the map does NOT do is pretend all of them have figures. Colour, not
+   clickability, carries that:
 
-   Matching is by normalised name so a newly sourced state auto-lights-up:
-   promote its figures and its shape starts responding, no map edit needed.
+     is-active     the state in view
+     is-available  we hold published figures — click for the numbers
+     is-listed     we hold the state's name but no figures yet — click and
+                   the page says so in words, which is the honest answer
+
+   Distinguishing the two shades matters because `regions` holds all 36 states
+   from the Local Government Directory while figures cover far fewer. Painting
+   them alike would promise thirty-odd pages of numbers we cannot show.
+
+   Matching is by normalised name, so a state changes shade on its own the day
+   its figures are promoted — no map edit needed.
 
    Small states (Delhi is the obvious one) are a few pixels wide on a map of
-   India and near-impossible to click. Any available state whose bounding box
-   is below MARKER_THRESHOLD gets a marker dot placed at its centre — a large,
-   reliable click target. The box is measured from the rendered geometry
-   rather than guessed, so it stays correct if the base map ever changes.
+   India and near-impossible to click. Any state whose bounding box is below
+   MARKER_THRESHOLD gets a marker dot placed at its centre — a large, reliable
+   click target. The box is measured from the rendered geometry rather than
+   guessed, so it stays correct if the base map ever changes.
 
    Base geometry: @svg-maps/india (Victor Cazanave), CC-BY-4.0 — attributed
    in the sources block. */
@@ -55,14 +62,19 @@ const shapeKey = (name) => {
 // on its larger side is too small to hit and earns a marker.
 const MARKER_THRESHOLD = 22;
 
+/* The tooltip and the accessible name say which of the two shades this is,
+   so the distinction survives for a reader who cannot see the colours. */
+const label = (name, hasRecords) =>
+  hasRecords ? `${name} — view records` : `${name} — no figures published yet`;
+
 export default function IndiaMap({ regions = [], activeSlug, onSelect }) {
-  // normalised state name -> slug, for the states we hold FIGURES for.
+  // normalised state name -> { slug, hasRecords }, for every state we list.
   // Keyed on the canonical name, which is what shapeKey resolves a legacy
   // shape name onto.
-  const slugByName = useMemo(
+  const stateByName = useMemo(
     () =>
       new Map(
-        regions.filter((r) => r.hasRecords).map((r) => [normalize(r.name), r.slug])
+        regions.map((r) => [normalize(r.name), { slug: r.slug, hasRecords: r.hasRecords }])
       ),
     [regions]
   );
@@ -71,20 +83,27 @@ export default function IndiaMap({ regions = [], activeSlug, onSelect }) {
   const [markers, setMarkers] = useState([]);
 
   // Measure the rendered shapes once they exist, then place a marker on any
-  // available state too small to click directly.
+  // state too small to click directly.
   useLayoutEffect(() => {
     const next = [];
     for (const loc of indiaMap.locations) {
-      const slug = slugByName.get(shapeKey(loc.name));
+      const entry = stateByName.get(shapeKey(loc.name));
       const el = pathRefs.current.get(loc.id);
-      if (!slug || !el) continue;
+      if (!entry || !el) continue;
       const b = el.getBBox();
       if (Math.max(b.width, b.height) < MARKER_THRESHOLD) {
-        next.push({ id: loc.id, slug, name: loc.name, cx: b.x + b.width / 2, cy: b.y + b.height / 2 });
+        next.push({
+          id: loc.id,
+          slug: entry.slug,
+          hasRecords: entry.hasRecords,
+          name: loc.name,
+          cx: b.x + b.width / 2,
+          cy: b.y + b.height / 2,
+        });
       }
     }
     setMarkers(next);
-  }, [slugByName]);
+  }, [stateByName]);
 
   const activate = (slug) => (e) => {
     if (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ') return;
@@ -99,19 +118,25 @@ export default function IndiaMap({ regions = [], activeSlug, onSelect }) {
         className="india-map"
         viewBox={indiaMap.viewBox}
         role="group"
-        aria-label="Map of India — states with published records are selectable"
+        aria-label="Map of India — pick a state or union territory"
       >
         {indiaMap.locations.map((loc) => {
-          const slug = slugByName.get(shapeKey(loc.name));
-          const available = Boolean(slug);
-          const active = available && slug === activeSlug;
-          const cls = active ? 'is-active' : available ? 'is-available' : 'is-inert';
+          const entry = stateByName.get(shapeKey(loc.name));
+          const slug = entry?.slug;
+          const active = Boolean(slug) && slug === activeSlug;
+          const cls = active
+            ? 'is-active'
+            : !entry
+              ? 'is-inert'
+              : entry.hasRecords
+                ? 'is-available'
+                : 'is-listed';
           const setRef = (el) => {
             if (el) pathRefs.current.set(loc.id, el);
             else pathRefs.current.delete(loc.id);
           };
 
-          if (!available) {
+          if (!entry) {
             return (
               <path
                 key={loc.id}
@@ -132,11 +157,11 @@ export default function IndiaMap({ regions = [], activeSlug, onSelect }) {
               role="button"
               tabIndex={0}
               aria-pressed={active}
-              aria-label={`${loc.name} — view records`}
+              aria-label={label(loc.name, entry.hasRecords)}
               onClick={activate(slug)}
               onKeyDown={activate(slug)}
             >
-              <title>{loc.name}</title>
+              <title>{label(loc.name, entry.hasRecords)}</title>
             </path>
           );
         })}
@@ -144,25 +169,34 @@ export default function IndiaMap({ regions = [], activeSlug, onSelect }) {
         {/* Markers for states too small to click on their own outline. */}
         {markers.map((m) => {
           const active = m.slug === activeSlug;
+          const cls = active ? 'is-active' : m.hasRecords ? '' : 'is-listed';
           return (
             <circle
               key={`marker-${m.id}`}
               cx={m.cx}
               cy={m.cy}
               r={7}
-              className={`map-marker ${active ? 'is-active' : ''}`}
+              className={`map-marker ${cls}`}
               role="button"
               tabIndex={0}
               aria-pressed={active}
-              aria-label={`${m.name} — view records`}
+              aria-label={label(m.name, m.hasRecords)}
               onClick={activate(m.slug)}
               onKeyDown={activate(m.slug)}
             >
-              <title>{m.name}</title>
+              <title>{label(m.name, m.hasRecords)}</title>
             </circle>
           );
         })}
       </svg>
+
+      {/* Two shades that mean different things need saying in words. Without
+          this a reader has no way to know the grey states are clickable, and
+          would read the map as broken for most of the country. */}
+      <p className="map-legend">
+        <span className="map-key map-key-available" aria-hidden="true" /> figures published
+        <span className="map-key map-key-listed" aria-hidden="true" /> listed, no figures yet
+      </p>
     </div>
   );
 }

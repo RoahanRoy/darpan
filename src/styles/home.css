@@ -179,9 +179,16 @@
 .map-state {
   stroke: var(--color-bg); stroke-width: 0.6; transition: fill 0.12s ease;
 }
-/* States with no sourced records: present for context, not interactive. */
+/* A shape matching no state we list. None do today — every shape in the base
+   map resolves — so this is the fallback if the geometry ever gains one. */
 .map-state.is-inert { fill: var(--color-neutral-300); pointer-events: none; }
-/* States we hold data for: clickable. */
+/* Listed, clickable, but no figures promoted yet: grey rather than accent, so
+   the map never promises numbers the page cannot show. Still hoverable — the
+   whole country is a picker. */
+.map-state.is-listed { fill: var(--color-neutral-300); cursor: pointer; }
+.map-state.is-listed:hover { fill: var(--color-neutral-500); }
+.map-state.is-listed:focus-visible { outline: none; fill: var(--color-neutral-500); }
+/* States we hold figures for: clickable, and coloured to say so. */
 .map-state.is-available { fill: var(--color-accent-300); cursor: pointer; }
 .map-state.is-available:hover { fill: var(--color-accent-500); }
 .map-state.is-available:focus-visible { outline: none; fill: var(--color-accent-500); }
@@ -195,7 +202,19 @@
 }
 .map-marker:hover { fill: var(--color-accent-700); }
 .map-marker:focus-visible { outline: none; fill: var(--color-accent-700); }
+.map-marker.is-listed { fill: var(--color-neutral-500); }
+.map-marker.is-listed:hover { fill: var(--color-neutral-700); }
 .map-marker.is-active { fill: var(--color-accent); }
+
+.map-legend {
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2);
+  font-size: 11px; color: var(--color-neutral-700); margin: var(--space-2) 0 0;
+}
+.map-key {
+  width: 10px; height: 10px; border-radius: 2px; display: inline-block; flex: none;
+}
+.map-key-available { background: var(--color-accent-300); }
+.map-key-listed { background: var(--color-neutral-300); margin-left: var(--space-3); }
 
 .map-credit { font-size: 10px; margin-top: var(--space-3); opacity: 0.7; }
 

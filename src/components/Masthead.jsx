@@ -28,12 +28,13 @@ export default function Masthead({
     <section className="split split-masthead" id="top">
       <div className="split-main">
         <div className="kicker">
-          {activeState?.name ?? '—'} · {areaName}
+          {activeState ? `${activeState.name} · ${areaName}` : 'India · all states and union territories'}
         </div>
         <h1 className="masthead-title">Where the money goes, and who is asking</h1>
         <p className="text-muted masthead-lede">
-          Budget and delivery records for {activeState?.name ?? 'this state'}, taken from
-          published documents and linked back to them. Public records only — no login.
+          {activeState
+            ? `Budget and delivery records for ${activeState.name}, taken from published documents and linked back to them. Public records only — no login.`
+            : 'Budget and delivery records taken from published government documents and linked back to them. Pick a state to begin. Public records only — no login.'}
         </p>
         {unitNote ? <p className="text-muted masthead-note">{unitNote}</p> : null}
       </div>
