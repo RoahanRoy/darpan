@@ -380,12 +380,20 @@ async function promote(runId) {
       throw new OrphansFound(runId, orphans);
     }
 
+    /* `retire` refuses to drop a stranded gloss and tells you to move it to
+       the new row first. That advice cannot apply here: on a rename the new
+       row does not exist until this transaction lands, so there is nothing to
+       move it to yet. The sequence has to be the other way round — promote,
+       then write the gloss on the row that now exists — and the only way that
+       does not lose the text is to print it before it goes. */
     let retired = 0;
+    const lost = [];
     for (const { promoter, rows } of orphans) {
+      lost.push(...rows.filter((r) => r.provision_note));
       retired += await promoter.retireOrphans(client, rows.map((r) => r.id));
     }
 
-    return { promoted: facts.length, retired };
+    return { promoted: facts.length, retired, lost };
   });
 
   if (promoted.promoted) {
@@ -393,6 +401,18 @@ async function promote(runId) {
   }
   if (promoted.retired) {
     console.log(`retired ${promoted.retired} orphaned row(s)`);
+  }
+
+  if (promoted.lost?.length) {
+    console.log(
+      `\n${promoted.lost.length} of them carried a provision note. If the sector ` +
+        `was renamed rather than dropped, the gloss belongs on its new row — ` +
+        `these are the only copies:`
+    );
+    for (const r of promoted.lost) {
+      console.log(`  ${r.state_slug} · ${r.sector}\n    ${r.provision_note}`);
+    }
+    console.log(`\nWrite it back with: npm run ingest:review -- gloss <rowId> "…"`);
   }
 }
 
