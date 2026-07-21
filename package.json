@@ -17,6 +17,8 @@
     "ingest:states": "node ingest/run-states.js",
     "prs:discover": "node scripts/prs-discover.js",
     "prs:check": "node scripts/prs-discover.js --check",
+    "gloss:apply": "node scripts/apply-glosses.js",
+    "gloss:check": "node scripts/apply-glosses.js --check",
     "ingest:review": "node ingest/review.js",
     "ingest:verify": "node ingest/verify.js",
     "dev:full": "vercel dev",

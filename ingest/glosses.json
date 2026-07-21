@@ -1,0 +1,24 @@
+{
+  "_comment": "The one-line gloss under each sector figure, written by hand from the source paper. Keyed \"<state slug>|<sector>\". Applied with scripts/apply-glosses.js. Kept here, not only in the database, because no adapter can regenerate this text: see the header of that script.",
+  "glosses": {
+    "delhi|Education, Sports, Arts, and Culture": "Rs 1,146 crore for the Samagra Shiksha Scheme.",
+    "delhi|Health and Family Welfare": "Rs 1,667 crore to introduce the Pradhan Mantri Ayushman Bharat Health Infrastructure Mission.",
+    "delhi|Transport": "Rs 2,000 crore as revenue grants to Delhi Transport Corporation for its working deficit.",
+    "delhi|Social Welfare and Nutrition": "Rs 5,110 crore for Mahila Samridhi Yojana.",
+    "delhi|Energy": "Rs 3,600 crore for power subsidy to consumers.",
+    "delhi|Urban Development": "Rs 609 crore as grants to local bodies under AMRUT 2.0.",
+    "delhi|Water Supply and Sanitation": "Rs 2,050 crore as grants to Delhi Jal Board for capital projects.",
+    "delhi|Rural Development": "Rs 999 crore for the Village Board for Integrated Development of Rural Villages.",
+    "delhi|Irrigation and Flood Control": "Rs 475 crore for drainage.",
+    "uttarakhand|Education, Sports, Arts, and Culture": "Rs 3,780 crore for government primary schools and Rs 4,285 crore for government secondary schools.",
+    "uttarakhand|Agriculture and Allied Activities": "Rs 688 crore for horticulture and vegetable crops.",
+    "uttarakhand|Rural Development": "Rs 1,138 crore for Pradhan Mantri Gram Sadak Yojana.",
+    "uttarakhand|Health and Family Welfare": "Rs 1,662 crore for allopathic rural health services and Rs 927 crore for urban.",
+    "uttarakhand|Social Welfare and Nutrition": "Rs 945 crore for child welfare and Rs 725 crore for social security pensions.",
+    "uttarakhand|Police": "District police allocated Rs 1,548 crore.",
+    "uttarakhand|Transport": "Rs 1,961 crore for district and other roads.",
+    "uttarakhand|Water Supply and Sanitation": "Rs 1,843 crore for Jal Jeevan Mission.",
+    "uttarakhand|Urban Development": "Rs 1,710 crore for the integrated development of small and medium towns.",
+    "uttarakhand|Energy": "Rs 1,202 crore as capital outlay on power projects."
+  }
+}
