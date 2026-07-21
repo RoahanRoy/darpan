@@ -8,6 +8,8 @@
    rejected at stage time, so the staging area cannot fill up with proposals
    nothing knows how to land. */
 
+import { isKnownSector } from '../adapters/prs-state-budget.js';
+
 export const targetTable = 'state_sector_budgets';
 
 // Keys the adapter attaches for the reviewer's benefit rather than for the
@@ -60,6 +62,21 @@ export function validate(payload) {
 
   if (!payload.state_slug) errors.push('state_slug missing');
   if (!payload.sector) errors.push('sector missing');
+
+  /* A sector name outside the fourteen PRS heads is how a mis-assembled name
+     reaches the page. Four did — "Mukhyamantri Mazi Ladaki Bahin Yojana Rural
+     Development" among them — because the row was otherwise perfectly valid
+     and nothing looked at the name at all.
+
+     A warning rather than an error: PRS could legitimately add a head, and
+     that should be read and accepted by a person, not rejected outright. */
+  if (payload.sector && !isKnownSector(payload.sector)) {
+    warnings.push(
+      `"${payload.sector}" is not one of the sector heads PRS publishes. Either ` +
+        'the name was assembled from a provision sentence that ran on without a ' +
+        'full stop, or PRS has added a head — check the paper before approving.'
+    );
+  }
 
   for (const col of NUMERIC) {
     const v = payload[col];

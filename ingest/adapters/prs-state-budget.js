@@ -119,6 +119,61 @@ function sliceSectorTable(lines) {
    the failure mode that reads perfectly well and is therefore the dangerous
    one. ingest/verify.js pins all ten Uttarakhand rows against the figures a
    human transcribed, so a drift here fails the build rather than the page. */
+/* The sector heads PRS publishes. These are standard budget heads, not free
+   text — the same fourteen appear across every state's paper, which is what
+   makes the table comparable between states in the first place.
+
+   They are listed because isNamePrefix cannot be made reliable on its own. It
+   decides whether a line is a wrapped sector name or the tail of the previous
+   row's provision note, and when a provision sentence runs off the end of a
+   line without a full stop its continuation is indistinguishable from a name:
+   Title-Case, no digits, no terminator. Maharashtra's paper reads
+
+     "Rs 26,500 crore has been allocated to"
+     "Mukhyamantri Mazi Ladaki Bahin Yojana"     <- taken as a name
+     "Rural Development 20,798 34,531 ..."
+
+   and the row landed as "Mukhyamantri Mazi Ladaki Bahin Yojana Rural
+   Development". Kerala, Tamil Nadu and Telangana each had one too. Every case
+   is junk PREFIXED to a real head, because the row line always supplies the
+   head's last word, so trimming to the head recovers the name exactly.
+
+   A name matching nothing here is left untouched and warned about rather than
+   forced, since PRS adding a fifteenth head is a thing that should be read by
+   a person, not silently rewritten into one of the fourteen. */
+const SECTOR_HEADS = [
+  'Education, Sports, Arts, and Culture',
+  'Health and Family Welfare',
+  'Social Welfare and Nutrition',
+  'Welfare of SC, ST, OBC, and Minorities',
+  'Agriculture and Allied Activities',
+  'Irrigation and Flood Control',
+  'Water Supply and Sanitation',
+  'Rural Development',
+  'Urban Development',
+  'Roads and Bridges',
+  'Transport',
+  'Housing',
+  'Police',
+  'Energy',
+];
+
+export function repairSectorName(raw) {
+  const name = String(raw ?? '').replace(/\s+/g, ' ').trim();
+  if (SECTOR_HEADS.includes(name)) return { name, trimmed: null };
+
+  const head = SECTOR_HEADS.find(
+    (h) => name.length > h.length && name.toLowerCase().endsWith(h.toLowerCase())
+  );
+  if (!head) return { name, trimmed: null };
+
+  return { name: head, trimmed: name.slice(0, name.length - head.length).trim() };
+}
+
+export function isKnownSector(name) {
+  return SECTOR_HEADS.includes(String(name ?? '').replace(/\s+/g, ' ').trim());
+}
+
 function isNamePrefix(line) {
   if (!line) return false;
   if (/[.]$/.test(line)) return false;
@@ -151,11 +206,17 @@ function parseSectors(tableLines) {
     const provisionTail = gap.slice(0, split);
     gap = [];
 
-    const sector = [...nameLines, m[1]].join(' ').replace(/\s+/g, ' ').trim().replace(/,$/, '');
-    if (!sector) continue;
+    const assembled = [...nameLines, m[1]].join(' ').replace(/\s+/g, ' ').trim().replace(/,$/, '');
+    if (!assembled) continue;
+
+    /* Whatever was trimmed off is not discarded — it is the tail of the
+       previous row's provision sentence, which is where it goes below. Losing
+       it would replace a wrong sector name with a truncated note. */
+    const { name: sector, trimmed } = repairSectorName(assembled);
 
     sectors.push({
       sector,
+      _trimmedFromName: trimmed,
       actuals_prev_cr: toNumber(m[2]),
       budgeted_cr: toNumber(m[3]),
       revised_cr: toNumber(m[4]),
@@ -174,13 +235,18 @@ function parseSectors(tableLines) {
   // The final row's tail is whatever is left over after the last match.
   for (let i = 0; i < sectors.length; i++) {
     const tail = sectors[i + 1]?._tailForPrevious ?? (i === sectors.length - 1 ? gap : []);
-    sectors[i].provision_fragments = [sectors[i].provisionHead, ...tail]
+    // Text trimmed off the NEXT row's name was the end of this row's sentence,
+    // so it is restored between this row's own text and the gap that follows.
+    const trimmed = sectors[i + 1]?._trimmedFromName;
+    sectors[i].provision_fragments = [sectors[i].provisionHead, trimmed, ...tail]
+      .filter(Boolean)
       .join(' ')
       .replace(/▪/g, ' ')
       .replace(/\s+/g, ' ')
       .trim() || null;
     delete sectors[i].provisionHead;
     delete sectors[i]._tailForPrevious;
+    delete sectors[i]._trimmedFromName;
   }
 
   return sectors;

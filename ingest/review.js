@@ -168,6 +168,26 @@ async function decide(runId, status) {
   console.log(`${status} ${rowCount} row(s)`);
 }
 
+/* Every row a run staged, whatever the reviewer did with it.
+
+   The orphan check needs this rather than the approved rows alone. A run
+   re-reading a paper stages the whole table but only proposes what actually
+   moved: re-ingesting Maharashtra after the sector-name fix staged ten rows,
+   nine of which were byte-identical to what was already published and so were
+   marked unchanged, leaving exactly one approvable. Asking "what is missing
+   from this set" of that one row answers that the state's other nine sectors
+   are missing, which is the opposite of true.
+
+   The set that means "this is the whole table" is the run's staged facts, not
+   the subset a person had reason to act on. */
+async function stagedSetFor(client, runId) {
+  const { rows } = await client.query(
+    `SELECT target_table, payload FROM staged_facts WHERE run_id = $1`,
+    [runId]
+  );
+  return rows;
+}
+
 /* Asks each promoter involved in a run what the run would strand.
 
    Grouped by target table because the question only makes sense per table:
@@ -223,12 +243,11 @@ class OrphansFound extends Error {
    a run that landed before this check existed can still be examined. */
 async function orphans(runId) {
   const { rows: facts } = await pool.query(
-    `SELECT target_table, payload FROM staged_facts
-     WHERE run_id = $1 AND status IN ('approved', 'promoted')`,
+    `SELECT target_table, payload FROM staged_facts WHERE run_id = $1`,
     [runId]
   );
 
-  if (!facts.length) return console.log(`run ${runId} has no approved or promoted rows`);
+  if (!facts.length) return console.log(`run ${runId} staged nothing`);
 
   const client = await pool.connect();
   try {
@@ -255,12 +274,8 @@ async function orphans(runId) {
    the runs that landed before promote learned to check. */
 async function retire(runId) {
   const retired = await withTransaction(async (client) => {
-    const { rows: facts } = await client.query(
-      `SELECT target_table, payload FROM staged_facts
-       WHERE run_id = $1 AND status IN ('approved', 'promoted')`,
-      [runId]
-    );
-    if (!facts.length) throw new Error(`run ${runId} has no approved or promoted rows`);
+    const facts = await stagedSetFor(client, runId);
+    if (!facts.length) throw new Error(`run ${runId} staged nothing`);
 
     const found = await collectOrphans(client, facts);
 
@@ -374,7 +389,7 @@ async function promote(runId) {
        nothing from it lands. That is the point: a half-applied state, with
        this year's Education next to last year's Police, is worse on the page
        than a state that did not update at all. */
-    const orphans = await collectOrphans(client, facts);
+    const orphans = await collectOrphans(client, await stagedSetFor(client, runId));
 
     if (orphans.length && !('retire-orphans' in flags)) {
       throw new OrphansFound(runId, orphans);
