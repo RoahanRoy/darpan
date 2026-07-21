@@ -235,10 +235,19 @@ function parseSectors(tableLines) {
   // The final row's tail is whatever is left over after the last match.
   for (let i = 0; i < sectors.length; i++) {
     const tail = sectors[i + 1]?._tailForPrevious ?? (i === sectors.length - 1 ? gap : []);
-    // Text trimmed off the NEXT row's name was the end of this row's sentence,
-    // so it is restored between this row's own text and the gap that follows.
+    /* Text trimmed off the NEXT row's name goes last, not first. It is the
+       continuation of the final sentence in this row's gap — the words that
+       ran past the end of the line and were mistaken for a heading — so it
+       belongs after the tail, not before it. Kerala reads
+
+         "Rs 14,500 crore ... to Kerala Social Security Pension Limited."
+         "Rs 1,950 crore has been allocated towards the CM"      <- tail ends here
+         "Sthree Suraksha Padhathi"                              <- trimmed
+
+       and putting the trimmed text first opened the note with a dangling
+       scheme name while leaving the sentence it completes cut off at "the CM". */
     const trimmed = sectors[i + 1]?._trimmedFromName;
-    sectors[i].provision_fragments = [sectors[i].provisionHead, trimmed, ...tail]
+    sectors[i].provision_fragments = [sectors[i].provisionHead, ...tail, trimmed]
       .filter(Boolean)
       .join(' ')
       .replace(/▪/g, ' ')
