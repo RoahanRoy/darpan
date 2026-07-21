@@ -1,0 +1,741 @@
+{
+  "findings": {
+    "andhra-pradesh": [
+      {
+        "kind": "shortfall",
+        "tag_label": "Budget gap",
+        "headline": "2025-26 spending was revised 13% below budget across the sector heads",
+        "body": "Rs 1,97,503 crore was budgeted across the 10 sectors PRS lists and Rs 1,72,778 crore was expected to actually be spent — a gap of Rs 24,725 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-andhra-pradesh-2026-27"
+      },
+      {
+        "kind": "underspend",
+        "tag_label": "Budget gap",
+        "headline": "Urban Development revised down 27%, then budgeted up 47%",
+        "body": "Budgeted at Rs 11,625 crore for 2025-26 and revised to Rs 8,517 crore before the year ended. The 2026-27 budget sets Rs 12,541 crore — 108% of what was budgeted the year it was cut.",
+        "computed_from_source": true,
+        "source_slug": "prs-andhra-pradesh-2026-27"
+      },
+      {
+        "kind": "underspend",
+        "tag_label": "Budget gap",
+        "headline": "Rural Development revised down 21%, then budgeted up 43%",
+        "body": "Budgeted at Rs 18,140 crore for 2025-26 and revised to Rs 14,410 crore before the year ended. The 2026-27 budget sets Rs 20,610 crore — 114% of what was budgeted the year it was cut.",
+        "computed_from_source": true,
+        "source_slug": "prs-andhra-pradesh-2026-27"
+      },
+      {
+        "kind": "underspend",
+        "tag_label": "Budget gap",
+        "headline": "Welfare of SC, ST, OBC, and Minorities revised down 20% mid-year",
+        "body": "Budgeted at Rs 52,047 crore for 2025-26, revised to Rs 41,705 crore — Rs 10,342 crore announced and then not expected to be spent. The 2026-27 budget sets Rs 52,855 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-andhra-pradesh-2026-27"
+      },
+      {
+        "kind": "underspend",
+        "tag_label": "Budget gap",
+        "headline": "Irrigation and Flood Control revised down 20% mid-year",
+        "body": "Budgeted at Rs 16,490 crore for 2025-26, revised to Rs 13,210 crore — Rs 3,280 crore announced and then not expected to be spent. The 2026-27 budget sets Rs 16,734 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-andhra-pradesh-2026-27"
+      }
+    ],
+    "arunachal-pradesh": [
+      {
+        "kind": "allocation",
+        "tag_label": "Budget gap",
+        "headline": "2025-26 spending was revised 18% above budget across the sector heads",
+        "body": "Rs 22,835 crore was budgeted across the 10 sectors PRS lists and Rs 27,005 crore was expected to be spent — Rs 4,170 crore more than was put to the legislature. The 2026-27 budget sets Rs 19,208 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-arunachal-pradesh-2026-27"
+      },
+      {
+        "kind": "underspend",
+        "tag_label": "Budget gap",
+        "headline": "Police revised down 42% mid-year",
+        "body": "Budgeted at Rs 3,075 crore for 2025-26, revised to Rs 1,781 crore — Rs 1,294 crore announced and then not expected to be spent. The 2026-27 budget sets Rs 2,011 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-arunachal-pradesh-2026-27"
+      },
+      {
+        "kind": "underspend",
+        "tag_label": "Budget gap",
+        "headline": "Agriculture and Allied Activities revised down 31% mid-year",
+        "body": "Budgeted at Rs 2,618 crore for 2025-26, revised to Rs 1,809 crore — Rs 809 crore announced and then not expected to be spent. The 2026-27 budget sets Rs 2,161 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-arunachal-pradesh-2026-27"
+      },
+      {
+        "kind": "underspend",
+        "tag_label": "Budget gap",
+        "headline": "Water Supply and Sanitation revised down 20% mid-year",
+        "body": "Budgeted at Rs 1,738 crore for 2025-26, revised to Rs 1,386 crore — Rs 352 crore announced and then not expected to be spent. The 2026-27 budget sets Rs 1,089 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-arunachal-pradesh-2026-27"
+      },
+      {
+        "kind": "allocation",
+        "tag_label": "Largest head",
+        "headline": "Transport takes 17% of sector spending in 2026-27",
+        "body": "Rs 3,334 crore of the Rs 19,208 crore budgeted across the 10 sector heads PRS lists — the largest single head.",
+        "computed_from_source": true,
+        "source_slug": "prs-arunachal-pradesh-2026-27"
+      }
+    ],
+    "assam": [
+      {
+        "kind": "allocation",
+        "tag_label": "Budget gap",
+        "headline": "2024-25 spending was revised 11% above budget across the sector heads",
+        "body": "Rs 81,864 crore was budgeted across the 10 sectors PRS lists and Rs 90,912 crore was expected to be spent — Rs 9,048 crore more than was put to the legislature. The 2025-26 budget sets Rs 90,602 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-assam-2025-26"
+      },
+      {
+        "kind": "allocation",
+        "tag_label": "Allocation",
+        "headline": "Water Supply and Sanitation up 128% on last year's revised estimate",
+        "body": "Rs 2,361 crore was expected to be spent in 2024-25; the 2025-26 budget sets Rs 5,378 crore, a rise of Rs 3,017 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-assam-2025-26"
+      },
+      {
+        "kind": "allocation",
+        "tag_label": "Largest head",
+        "headline": "Education, Sports, Arts, and Culture takes 29% of sector spending in 2025-26",
+        "body": "Rs 26,156 crore of the Rs 90,602 crore budgeted across the 10 sector heads PRS lists — the largest single head.",
+        "computed_from_source": true,
+        "source_slug": "prs-assam-2025-26"
+      }
+    ],
+    "bihar": [
+      {
+        "kind": "allocation",
+        "tag_label": "Budget gap",
+        "headline": "2025-26 spending was revised 49% above budget across the sector heads",
+        "body": "Rs 1,93,237 crore was budgeted across the 10 sectors PRS lists and Rs 2,87,851 crore was expected to be spent — Rs 94,614 crore more than was put to the legislature. The 2026-27 budget sets Rs 2,22,070 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-bihar-2026-27"
+      },
+      {
+        "kind": "allocation",
+        "tag_label": "Largest head",
+        "headline": "Education, Sports, Arts, and Culture takes 32% of sector spending in 2026-27",
+        "body": "Rs 70,141 crore of the Rs 2,22,070 crore budgeted across the 10 sector heads PRS lists — the largest single head.",
+        "computed_from_source": true,
+        "source_slug": "prs-bihar-2026-27"
+      }
+    ],
+    "chhattisgarh": [
+      {
+        "kind": "underspend",
+        "tag_label": "Budget gap",
+        "headline": "Rural Development revised down 26%, then budgeted up 70%",
+        "body": "Budgeted at Rs 7,627 crore for 2025-26 and revised to Rs 5,649 crore before the year ended. The 2026-27 budget sets Rs 9,586 crore — 126% of what was budgeted the year it was cut.",
+        "computed_from_source": true,
+        "source_slug": "prs-chhattisgarh-2026-27"
+      },
+      {
+        "kind": "underspend",
+        "tag_label": "Budget gap",
+        "headline": "Transport revised down 31%, then budgeted up 53%",
+        "body": "Budgeted at Rs 8,537 crore for 2025-26 and revised to Rs 5,922 crore before the year ended. The 2026-27 budget sets Rs 9,060 crore — 106% of what was budgeted the year it was cut.",
+        "computed_from_source": true,
+        "source_slug": "prs-chhattisgarh-2026-27"
+      },
+      {
+        "kind": "underspend",
+        "tag_label": "Budget gap",
+        "headline": "Education, Sports, Arts, and Culture revised down 18% mid-year",
+        "body": "Budgeted at Rs 26,730 crore for 2025-26, revised to Rs 22,003 crore — Rs 4,727 crore announced and then not expected to be spent. The 2026-27 budget sets Rs 27,068 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-chhattisgarh-2026-27"
+      },
+      {
+        "kind": "allocation",
+        "tag_label": "Largest head",
+        "headline": "Agriculture and Allied Activities takes 24% of sector spending in 2026-27",
+        "body": "Rs 30,708 crore of the Rs 1,27,281 crore budgeted across the 10 sector heads PRS lists — the largest single head.",
+        "computed_from_source": true,
+        "source_slug": "prs-chhattisgarh-2026-27"
+      }
+    ],
+    "goa": [
+      {
+        "kind": "allocation",
+        "tag_label": "Largest head",
+        "headline": "Energy takes 27% of sector spending in 2026-27",
+        "body": "Rs 5,068 crore of the Rs 18,658 crore budgeted across the 10 sector heads PRS lists — the largest single head.",
+        "computed_from_source": true,
+        "source_slug": "prs-goa-2026-27"
+      }
+    ],
+    "gujarat": [
+      {
+        "kind": "underspend",
+        "tag_label": "Budget gap",
+        "headline": "Irrigation and Flood Control revised down 21% mid-year",
+        "body": "Budgeted at Rs 18,476 crore for 2025-26, revised to Rs 14,656 crore — Rs 3,820 crore announced and then not expected to be spent. The 2026-27 budget sets Rs 19,589 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-gujarat-2026-27"
+      },
+      {
+        "kind": "underspend",
+        "tag_label": "Budget gap",
+        "headline": "Energy revised down 16% mid-year",
+        "body": "Budgeted at Rs 18,444 crore for 2025-26, revised to Rs 15,475 crore — Rs 2,969 crore announced and then not expected to be spent. The 2026-27 budget sets Rs 14,832 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-gujarat-2026-27"
+      },
+      {
+        "kind": "allocation",
+        "tag_label": "Largest head",
+        "headline": "Education, Sports, Arts, and Culture takes 24% of sector spending in 2026-27",
+        "body": "Rs 51,796 crore of the Rs 2,18,696 crore budgeted across the 10 sector heads PRS lists — the largest single head.",
+        "computed_from_source": true,
+        "source_slug": "prs-gujarat-2026-27"
+      }
+    ],
+    "haryana": [
+      {
+        "kind": "allocation",
+        "tag_label": "Largest head",
+        "headline": "Education, Sports, Arts, and Culture takes 21% of sector spending in 2026-27",
+        "body": "Rs 22,736 crore of the Rs 1,10,726 crore budgeted across the 10 sector heads PRS lists — the largest single head.",
+        "computed_from_source": true,
+        "source_slug": "prs-haryana-2026-27"
+      }
+    ],
+    "himachal-pradesh": [
+      {
+        "kind": "allocation",
+        "tag_label": "Budget gap",
+        "headline": "2025-26 spending was revised 36% above budget across the sector heads",
+        "body": "Rs 28,587 crore was budgeted across the 9 sectors PRS lists and Rs 38,819 crore was expected to be spent — Rs 10,232 crore more than was put to the legislature. The 2026-27 budget sets Rs 25,820 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-himachal-pradesh-2026-27"
+      },
+      {
+        "kind": "allocation",
+        "tag_label": "Largest head",
+        "headline": "Education, Sports, Arts, and Culture takes 38% of sector spending in 2026-27",
+        "body": "Rs 9,806 crore of the Rs 25,820 crore budgeted across the 9 sector heads PRS lists — the largest single head.",
+        "computed_from_source": true,
+        "source_slug": "prs-himachal-pradesh-2026-27"
+      }
+    ],
+    "jammu-and-kashmir": [
+      {
+        "kind": "shortfall",
+        "tag_label": "Budget gap",
+        "headline": "2024-25 spending was revised 8% below budget across the sector heads",
+        "body": "Rs 70,343 crore was budgeted across the 10 sectors PRS lists and Rs 64,449 crore was expected to actually be spent — a gap of Rs 5,894 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-jammu-and-kashmir-2025-26"
+      },
+      {
+        "kind": "underspend",
+        "tag_label": "Budget gap",
+        "headline": "Rural Development revised down 23% mid-year",
+        "body": "Budgeted at Rs 4,659 crore for 2024-25, revised to Rs 3,597 crore — Rs 1,062 crore announced and then not expected to be spent. The 2025-26 budget sets Rs 4,750 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-jammu-and-kashmir-2025-26"
+      },
+      {
+        "kind": "allocation",
+        "tag_label": "Largest head",
+        "headline": "Education, Sports, Arts, and Culture takes 23% of sector spending in 2025-26",
+        "body": "Rs 15,216 crore of the Rs 67,342 crore budgeted across the 10 sector heads PRS lists — the largest single head.",
+        "computed_from_source": true,
+        "source_slug": "prs-jammu-and-kashmir-2025-26"
+      }
+    ],
+    "jharkhand": [
+      {
+        "kind": "allocation",
+        "tag_label": "Largest head",
+        "headline": "Social Welfare and Nutrition takes 24% of sector spending in 2026-27",
+        "body": "Rs 24,900 crore of the Rs 1,03,544 crore budgeted across the 9 sector heads PRS lists — the largest single head.",
+        "computed_from_source": true,
+        "source_slug": "prs-jharkhand-2026-27"
+      }
+    ],
+    "karnataka": [
+      {
+        "kind": "underspend",
+        "tag_label": "Budget gap",
+        "headline": "Water Supply and Sanitation revised down 43%, then budgeted up 69%",
+        "body": "Budgeted at Rs 13,399 crore for 2025-26 and revised to Rs 7,635 crore before the year ended. The 2026-27 budget sets Rs 12,926 crore — 96% of what was budgeted the year it was cut.",
+        "computed_from_source": true,
+        "source_slug": "prs-karnataka-2026-27"
+      },
+      {
+        "kind": "allocation",
+        "tag_label": "Largest head",
+        "headline": "Social Welfare and Nutrition takes 19% of sector spending in 2026-27",
+        "body": "Rs 47,948 crore of the Rs 2,47,443 crore budgeted across the 10 sector heads PRS lists — the largest single head.",
+        "computed_from_source": true,
+        "source_slug": "prs-karnataka-2026-27"
+      }
+    ],
+    "kerala": [
+      {
+        "kind": "shortfall",
+        "tag_label": "Budget gap",
+        "headline": "2025-26 spending was revised 9% below budget across the sector heads",
+        "body": "Rs 86,948 crore was budgeted across the 10 sectors PRS lists and Rs 78,821 crore was expected to actually be spent — a gap of Rs 8,127 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-kerala-2026-27"
+      },
+      {
+        "kind": "underspend",
+        "tag_label": "Budget gap",
+        "headline": "Rural Development revised down 51%, then budgeted up 141%",
+        "body": "Budgeted at Rs 8,021 crore for 2025-26 and revised to Rs 3,915 crore before the year ended. The 2026-27 budget sets Rs 9,446 crore — 118% of what was budgeted the year it was cut.",
+        "computed_from_source": true,
+        "source_slug": "prs-kerala-2026-27"
+      },
+      {
+        "kind": "underspend",
+        "tag_label": "Budget gap",
+        "headline": "Urban Development revised down 51% mid-year",
+        "body": "Budgeted at Rs 2,049 crore for 2025-26, revised to Rs 1,005 crore — Rs 1,044 crore announced and then not expected to be spent. The 2026-27 budget sets Rs 1,593 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-kerala-2026-27"
+      },
+      {
+        "kind": "allocation",
+        "tag_label": "Allocation",
+        "headline": "Transport up 50% on last year's revised estimate",
+        "body": "Rs 5,005 crore was expected to be spent in 2025-26; the 2026-27 budget sets Rs 7,527 crore, a rise of Rs 2,522 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-kerala-2026-27"
+      },
+      {
+        "kind": "underspend",
+        "tag_label": "Budget gap",
+        "headline": "Welfare of SC, ST, OBC, and Minorities revised down 31% mid-year",
+        "body": "Budgeted at Rs 3,488 crore for 2025-26, revised to Rs 2,423 crore — Rs 1,065 crore announced and then not expected to be spent. The 2026-27 budget sets Rs 3,374 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-kerala-2026-27"
+      }
+    ],
+    "madhya-pradesh": [
+      {
+        "kind": "shortfall",
+        "tag_label": "Budget gap",
+        "headline": "2025-26 spending was revised 6% below budget across the sector heads",
+        "body": "Rs 2,34,811 crore was budgeted across the 10 sectors PRS lists and Rs 2,20,745 crore was expected to actually be spent — a gap of Rs 14,066 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-madhya-pradesh-2026-27"
+      },
+      {
+        "kind": "allocation",
+        "tag_label": "Allocation",
+        "headline": "Rural Development up 68% on last year's revised estimate",
+        "body": "Rs 14,050 crore was expected to be spent in 2025-26; the 2026-27 budget sets Rs 23,579 crore, a rise of Rs 9,529 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-madhya-pradesh-2026-27"
+      },
+      {
+        "kind": "underspend",
+        "tag_label": "Budget gap",
+        "headline": "Energy revised down 16% mid-year",
+        "body": "Budgeted at Rs 34,130 crore for 2025-26, revised to Rs 28,834 crore — Rs 5,296 crore announced and then not expected to be spent. The 2026-27 budget sets Rs 31,843 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-madhya-pradesh-2026-27"
+      },
+      {
+        "kind": "allocation",
+        "tag_label": "Largest head",
+        "headline": "Education, Sports, Arts, and Culture takes 21% of sector spending in 2026-27",
+        "body": "Rs 52,917 crore of the Rs 2,49,251 crore budgeted across the 10 sector heads PRS lists — the largest single head.",
+        "computed_from_source": true,
+        "source_slug": "prs-madhya-pradesh-2026-27"
+      }
+    ],
+    "maharashtra": [
+      {
+        "kind": "allocation",
+        "tag_label": "Budget gap",
+        "headline": "2025-26 spending was revised 14% above budget across the sector heads",
+        "body": "Rs 4,24,772 crore was budgeted across the 10 sectors PRS lists and Rs 4,82,398 crore was expected to be spent — Rs 57,626 crore more than was put to the legislature. The 2026-27 budget sets Rs 4,49,507 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-maharashtra-2026-27"
+      },
+      {
+        "kind": "underspend",
+        "tag_label": "Budget gap",
+        "headline": "Police revised down 23% mid-year",
+        "body": "Budgeted at Rs 33,743 crore for 2025-26, revised to Rs 26,110 crore — Rs 7,633 crore announced and then not expected to be spent. The 2026-27 budget sets Rs 33,700 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-maharashtra-2026-27"
+      },
+      {
+        "kind": "allocation",
+        "tag_label": "Largest head",
+        "headline": "Education, Sports, Arts, and Culture takes 24% of sector spending in 2026-27",
+        "body": "Rs 1,08,467 crore of the Rs 4,49,507 crore budgeted across the 10 sector heads PRS lists — the largest single head.",
+        "computed_from_source": true,
+        "source_slug": "prs-maharashtra-2026-27"
+      }
+    ],
+    "manipur": [
+      {
+        "kind": "allocation",
+        "tag_label": "Allocation",
+        "headline": "Transport up 42% on last year's revised estimate",
+        "body": "Rs 573 crore was expected to be spent in 2025-26; the 2026-27 budget sets Rs 814 crore, a rise of Rs 241 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-manipur-2026-27"
+      },
+      {
+        "kind": "allocation",
+        "tag_label": "Largest head",
+        "headline": "Education, Sports, Arts, and Culture takes 23% of sector spending in 2026-27",
+        "body": "Rs 3,232 crore of the Rs 14,057 crore budgeted across the 10 sector heads PRS lists — the largest single head.",
+        "computed_from_source": true,
+        "source_slug": "prs-manipur-2026-27"
+      }
+    ],
+    "meghalaya": [
+      {
+        "kind": "underspend",
+        "tag_label": "Budget gap",
+        "headline": "Energy revised down 62%, then budgeted up 92%",
+        "body": "Budgeted at Rs 1,510 crore for 2025-26 and revised to Rs 578 crore before the year ended. The 2026-27 budget sets Rs 1,107 crore — 73% of what was budgeted the year it was cut.",
+        "computed_from_source": true,
+        "source_slug": "prs-meghalaya-2026-27"
+      },
+      {
+        "kind": "allocation",
+        "tag_label": "Largest head",
+        "headline": "Education, Sports, Arts, and Culture takes 22% of sector spending in 2026-27",
+        "body": "Rs 4,267 crore of the Rs 19,597 crore budgeted across the 10 sector heads PRS lists — the largest single head.",
+        "computed_from_source": true,
+        "source_slug": "prs-meghalaya-2026-27"
+      }
+    ],
+    "mizoram": [
+      {
+        "kind": "allocation",
+        "tag_label": "Budget gap",
+        "headline": "2025-26 spending was revised 29% above budget across the sector heads",
+        "body": "Rs 7,879 crore was budgeted across the 10 sectors PRS lists and Rs 10,171 crore was expected to be spent — Rs 2,292 crore more than was put to the legislature. The 2026-27 budget sets Rs 9,091 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-mizoram-2026-27"
+      },
+      {
+        "kind": "allocation",
+        "tag_label": "Allocation",
+        "headline": "Rural Development up 112% on last year's revised estimate",
+        "body": "Rs 625 crore was expected to be spent in 2025-26; the 2026-27 budget sets Rs 1,322 crore, a rise of Rs 697 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-mizoram-2026-27"
+      },
+      {
+        "kind": "allocation",
+        "tag_label": "Largest head",
+        "headline": "Education, Sports, Arts, and Culture takes 25% of sector spending in 2026-27",
+        "body": "Rs 2,283 crore of the Rs 9,091 crore budgeted across the 10 sector heads PRS lists — the largest single head.",
+        "computed_from_source": true,
+        "source_slug": "prs-mizoram-2026-27"
+      }
+    ],
+    "nagaland": [
+      {
+        "kind": "underspend",
+        "tag_label": "Budget gap",
+        "headline": "Housing revised down 68%, then budgeted up 357%",
+        "body": "Budgeted at Rs 326 crore for 2025-26 and revised to Rs 105 crore before the year ended. The 2026-27 budget sets Rs 480 crore — 147% of what was budgeted the year it was cut.",
+        "computed_from_source": true,
+        "source_slug": "prs-nagaland-2026-27"
+      },
+      {
+        "kind": "underspend",
+        "tag_label": "Budget gap",
+        "headline": "Rural Development revised down 35%, then budgeted up 76%",
+        "body": "Budgeted at Rs 953 crore for 2025-26 and revised to Rs 623 crore before the year ended. The 2026-27 budget sets Rs 1,094 crore — 115% of what was budgeted the year it was cut.",
+        "computed_from_source": true,
+        "source_slug": "prs-nagaland-2026-27"
+      },
+      {
+        "kind": "allocation",
+        "tag_label": "Largest head",
+        "headline": "Education, Sports, Arts, and Culture takes 24% of sector spending in 2026-27",
+        "body": "Rs 2,881 crore of the Rs 11,905 crore budgeted across the 10 sector heads PRS lists — the largest single head.",
+        "computed_from_source": true,
+        "source_slug": "prs-nagaland-2026-27"
+      }
+    ],
+    "odisha": [
+      {
+        "kind": "allocation",
+        "tag_label": "Largest head",
+        "headline": "Education, Sports, Arts, and Culture takes 19% of sector spending in 2026-27",
+        "body": "Rs 38,397 crore of the Rs 2,05,054 crore budgeted across the 10 sector heads PRS lists — the largest single head.",
+        "computed_from_source": true,
+        "source_slug": "prs-odisha-2026-27"
+      }
+    ],
+    "punjab": [
+      {
+        "kind": "allocation",
+        "tag_label": "Allocation",
+        "headline": "Transport up 81% on last year's revised estimate",
+        "body": "Rs 2,844 crore was expected to be spent in 2025-26; the 2026-27 budget sets Rs 5,153 crore, a rise of Rs 2,309 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-punjab-2026-27"
+      },
+      {
+        "kind": "allocation",
+        "tag_label": "Allocation",
+        "headline": "Urban Development up 77% on last year's revised estimate",
+        "body": "Rs 1,665 crore was expected to be spent in 2025-26; the 2026-27 budget sets Rs 2,945 crore, a rise of Rs 1,280 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-punjab-2026-27"
+      },
+      {
+        "kind": "allocation",
+        "tag_label": "Allocation",
+        "headline": "Social Welfare and Nutrition up 66% on last year's revised estimate",
+        "body": "Rs 11,290 crore was expected to be spent in 2025-26; the 2026-27 budget sets Rs 18,775 crore, a rise of Rs 7,485 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-punjab-2026-27"
+      },
+      {
+        "kind": "allocation",
+        "tag_label": "Largest head",
+        "headline": "Education, Sports, Arts, and Culture takes 23% of sector spending in 2026-27",
+        "body": "Rs 21,503 crore of the Rs 92,257 crore budgeted across the 10 sector heads PRS lists — the largest single head.",
+        "computed_from_source": true,
+        "source_slug": "prs-punjab-2026-27"
+      }
+    ],
+    "rajasthan": [
+      {
+        "kind": "shortfall",
+        "tag_label": "Budget gap",
+        "headline": "2025-26 spending was revised 10% below budget across the sector heads",
+        "body": "Rs 2,00,273 crore was budgeted across the 9 sectors PRS lists and Rs 1,80,408 crore was expected to actually be spent — a gap of Rs 19,865 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-rajasthan-2026-27"
+      },
+      {
+        "kind": "underspend",
+        "tag_label": "Budget gap",
+        "headline": "Urban Development revised down 24%, then budgeted up 58%",
+        "body": "Budgeted at Rs 16,811 crore for 2025-26 and revised to Rs 12,769 crore before the year ended. The 2026-27 budget sets Rs 20,184 crore — 120% of what was budgeted the year it was cut.",
+        "computed_from_source": true,
+        "source_slug": "prs-rajasthan-2026-27"
+      },
+      {
+        "kind": "underspend",
+        "tag_label": "Budget gap",
+        "headline": "Transport revised down 22% mid-year",
+        "body": "Budgeted at Rs 18,909 crore for 2025-26, revised to Rs 14,707 crore — Rs 4,202 crore announced and then not expected to be spent. The 2026-27 budget sets Rs 16,639 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-rajasthan-2026-27"
+      },
+      {
+        "kind": "underspend",
+        "tag_label": "Budget gap",
+        "headline": "Water Supply and Sanitation revised down 22% mid-year",
+        "body": "Budgeted at Rs 13,558 crore for 2025-26, revised to Rs 10,638 crore — Rs 2,920 crore announced and then not expected to be spent. The 2026-27 budget sets Rs 14,288 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-rajasthan-2026-27"
+      },
+      {
+        "kind": "allocation",
+        "tag_label": "Largest head",
+        "headline": "Energy takes 20% of sector spending in 2026-27",
+        "body": "Rs 42,752 crore of the Rs 2,15,773 crore budgeted across the 9 sector heads PRS lists — the largest single head.",
+        "computed_from_source": true,
+        "source_slug": "prs-rajasthan-2026-27"
+      }
+    ],
+    "sikkim": [
+      {
+        "kind": "allocation",
+        "tag_label": "Budget gap",
+        "headline": "2024-25 spending was revised 12% above budget across the sector heads",
+        "body": "Rs 7,095 crore was budgeted across the 9 sectors PRS lists and Rs 7,961 crore was expected to be spent — Rs 866 crore more than was put to the legislature. The 2025-26 budget sets Rs 8,103 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-sikkim-2025-26"
+      },
+      {
+        "kind": "allocation",
+        "tag_label": "Largest head",
+        "headline": "Education, Sports, Arts, and Culture takes 28% of sector spending in 2025-26",
+        "body": "Rs 2,256 crore of the Rs 8,103 crore budgeted across the 9 sector heads PRS lists — the largest single head.",
+        "computed_from_source": true,
+        "source_slug": "prs-sikkim-2025-26"
+      }
+    ],
+    "tamil-nadu": [
+      {
+        "kind": "allocation",
+        "tag_label": "Allocation",
+        "headline": "Urban Development up 42% on last year's revised estimate",
+        "body": "Rs 5,603 crore was expected to be spent in 2024-25; the 2025-26 budget sets Rs 7,936 crore, a rise of Rs 2,333 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-tamil-nadu-2025-26"
+      },
+      {
+        "kind": "allocation",
+        "tag_label": "Largest head",
+        "headline": "Education, Sports, Arts, and Culture takes 25% of sector spending in 2025-26",
+        "body": "Rs 57,783 crore of the Rs 2,32,186 crore budgeted across the 10 sector heads PRS lists — the largest single head.",
+        "computed_from_source": true,
+        "source_slug": "prs-tamil-nadu-2025-26"
+      }
+    ],
+    "telangana": [
+      {
+        "kind": "shortfall",
+        "tag_label": "Budget gap",
+        "headline": "2025-26 spending was revised 8% below budget across the sector heads",
+        "body": "Rs 1,57,215 crore was budgeted across the 9 sectors PRS lists and Rs 1,45,006 crore was expected to actually be spent — a gap of Rs 12,209 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-telangana-2026-27"
+      },
+      {
+        "kind": "underspend",
+        "tag_label": "Budget gap",
+        "headline": "Welfare of SC, ST, OBC, and Minorities revised down 18% mid-year",
+        "body": "Budgeted at Rs 32,743 crore for 2025-26, revised to Rs 26,870 crore — Rs 5,873 crore announced and then not expected to be spent. The 2026-27 budget sets Rs 34,883 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-telangana-2026-27"
+      },
+      {
+        "kind": "underspend",
+        "tag_label": "Budget gap",
+        "headline": "Urban Development revised down 17% mid-year",
+        "body": "Budgeted at Rs 12,731 crore for 2025-26, revised to Rs 10,508 crore — Rs 2,223 crore announced and then not expected to be spent. The 2026-27 budget sets Rs 13,221 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-telangana-2026-27"
+      },
+      {
+        "kind": "allocation",
+        "tag_label": "Largest head",
+        "headline": "Welfare of SC, ST, OBC, and Minorities takes 20% of sector spending in 2026-27",
+        "body": "Rs 34,883 crore of the Rs 1,71,265 crore budgeted across the 9 sector heads PRS lists — the largest single head.",
+        "computed_from_source": true,
+        "source_slug": "prs-telangana-2026-27"
+      }
+    ],
+    "tripura": [
+      {
+        "kind": "allocation",
+        "tag_label": "Allocation",
+        "headline": "Rural Development up 90% on last year's revised estimate",
+        "body": "Rs 1,665 crore was expected to be spent in 2025-26; the 2026-27 budget sets Rs 3,163 crore, a rise of Rs 1,498 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-tripura-2026-27"
+      },
+      {
+        "kind": "allocation",
+        "tag_label": "Allocation",
+        "headline": "Water Supply and Sanitation up 42% on last year's revised estimate",
+        "body": "Rs 508 crore was expected to be spent in 2025-26; the 2026-27 budget sets Rs 722 crore, a rise of Rs 214 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-tripura-2026-27"
+      },
+      {
+        "kind": "allocation",
+        "tag_label": "Largest head",
+        "headline": "Education, Sports, Arts, and Culture takes 21% of sector spending in 2026-27",
+        "body": "Rs 4,318 crore of the Rs 21,039 crore budgeted across the 10 sector heads PRS lists — the largest single head.",
+        "computed_from_source": true,
+        "source_slug": "prs-tripura-2026-27"
+      }
+    ],
+    "uttar-pradesh": [
+      {
+        "kind": "shortfall",
+        "tag_label": "Budget gap",
+        "headline": "2025-26 spending was revised 12% below budget across the sector heads",
+        "body": "Rs 4,15,393 crore was budgeted across the 9 sectors PRS lists and Rs 3,67,620 crore was expected to actually be spent — a gap of Rs 47,773 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-uttar-pradesh-2026-27"
+      },
+      {
+        "kind": "allocation",
+        "tag_label": "Allocation",
+        "headline": "Rural Development up 59% on last year's revised estimate",
+        "body": "Rs 30,877 crore was expected to be spent in 2025-26; the 2026-27 budget sets Rs 49,044 crore, a rise of Rs 18,167 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-uttar-pradesh-2026-27"
+      },
+      {
+        "kind": "allocation",
+        "tag_label": "Allocation",
+        "headline": "Agriculture and Allied Activities up 51% on last year's revised estimate",
+        "body": "Rs 20,504 crore was expected to be spent in 2025-26; the 2026-27 budget sets Rs 30,938 crore, a rise of Rs 10,434 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-uttar-pradesh-2026-27"
+      },
+      {
+        "kind": "underspend",
+        "tag_label": "Budget gap",
+        "headline": "Education, Sports, Arts, and Culture revised down 18% mid-year",
+        "body": "Budgeted at Rs 1,03,553 crore for 2025-26, revised to Rs 84,654 crore — Rs 18,899 crore announced and then not expected to be spent. The 2026-27 budget sets Rs 1,08,154 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-uttar-pradesh-2026-27"
+      },
+      {
+        "kind": "underspend",
+        "tag_label": "Budget gap",
+        "headline": "Police revised down 17% mid-year",
+        "body": "Budgeted at Rs 38,777 crore for 2025-26, revised to Rs 32,176 crore — Rs 6,601 crore announced and then not expected to be spent. The 2026-27 budget sets Rs 41,898 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-uttar-pradesh-2026-27"
+      }
+    ],
+    "west-bengal": [
+      {
+        "kind": "shortfall",
+        "tag_label": "Budget gap",
+        "headline": "2025-26 spending was revised 9% below budget across the sector heads",
+        "body": "Rs 2,04,247 crore was budgeted across the 9 sectors PRS lists and Rs 1,85,188 crore was expected to actually be spent — a gap of Rs 19,059 crore.",
+        "computed_from_source": true,
+        "source_slug": "prs-west-bengal-2026-27"
+      },
+      {
+        "kind": "underspend",
+        "tag_label": "Budget gap",
+        "headline": "Water Supply and Sanitation revised down 56%, then budgeted up 154%",
+        "body": "Budgeted at Rs 13,772 crore for 2025-26 and revised to Rs 6,053 crore before the year ended. The 2026-27 budget sets Rs 15,402 crore — 112% of what was budgeted the year it was cut.",
+        "computed_from_source": true,
+        "source_slug": "prs-west-bengal-2026-27"
+      },
+      {
+        "kind": "underspend",
+        "tag_label": "Budget gap",
+        "headline": "Rural Development revised down 25%, then budgeted up 132%",
+        "body": "Budgeted at Rs 14,227 crore for 2025-26 and revised to Rs 10,600 crore before the year ended. The 2026-27 budget sets Rs 24,555 crore — 173% of what was budgeted the year it was cut.",
+        "computed_from_source": true,
+        "source_slug": "prs-west-bengal-2026-27"
+      },
+      {
+        "kind": "underspend",
+        "tag_label": "Budget gap",
+        "headline": "Education, Sports, Arts, and Culture revised down 28%, then budgeted up 51%",
+        "body": "Budgeted at Rs 50,559 crore for 2025-26 and revised to Rs 36,262 crore before the year ended. The 2026-27 budget sets Rs 54,798 crore — 108% of what was budgeted the year it was cut.",
+        "computed_from_source": true,
+        "source_slug": "prs-west-bengal-2026-27"
+      },
+      {
+        "kind": "allocation",
+        "tag_label": "Largest head",
+        "headline": "Social Welfare and Nutrition takes 27% of sector spending in 2026-27",
+        "body": "Rs 63,894 crore of the Rs 2,39,934 crore budgeted across the 9 sector heads PRS lists — the largest single head.",
+        "computed_from_source": true,
+        "source_slug": "prs-west-bengal-2026-27"
+      }
+    ]
+  },
+  "_comment": "Budget-gap findings derived from state_sector_budgets by scripts/derive-findings.js. Every row is arithmetic on published figures — computed_from_source is true throughout, and the page marks these as our sum rather than the document's own words. Kept in git because db:reset would otherwise destroy prose no adapter can regenerate. Apply with: npm run findings:apply"
+}

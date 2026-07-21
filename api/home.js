@@ -26,6 +26,18 @@ const DEFAULT_DISTRICT = 'dehradun';
 // something going wrong, rather than a plain allocation.
 const ACCENT_KINDS = new Set(['audit', 'underspend', 'shortfall']);
 
+/* The year the budgeted and revised columns describe, read off the source
+   slug the figures were promoted under: "prs-bihar-2026-27" is a paper whose
+   next-year budget is 2026-27 and whose budget-and-revised pair is 2025-26.
+   Returns null rather than a guess when there is no source to read, so the
+   page can drop the year from the label instead of naming the wrong one. */
+function deliveredYearFor(sourceSlug) {
+  const m = sourceSlug ? /-(\d{4})-\d{2}$/.exec(sourceSlug) : null;
+  if (!m) return null;
+  const start = Number(m[1]) - 1;
+  return `${start}–${String((start + 1) % 100).padStart(2, '0')}`;
+}
+
 function serialiseSource(row) {
   return {
     slug: row.slug,
@@ -111,10 +123,11 @@ export default async function handler(req, res) {
             WHERE state_id = ${area.state_id} AND fiscal_year = ${FY}
             ORDER BY display_order`,
 
-        sql`SELECT sector, actuals_prev_cr, budgeted_cr, revised_cr,
-                   next_budget_cr, provision_note
-            FROM state_sector_budgets
-            WHERE state_id = ${area.state_id} ORDER BY display_order`,
+        sql`SELECT b.sector, b.actuals_prev_cr, b.budgeted_cr, b.revised_cr,
+                   b.next_budget_cr, b.provision_note, src.slug AS source_slug
+            FROM state_sector_budgets b
+            JOIN sources src ON src.id = b.source_id
+            WHERE b.state_id = ${area.state_id} ORDER BY b.display_order`,
 
         sql`SELECT scheme_name, sector, amount_cr FROM state_scheme_allocations
             WHERE state_id = ${area.state_id} AND fiscal_year = ${FY}
@@ -185,6 +198,14 @@ export default async function handler(req, res) {
           amount: h.amount_cr == null ? null : formatCrore(h.amount_cr),
           qualifier: h.qualifier,
         })),
+
+        /* Which year the budget-vs-revised columns describe. It is not the
+           state's headline fiscal year: the sector table comes from whichever
+           PRS paper was last ingested, and a 2026-27 analysis prints 2025-26
+           budget and revised figures. This was a hardcoded "2024–25" in the
+           rail until the states were re-ingested from 2026-27 papers, at
+           which point twenty-six states labelled the wrong year. */
+        deliveredYear: deliveredYearFor(sectors[0]?.source_slug),
 
         // Each sector carries last year's budget-vs-revised gap. Anything
         // under 100% is money the government told the legislature it would

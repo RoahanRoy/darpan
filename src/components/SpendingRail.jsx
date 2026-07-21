@@ -48,7 +48,14 @@ export default function SpendingRail({ spending }) {
         total expenditure budgeted, excluding debt repayment. State-wide figure — not {perUnit}.
       </p>
 
-      <div className="kicker kicker-neutral">Delivered against budget, 2024–25</div>
+      {/* The year comes from the paper the figures were read out of, not from
+          a constant. States sit on different years — most are on 2026-27
+          analyses, a few on 2025-26 — and one hardcoded year was wrong for
+          nearly all of them. */}
+      <div className="kicker kicker-neutral">
+        Delivered against budget
+        {spending.deliveredYear ? `, ${spending.deliveredYear}` : ''}
+      </div>
       <p className="text-muted spend-sub">
         What each sector was budgeted, against what the revised estimate expected to
         actually be spent. Under 100% is money announced and then not spent.
