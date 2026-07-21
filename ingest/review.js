@@ -8,6 +8,12 @@
      npm run ingest:review -- approve <runId> [--key "uttarakhand|Police"]
      npm run ingest:review -- reject  <runId> [--key ...] [--note "why"]
      npm run ingest:review -- promote <runId>       approved rows go live
+     npm run ingest:review -- gloss <rowId> "text"  the gloss, on a live row
+     npm run ingest:review -- orphans <runId>       what the run would strand
+     npm run ingest:review -- retire  <runId>       delete those stranded rows
+
+   `promote` refuses a run that would strand a row and explains why; add
+   --retire-orphans once you have looked at them and agree they should go.
 */
 
 import { execSync } from 'node:child_process';
@@ -137,6 +143,20 @@ async function note(factId, text) {
   console.log(rowCount ? `set provision_note on ${factId}` : `no pending fact ${factId}`);
 }
 
+/* The published-row counterpart of `note`. `note` writes the gloss on a fact
+   still in staging; this writes it on a row already on the page — needed when
+   a sector is renamed and the gloss has to follow the figures to their new
+   row, and when a state lands without glosses and someone writes them from
+   the paper afterwards. */
+async function gloss(rowId, text) {
+  if (!text) throw new Error('usage: gloss <rowId> "the one-line gloss"');
+  const { rowCount } = await pool.query(
+    `UPDATE state_sector_budgets SET provision_note = $2 WHERE id = $1`,
+    [rowId, text]
+  );
+  console.log(rowCount ? `set provision_note on row ${rowId}` : `no such row ${rowId}`);
+}
+
 async function decide(runId, status) {
   const { rowCount } = await pool.query(
     `UPDATE staged_facts
@@ -146,6 +166,134 @@ async function decide(runId, status) {
     [runId, status, reviewer(), flags.note ?? null, flags.key ?? null]
   );
   console.log(`${status} ${rowCount} row(s)`);
+}
+
+/* Asks each promoter involved in a run what the run would strand.
+
+   Grouped by target table because the question only makes sense per table:
+   what counts as a complete set, and therefore what counts as left over, is
+   the promoter's judgement and nothing else's. A promoter that does not
+   publish sets omits findOrphans and is skipped. */
+async function collectOrphans(client, facts) {
+  const byTable = new Map();
+  for (const f of facts) {
+    if (!byTable.has(f.target_table)) byTable.set(f.target_table, []);
+    byTable.get(f.target_table).push(f.payload);
+  }
+
+  const found = [];
+  for (const [table, payloads] of byTable) {
+    const promoter = promoterFor(table);
+    if (!promoter.findOrphans) continue;
+    const rows = await promoter.findOrphans(client, payloads);
+    if (rows.length) found.push({ table, promoter, rows });
+  }
+  return found;
+}
+
+/* Carries the listing so the failure names every row rather than saying that
+   some exist. A reviewer reading this needs to decide rename-or-departure
+   per row, and cannot do it from a count. */
+class OrphansFound extends Error {
+  constructor(runId, orphans) {
+    const lines = orphans.flatMap(({ table, rows }) =>
+      rows.map(
+        (r) =>
+          `  ${r.state_slug} · ${r.sector}` +
+          `  (${table}, source ${r.source_slug ?? 'none'}` +
+          `${r.provision_note ? ', has a provision note' : ''})`
+      )
+    );
+
+    super(
+      `this run would leave ${lines.length} row(s) behind, so nothing was promoted:\n` +
+        lines.join('\n') +
+        `\n\nEach is either a sector the publisher renamed — in which case the ` +
+        `figures moved to the new name and this row is a duplicate — or one ` +
+        `that left the paper, in which case it is a real figure from an older ` +
+        `document sitting among newer ones.\n\n` +
+        `Look at them:   npm run ingest:review -- orphans ${runId}\n` +
+        `Then promote:   npm run ingest:review -- promote ${runId} --retire-orphans`
+    );
+    this.name = 'OrphansFound';
+  }
+}
+
+/* Read-only. Deliberately accepts promoted runs as well as approved ones, so
+   a run that landed before this check existed can still be examined. */
+async function orphans(runId) {
+  const { rows: facts } = await pool.query(
+    `SELECT target_table, payload FROM staged_facts
+     WHERE run_id = $1 AND status IN ('approved', 'promoted')`,
+    [runId]
+  );
+
+  if (!facts.length) return console.log(`run ${runId} has no approved or promoted rows`);
+
+  const client = await pool.connect();
+  try {
+    const found = await collectOrphans(client, facts);
+    if (!found.length) return console.log(`run ${runId} strands nothing`);
+
+    for (const { table, rows } of found) {
+      console.log(`${table}:`);
+      for (const r of rows) {
+        console.log(
+          `  [${r.id}] ${r.state_slug} · ${r.sector}` +
+            `  next ${money(r.next_budget_cr)} cr  source ${r.source_slug ?? 'none'}` +
+            `${r.provision_note ? `\n        note: ${r.provision_note}` : ''}`
+        );
+      }
+    }
+    console.log(`\nretire them: npm run ingest:review -- retire ${runId}`);
+  } finally {
+    client.release();
+  }
+}
+
+/* Retires orphans for a run that is already promoted — the repair path for
+   the runs that landed before promote learned to check. */
+async function retire(runId) {
+  const retired = await withTransaction(async (client) => {
+    const { rows: facts } = await client.query(
+      `SELECT target_table, payload FROM staged_facts
+       WHERE run_id = $1 AND status IN ('approved', 'promoted')`,
+      [runId]
+    );
+    if (!facts.length) throw new Error(`run ${runId} has no approved or promoted rows`);
+
+    const found = await collectOrphans(client, facts);
+
+    /* A provision_note is the one field on these rows that no adapter can
+       regenerate — a person read the paper and wrote it. When a sector is
+       renamed the note is stranded on the old row while the new one comes up
+       null, so a blind delete quietly throws away the only hand-made thing in
+       the table. Deleting a figure is recoverable by re-running the adapter;
+       this is not. */
+    const glossed = found.flatMap(({ rows }) => rows.filter((r) => r.provision_note));
+
+    if (glossed.length && !('drop-notes' in flags)) {
+      throw new Error(
+        `${glossed.length} of these rows carry a provision note, which only a ` +
+          `person can write:\n` +
+          glossed
+            .map((r) => `  [${r.id}] ${r.state_slug} · ${r.sector}\n        ${r.provision_note}`)
+            .join('\n') +
+          `\n\nIf the sector was renamed the note belongs on its new row — move ` +
+          `it first:\n` +
+          `  npm run ingest:review -- gloss <newRowId> "${glossed[0].provision_note}"\n\n` +
+          `If it left the paper the note goes with it: re-run with --drop-notes.`
+      );
+    }
+
+    let n = 0;
+    for (const { promoter, rows } of found) {
+      n += await promoter.retireOrphans(client, rows.map((r) => r.id));
+    }
+    return n;
+  });
+
+  console.log(retired ? `retired ${retired} row(s)` : 'nothing to retire');
 }
 
 async function promote(runId) {
@@ -219,10 +367,33 @@ async function promote(runId) {
       );
     }
 
-    return facts.length;
+    /* The rows landed above are only half of what the run claims. The other
+       half is that the state's table contains nothing else — see findOrphans
+       in the promoter. A run that would leave a stale row behind stops here,
+       and because the whole promote is one transaction, stopping means
+       nothing from it lands. That is the point: a half-applied state, with
+       this year's Education next to last year's Police, is worse on the page
+       than a state that did not update at all. */
+    const orphans = await collectOrphans(client, facts);
+
+    if (orphans.length && !('retire-orphans' in flags)) {
+      throw new OrphansFound(runId, orphans);
+    }
+
+    let retired = 0;
+    for (const { promoter, rows } of orphans) {
+      retired += await promoter.retireOrphans(client, rows.map((r) => r.id));
+    }
+
+    return { promoted: facts.length, retired };
   });
 
-  if (promoted) console.log(`promoted ${promoted} row(s) — they are now on the page`);
+  if (promoted.promoted) {
+    console.log(`promoted ${promoted.promoted} row(s) — they are now on the page`);
+  }
+  if (promoted.retired) {
+    console.log(`retired ${promoted.retired} orphaned row(s)`);
+  }
 }
 
 try {
@@ -233,10 +404,14 @@ try {
     case 'approve': await decide(Number(positional[0]), 'approved'); break;
     case 'reject': await decide(Number(positional[0]), 'rejected'); break;
     case 'promote': await promote(Number(positional[0])); break;
+    case 'gloss': await gloss(Number(positional[0]), positional[1]); break;
+    case 'orphans': await orphans(Number(positional[0])); break;
+    case 'retire': await retire(Number(positional[0])); break;
     default:
       console.error(
         'commands: list | show <runId> | note <factId> "text" | ' +
-          'approve <runId> | reject <runId> | promote <runId>'
+          'approve <runId> | reject <runId> | promote <runId> | ' +
+          'orphans <runId> | retire <runId>'
       );
       process.exitCode = 1;
   }

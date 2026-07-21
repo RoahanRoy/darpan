@@ -122,6 +122,63 @@ export async function currentRows(client) {
   );
 }
 
+/* A state's sector table is published as a set, not as loose rows. One PRS
+   paper lists every sector that state budgets for, so a promote is really a
+   claim about the whole table: these ten sectors, from this document, for
+   this year.
+
+   `promote` alone cannot express that. It inserts and updates, so a row that
+   was live before the run and is absent from it simply stays — carrying its
+   old figures and its old source next to the new ones. Two ways that
+   happens, both observed:
+
+     - The publisher renames a sector. PRS put an Oxford comma into
+       "Education, Sports, Arts, and Culture" between 2025-26 and 2026-27,
+       which is a different key, so the state gets the sector twice.
+     - The sector genuinely leaves the paper. Delhi Police is a central
+       subject and dropped out of Delhi's 2026-27 analysis; Uttarakhand's
+       2026-27 paper has no Irrigation and Flood Control line.
+
+   Both leave a figure on the page that is a year older than the figures
+   around it and attributed to a document that does not contain it.
+
+   These are called orphans and this deliberately does not delete them. The
+   two causes need opposite handling — a rename should carry the reviewer's
+   provision_note across to the new row, a real disappearance should not —
+   and nothing here can tell them apart. So they are found, named, and put in
+   front of a person, the same way db/geography.js leaves a merged district
+   visible rather than dropping the row and its figures with it. */
+export async function findOrphans(client, payloads) {
+  const expected = new Map();
+  for (const p of payloads) {
+    if (!expected.has(p.state_slug)) expected.set(p.state_slug, new Set());
+    expected.get(p.state_slug).add(p.sector);
+  }
+
+  const { rows } = await client.query(
+    `SELECT b.id, st.slug AS state_slug, b.sector, b.next_budget_cr,
+            src.slug AS source_slug, b.provision_note
+     FROM state_sector_budgets b
+     JOIN states st ON st.id = b.state_id
+     LEFT JOIN sources src ON src.id = b.source_id
+     WHERE st.slug = ANY($1)
+     ORDER BY st.slug, b.display_order`,
+    [[...expected.keys()]]
+  );
+
+  return rows.filter((r) => !expected.get(r.state_slug).has(r.sector));
+}
+
+/** Deletes orphans by id. Only ever called on an explicit instruction. */
+export async function retireOrphans(client, ids) {
+  if (!ids.length) return 0;
+  const { rowCount } = await client.query(
+    `DELETE FROM state_sector_budgets WHERE id = ANY($1)`,
+    [ids]
+  );
+  return rowCount;
+}
+
 /** Writes one approved row. Runs inside the caller's transaction. */
 export async function promote(client, { payload, sourceId }) {
   const { rows } = await client.query(
