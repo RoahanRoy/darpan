@@ -130,6 +130,28 @@ CI checks numbering and naming (`scripts/check-migrations.js`), so a
 duplicate `003` from two branches fails the pull request rather than
 surfacing as an out-of-order apply against production.
 
+The second rule is what makes the first paragraph of this section true
+unattended: `.github/workflows/migrate.yml` applies pending migrations on
+every push to main. Nothing has to be run by hand after a merge, and every
+commit on main carries a record of the schema production was actually on. It
+is a no-op that prints `up to date` when nothing pends.
+
+**A merge starts the migration and the deploy at the same time.** Vercel
+builds from the same push, so for the half-minute or so that both take there
+is no ordering guarantee between them. Migrating is the shorter job and
+normally wins, but that is a race, not a promise. Where it matters, ship the
+migration in a commit *before* the code that depends on it — a column that
+exists and is unread costs nothing, and a column that is read before it
+exists is a 500 on a public page.
+
+Note that migrations are not run on pull requests, and that is deliberate:
+`ci.yml` is built so nothing in a pull request can reach the production
+database. To see a plan before merging, run it yourself:
+
+```sh
+npm run db:migrate -- --dry
+```
+
 ## Rebuilding from scratch
 
 `db:reset` is the only script that deletes published rows. It requires two

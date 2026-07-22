@@ -1,0 +1,82 @@
+# Applies pending migrations when they land on main.
+#
+# Vercel deploys whatever lands on main. The schema that code expects
+# arrived separately until now, by hand, from a shell holding .env.local —
+# so "is production migrated?" was a question nobody could answer without
+# connecting, and the realistic failure was a handler 500ing against a table
+# that had not been created yet.
+#
+# Running this unattended is safe because of a rule the project already
+# enforces: a migration may never destroy data (db/README.md, "Adding a
+# migration"). That rule is what earns the automation. If it is ever
+# relaxed, this workflow has to go.
+#
+# Deliberately not on pull_request. ci.yml is built so that nothing in a
+# pull request can reach the production database, which is worth more than
+# the convenience of previewing a migration plan on a branch. Run
+# `npm run db:migrate -- --dry` locally for that.
+#
+# Requires the DATABASE_URL repository secret.
+
+name: migrate
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+# Serialised, never cancelled. db/migrate.js takes a session-level advisory
+# lock so two runners cannot interleave, but cancelling a run mid-apply
+# would leave the lock held until the connection dropped, and the next push
+# would wait on it for no reason.
+concurrency:
+  group: migrate
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DOTENV_CONFIG_QUIET: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - name: Require the secret
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "::error::DATABASE_URL secret is not set — main is deploying against an unmigrated database."
+            exit 1
+          fi
+
+      # Runs on every push, not only when db/migrations changed. It is a
+      # no-op that prints "up to date" when nothing pends, and in exchange
+      # every commit on main carries a record of the schema production was
+      # actually on. A paths filter would save thirty seconds and give that
+      # up — and would skip the retry after a migration that failed once.
+      - name: Show the plan
+        run: npm run --silent db:migrate -- --dry
+
+      - name: Apply
+        run: npm run --silent db:migrate
+
+      # db/migrate.js ends by printing row counts across the public tables.
+      # They are the cheapest signal that a migration ran against the
+      # database somebody meant: an empty count set after a successful apply
+      # means the schema is there and the seed is not.
+      - name: Record what the database looks like now
+        if: always()
+        run: |
+          {
+            echo "### Migrations"
+            echo
+            echo "Applied on \`${GITHUB_SHA:0:7}\`. See the job log for row counts."
+          } >> "$GITHUB_STEP_SUMMARY"
