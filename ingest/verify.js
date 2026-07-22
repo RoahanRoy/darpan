@@ -30,6 +30,14 @@ const CASES = [
       'Irrigation and Flood Control': [1162, 2175, 1822, 1926],
       Energy: [673, 1263, 911, 1403],
     },
+    // label → amount_cr. Transcribed by hand into db/seed.sql in 13266a9,
+    // before the highlights parser existed — the same oracle the sectors use.
+    headlines: {
+      'Total expenditure (excluding debt repayment)': 75170,
+      'Receipts (excluding borrowings)': 62565,
+      'Revenue surplus': 2586,
+      'Fiscal deficit': 12605,
+    },
   },
   {
     stateSlug: 'delhi',
@@ -38,6 +46,12 @@ const CASES = [
     documentDate: '2025-03-31',
     sectors: {
       'Education, Sports, Arts, and Culture': [14681, 16146, 15924, 19039],
+    },
+    headlines: {
+      'Total expenditure (excluding debt repayment)': 95358,
+      'Receipts (excluding borrowings)': 81655,
+      'Revenue surplus': 9661,
+      'Fiscal deficit': 13703,
     },
   },
 ];
@@ -66,15 +80,17 @@ for (const c of CASES) {
   }
 
   const parsed = new Map(
-    result.facts.map((f) => [
-      f.payload.sector,
-      [
-        f.payload.actuals_prev_cr,
-        f.payload.budgeted_cr,
-        f.payload.revised_cr,
-        f.payload.next_budget_cr,
-      ],
-    ])
+    result.facts
+      .filter((f) => f.targetTable === 'state_sector_budgets')
+      .map((f) => [
+        f.payload.sector,
+        [
+          f.payload.actuals_prev_cr,
+          f.payload.budgeted_cr,
+          f.payload.revised_cr,
+          f.payload.next_budget_cr,
+        ],
+      ])
   );
 
   for (const [sector, expected] of Object.entries(c.sectors)) {
@@ -88,6 +104,25 @@ for (const c of CASES) {
       continue;
     }
     console.log(`  ✓ ${sector} [${got}]`);
+  }
+
+  const headlines = new Map(
+    result.facts
+      .filter((f) => f.targetTable === 'state_budget_headlines')
+      .map((f) => [f.payload.label, Number(f.payload.amount_cr)])
+  );
+
+  for (const [label, expected] of Object.entries(c.headlines ?? {})) {
+    const got = headlines.get(label);
+    if (got == null) {
+      fail(`missing headline "${label}" (parsed: ${[...headlines.keys()].join(' | ')})`);
+      continue;
+    }
+    if (got !== expected) {
+      fail(`headline "${label}": got ${got}, expected ${expected}`);
+      continue;
+    }
+    console.log(`  ✓ ${label} ${got}`);
   }
 }
 

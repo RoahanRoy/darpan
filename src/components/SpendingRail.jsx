@@ -40,6 +40,13 @@ export default function SpendingRail({ spending }) {
 
   const perUnit = spending.scopeLabel === 'Delhi' ? 'per municipal body' : 'per district';
 
+  // The total expenditure headline is already the big number above; the rest —
+  // receipts, the two deficits, GSDP — make up the fiscal-facts strip so they
+  // are on the page rather than only in the payload.
+  const facts = spending.headlines.filter(
+    (h) => !h.label.startsWith('Total expenditure') && h.amount != null
+  );
+
   return (
     <div className="split-rail" id="spending">
       <div className="kicker">{spending.period}</div>
@@ -47,6 +54,20 @@ export default function SpendingRail({ spending }) {
       <p className="text-muted spend-sub">
         total expenditure budgeted, excluding debt repayment. State-wide figure — not {perUnit}.
       </p>
+
+      {facts.length > 0 && (
+        <dl className="spend-facts">
+          {facts.map((h) => (
+            <div key={h.label} className="spend-fact">
+              <dt>{h.label}</dt>
+              <dd className="tnum">
+                {h.amount}
+                {h.qualifier ? <span className="spend-fact-q"> · {h.qualifier}</span> : null}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      )}
 
       {/* The year comes from the paper the figures were read out of, not from
           a constant. States sit on different years — most are on 2026-27

@@ -2,8 +2,12 @@
    Staging a fact for a table absent from this map is a hard error. */
 
 import * as stateSectorBudgets from './state-sector-budgets.js';
+import * as stateBudgetHeadlines from './state-budget-headlines.js';
 
-const promoters = new Map([[stateSectorBudgets.targetTable, stateSectorBudgets]]);
+const promoters = new Map([
+  [stateSectorBudgets.targetTable, stateSectorBudgets],
+  [stateBudgetHeadlines.targetTable, stateBudgetHeadlines],
+]);
 
 export function promoterFor(targetTable) {
   const p = promoters.get(targetTable);

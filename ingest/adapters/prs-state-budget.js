@@ -54,6 +54,129 @@ function findDocumentDate(lines) {
   return null;
 }
 
+/* ------------------------------------------------------ budget highlights
+
+   Every PRS state analysis opens with a "Budget Highlights" block: five or so
+   bullets giving the top-line figures the sector table never carries — total
+   expenditure, receipts, the two deficits, and GSDP. db/seed.sql had these
+   hand-typed for Delhi and Uttarakhand and nowhere else, so twenty-eight state
+   pages rendered a sector table with no headline total above it. This reads
+   them off the same paper the sectors come from.
+
+   The bullets are prose, not a table, but they are boilerplate prose: the same
+   sentence frames recur verbatim across all thirty papers, which is what makes
+   a regex defensible here where it would not be on free text. ingest/verify.js
+   pins the output against the figures a human transcribed from the 2025-26
+   Delhi and Uttarakhand papers, so a reframing by PRS fails the build rather
+   than quietly staging a wrong total. */
+
+// "Rs 3,24,925 crore" or "Rs 13.1 lakh crore" — a few papers give the larger
+// aggregates in lakh crore, so the unit has to be read, not assumed.
+const RS_AMOUNT = String.raw`Rs\s+([\d,]+(?:\.\d+)?)\s+(lakh\s+crore|crore)`;
+
+function toCroreWithUnit(numStr, unit) {
+  const n = Number(String(numStr).replace(/,/g, ''));
+  if (!Number.isFinite(n)) return null;
+  return /lakh/i.test(unit || '') ? Math.round(n * 100000) : n;
+}
+
+/** The fiscal year one before the budget year: '2026-27' → '2025-26'. Used to
+    word the qualifier ("up 12% on revised 2025-26") without re-parsing it out
+    of the sentence, which states phrase inconsistently. */
+function previousFiscalYear(fy) {
+  const m = /^(\d{4})-(\d{2})$/.exec(fy || '');
+  if (!m) return null;
+  const start = Number(m[1]) - 1;
+  return `${start}-${String(Number(m[2]) - 1).padStart(2, '0')}`;
+}
+
+/* Collapses the Budget Highlights block into one string per bullet. The text
+   stream breaks a bullet across lines unpredictably — Kerala emits the whole
+   block on one line, others wrap every sentence — so a new bullet starts on
+   the ▪ marker OR on a line opening with one of the fixed sentence frames, and
+   everything else is joined onto the bullet in progress. */
+function highlightBullets(lines) {
+  const start = lines.findIndex((l) => /^Budget Highlights\b/i.test(l));
+  if (start === -1) return [];
+  let end = lines.findIndex(
+    (l, i) => i > start && /^(Policy Highlights|Budget Estimates)\b/i.test(l)
+  );
+  if (end === -1 || end - start > 30) end = start + 20;
+
+  const NEW_BULLET = /^(The Gross|Expenditure|Receipts|Revenue|Fiscal|The state is)/;
+  const bullets = [];
+  for (const line of lines.slice(start + 1, end)) {
+    if (!line) continue;
+    if (/^▪/.test(line) || bullets.length === 0) {
+      bullets.push(line.replace(/^▪\s*/, '').trim());
+    } else if (NEW_BULLET.test(line)) {
+      bullets.push(line.trim());
+    } else {
+      bullets[bullets.length - 1] += ' ' + line.trim();
+    }
+  }
+  return bullets;
+}
+
+/** Reads the Budget Highlights bullets into headline rows, in the order and
+    with the labels db/seed.sql already established for the two seeded states.
+    Any figure the block does not carry is simply omitted — Delhi and Tripura
+    publish no GSDP, which is a property of the paper, not a parse failure. */
+export function parseHeadlines(lines, fiscalYear) {
+  const blob = highlightBullets(lines).join('\n');
+  if (!blob) return [];
+  const prev = previousFiscalYear(fiscalYear);
+  const rows = [];
+  let m;
+
+  if ((m = new RegExp(String.raw`Expenditure \(excluding debt repayment\)[^.]*?estimated to be ${RS_AMOUNT}[^.]*?(increase|decrease) of (\d+)%`, 'i').exec(blob))) {
+    rows.push({
+      label: 'Total expenditure (excluding debt repayment)',
+      amount_cr: toCroreWithUnit(m[1], m[2]),
+      qualifier: prev ? `${m[3] === 'increase' ? 'up' : 'down'} ${m[4]}% on revised ${prev}` : null,
+    });
+  } else if ((m = new RegExp(String.raw`Expenditure \(excluding debt repayment\)[^.]*?estimated to be ${RS_AMOUNT}`, 'i').exec(blob))) {
+    rows.push({ label: 'Total expenditure (excluding debt repayment)', amount_cr: toCroreWithUnit(m[1], m[2]), qualifier: null });
+  }
+
+  if ((m = new RegExp(String.raw`Receipts \(excluding borrowings\)[^.]*?estimated to be ${RS_AMOUNT}`, 'i').exec(blob))) {
+    rows.push({ label: 'Receipts (excluding borrowings)', amount_cr: toCroreWithUnit(m[1], m[2]), qualifier: null });
+  }
+
+  // Revenue account: a surplus, a deficit, or (Assam) an exact balance. The
+  // % of GSDP is captured where the sentence leads with it and left null where
+  // the paper gives only a rupee figure (Delhi, Tripura, Madhya Pradesh).
+  if ((m = /Revenue (surplus|deficit) (?:in|for) [\d-]+ is estimated to be (?:([\d.]+)% of GSDP \()?Rs ([\d,]+) crore/i.exec(blob))) {
+    rows.push({
+      label: `Revenue ${m[1]}`,
+      amount_cr: toCroreWithUnit(m[3], 'crore'),
+      qualifier: m[2] ? `${m[2]}% of GSDP` : null,
+    });
+  } else if (/revenue balance \(no surplus or deficit\)/i.test(blob)) {
+    rows.push({ label: 'Revenue balance', amount_cr: 0, qualifier: 'no surplus or deficit' });
+  }
+
+  if ((m = /Fiscal deficit (?:for|in) [\d-]+ is (?:targeted at|estimated (?:at|to be)) (?:([\d.]+)% of GSDP \()?Rs ([\d,]+(?:\.\d+)?) (lakh crore|crore)/i.exec(blob))) {
+    rows.push({
+      label: 'Fiscal deficit',
+      amount_cr: toCroreWithUnit(m[2], m[3]),
+      qualifier: m[1] ? `${m[1]}% of GSDP` : null,
+    });
+  }
+
+  if ((m = new RegExp(String.raw`Gross State Domestic Product \(GSDP\)[^.]*?projected to be ${RS_AMOUNT}[^.]*?growth of ([\d.]+)%`, 'i').exec(blob))) {
+    rows.push({
+      label: 'GSDP (at current prices)',
+      amount_cr: toCroreWithUnit(m[1], m[2]),
+      qualifier: `projected ${m[3]}% growth`,
+    });
+  } else if ((m = new RegExp(String.raw`Gross State Domestic Product \(GSDP\)[^.]*?projected to be ${RS_AMOUNT}`, 'i').exec(blob))) {
+    rows.push({ label: 'GSDP (at current prices)', amount_cr: toCroreWithUnit(m[1], m[2]), qualifier: null });
+  }
+
+  return rows.map((r, i) => ({ ...r, display_order: i + 1 }));
+}
+
 /** Locates the sector table and returns just its lines.
     Bounding matters: an earlier table (Salaries / Pension / Interest payment)
     also has four figures per row and would otherwise be parsed as sectors. */
@@ -292,6 +415,20 @@ export async function run({ url, stateSlug, fiscalYear }) {
     );
   }
 
+  /* The top-line figures from the Budget Highlights block. A short count here
+     is not fatal the way a short sector table is — a paper can legitimately
+     omit GSDP — but total expenditure and the two deficits are universal, so
+     fewer than three headlines means the block was reframed and the parse
+     should be looked at rather than trusted. */
+  const headlines = parseHeadlines(lines, fiscalYear);
+  if (headlines.length && headlines.length < 3) {
+    throw new Error(
+      `Parsed only ${headlines.length} headline figures from ${url}. The Budget ` +
+        'Highlights block always carries total expenditure, receipts and the ' +
+        'deficits; a short count means PRS reframed it — check before trusting.'
+    );
+  }
+
   const documentDate = findDocumentDate(lines);
   const stateLabel = stateSlug.replace(/(^|-)(\w)/g, (_, s, c) => (s ? ' ' : '') + c.toUpperCase());
 
@@ -310,22 +447,41 @@ export async function run({ url, stateSlug, fiscalYear }) {
       documentDateIsInferred: false,
     },
 
-    facts: sectors.map((s, i) => ({
-      targetTable: 'state_sector_budgets',
-      naturalKey: `${stateSlug}|${s.sector}`,
-      payload: {
-        state_slug: stateSlug,
-        sector: s.sector,
-        actuals_prev_cr: s.actuals_prev_cr,
-        budgeted_cr: s.budgeted_cr,
-        revised_cr: s.revised_cr,
-        next_budget_cr: s.next_budget_cr,
-        display_order: i + 1,
-        // Written by the reviewer before promotion; see the note above.
-        provision_note: null,
-        _provision_fragments: s.provision_fragments,
-        _published_pct_change: s.published_pct_change,
-      },
-    })),
+    facts: [
+      ...sectors.map((s, i) => ({
+        targetTable: 'state_sector_budgets',
+        naturalKey: `${stateSlug}|${s.sector}`,
+        payload: {
+          state_slug: stateSlug,
+          sector: s.sector,
+          actuals_prev_cr: s.actuals_prev_cr,
+          budgeted_cr: s.budgeted_cr,
+          revised_cr: s.revised_cr,
+          next_budget_cr: s.next_budget_cr,
+          display_order: i + 1,
+          // Written by the reviewer before promotion; see the note above.
+          provision_note: null,
+          _provision_fragments: s.provision_fragments,
+          _published_pct_change: s.published_pct_change,
+        },
+      })),
+
+      /* The headline figures land in state_budget_headlines, keyed by state,
+         fiscal year and label — the same year the paper's "next budget"
+         column describes, so a state on a 2026-27 analysis gets 2026-27
+         headlines that sit above its 2026-27 sector figures. */
+      ...headlines.map((h) => ({
+        targetTable: 'state_budget_headlines',
+        naturalKey: `${stateSlug}|${fiscalYear}|${h.label}`,
+        payload: {
+          state_slug: stateSlug,
+          fiscal_year: fiscalYear,
+          label: h.label,
+          amount_cr: h.amount_cr,
+          qualifier: h.qualifier,
+          display_order: h.display_order,
+        },
+      })),
+    ],
   };
 }

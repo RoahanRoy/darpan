@@ -88,17 +88,20 @@ export default async function handler(req, res) {
        would keep asking for last year's rows and quietly render nothing,
        which looks identical to a state having no budget at all.
 
-       Both year-bearing tables are consulted because a state may be seeded
-       with scheme allocations before its headline rows, or the reverse. */
+       The two year-bearing tables are read INDEPENDENTLY, not folded into one
+       max. They move on different clocks: the headline and sector figures come
+       from the latest PRS analysis (2026-27 for most states), while a state's
+       named scheme allocations were seeded from an earlier paper (2025-26 for
+       Delhi and Uttarakhand). A single max would ask for 2026-27 schemes,
+       find none, and blank a block that has perfectly good 2025-26 rows —
+       which is exactly what happened to Delhi's ten schemes the first time
+       2026-27 headlines were ingested. */
     const [area] = await sql`
       SELECT d.id, d.name, d.slug, d.unit_type, d.unit_note,
              d.effective_from::text AS effective_from,
              s.id AS state_id, s.name AS state_name, s.slug AS state_slug, s.kind AS state_kind,
-             (SELECT max(fy) FROM (
-                SELECT max(fiscal_year) AS fy FROM state_budget_headlines WHERE state_id = s.id
-                UNION ALL
-                SELECT max(fiscal_year) FROM state_scheme_allocations WHERE state_id = s.id
-              ) years) AS fiscal_year
+             (SELECT max(fiscal_year) FROM state_budget_headlines WHERE state_id = s.id) AS budget_fiscal_year,
+             (SELECT max(fiscal_year) FROM state_scheme_allocations WHERE state_id = s.id) AS scheme_fiscal_year
       FROM districts d JOIN states s ON s.id = d.state_id
       WHERE d.slug = ${districtSlug}
         AND (${stateSlug}::text IS NULL OR s.slug = ${stateSlug})
@@ -115,7 +118,9 @@ export default async function handler(req, res) {
     // A state with delivery records but no budget yet is a real state to
     // render — the money blocks come back empty and the page says so — so
     // this is not an error, but it must not be reported as a year either.
-    const FY = area.fiscal_year;
+    // FY is the budget year (headlines and sectors); schemes carry their own.
+    const FY = area.budget_fiscal_year;
+    const schemeFY = area.scheme_fiscal_year;
 
     const [headlines, sectors, allocations, progress, findingRows, sourceRows] =
       await Promise.all([
@@ -130,7 +135,7 @@ export default async function handler(req, res) {
             WHERE b.state_id = ${area.state_id} ORDER BY b.display_order`,
 
         sql`SELECT scheme_name, sector, amount_cr FROM state_scheme_allocations
-            WHERE state_id = ${area.state_id} AND fiscal_year = ${FY}
+            WHERE state_id = ${area.state_id} AND fiscal_year = ${schemeFY}
             ORDER BY display_order`,
 
         sql`SELECT p.scheme_name, p.metric_a_label, p.metric_a, p.metric_b_label,
@@ -181,6 +186,9 @@ export default async function handler(req, res) {
       },
       state: { name: area.state_name, slug: area.state_slug, kind: area.state_kind },
       fiscalYear: FY,
+      // The scheme block moves on its own clock — see the query note above — so
+      // it carries its own year rather than borrowing the budget's.
+      schemeFiscalYear: schemeFY,
 
       // State-level money, explicitly scoped.
       spending: {

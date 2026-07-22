@@ -155,7 +155,7 @@ export default function Home({ route }) {
             <SchemeGrid
               schemes={data.schemes}
               stateName={data.state.name}
-              fiscalYear={data.fiscalYear}
+              fiscalYear={data.schemeFiscalYear ?? data.fiscalYear}
             />
             <StatusTable
               rows={data.progress}
