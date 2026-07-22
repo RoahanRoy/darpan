@@ -1,0 +1,192 @@
+# Weekly check that Neon still matches the prose kept in git.
+#
+# Three columns hold sentences no adapter can regenerate, so they live in
+# files and are applied from them (db/README.md, "Prose that lives in git").
+# The `:check` commands are the only thing that reports a forgotten apply —
+# and until now nothing ran them, so the report existed but never arrived.
+# A db:reset, a re-ingest, or a promote that dropped rows all silently lose
+# prose, and the first symptom is a state page missing its sentences.
+#
+# Unlike ci.yml this needs the real database, so it runs on a schedule with
+# the DATABASE_URL secret rather than on every pull request. It only ever
+# reads: the three scripts are invoked with --check, which queries and
+# compares. Nothing here writes, and the fix (`*:apply`) stays a deliberate
+# act run by a person.
+#
+# Requires the DATABASE_URL repository secret.
+
+name: drift
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 07:00 UTC every Monday, year round. Drift is caused by our own
+    # operations rather than by the budget calendar, so unlike ingest.yml
+    # this does not narrow to the February–May window. The hour sits after
+    # ingest.yml's 06:00 slot so the two never report on each other.
+    - cron: '0 7 * * 1'
+
+concurrency:
+  group: drift
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      # dotenv v17 announces every file it loads. Harmless in a terminal,
+      # but these logs get pasted into an issue body verbatim.
+      DOTENV_CONFIG_QUIET: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      # Without this the scripts exit 1 on a missing DATABASE_URL, which is
+      # indistinguishable from drift and would open an issue saying the
+      # database disagrees with the store when in fact nobody looked.
+      - name: Require the secret
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "::error::DATABASE_URL secret is not set — this workflow cannot check anything."
+            exit 1
+          fi
+
+      # Each check runs even if an earlier one failed: a forgotten
+      # gloss:apply says nothing about whether the findings are current, and
+      # stopping at the first would hide the other two until it was fixed.
+      #
+      # These invoke the scripts directly rather than through `npm run` so a
+      # drift exit code does not drag npm's own failure banner into the issue
+      # body below. They are otherwise exactly the documented commands.
+      #
+      # `shell: bash` is load-bearing, not decoration. The default shell is
+      # `bash -e` without pipefail, so `node ... | tee` would exit with tee's
+      # status and every check would pass forever. Naming the shell is what
+      # gets `-o pipefail`.
+      - name: Glosses
+        id: glosses
+        continue-on-error: true
+        shell: bash
+        run: node scripts/apply-glosses.js --check 2>&1 | tee glosses.log
+
+      - name: Findings
+        id: findings
+        continue-on-error: true
+        shell: bash
+        run: node scripts/apply-findings.js --check 2>&1 | tee findings.log
+
+      - name: News
+        id: news
+        continue-on-error: true
+        shell: bash
+        run: node scripts/apply-news.js --check 2>&1 | tee news.log
+
+      - name: Report
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            const checks = [
+              { name: 'Glosses',  log: 'glosses.log',  store: 'ingest/glosses.json',      fix: 'npm run gloss:apply',    ok: '${{ steps.glosses.outcome }}' === 'success' },
+              { name: 'Findings', log: 'findings.log', store: 'ingest/findings.json',     fix: 'npm run findings:apply', ok: '${{ steps.findings.outcome }}' === 'success' },
+              { name: 'News',     log: 'news.log',     store: 'ingest/budget-news.json',  fix: 'npm run news:apply',     ok: '${{ steps.news.outcome }}' === 'success' },
+            ];
+
+            // A check can also fail before it compares anything — an
+            // unreachable database, a renamed table. The log is included
+            // whole so the issue distinguishes "drifted" from "could not
+            // tell", which need different responses.
+            const read = (f) => {
+              try { return fs.readFileSync(f, 'utf8').trim(); }
+              catch { return '(no output — the step did not run to completion)'; }
+            };
+
+            const drifted = checks.filter((c) => !c.ok);
+            const summary = checks
+              .map((c) => `| ${c.name} | ${c.ok ? 'matches' : '**differs**'} | \`${c.store}\` |`)
+              .join('\n');
+
+            await core.summary
+              .addHeading('Prose drift', 2)
+              .addTable([
+                [{ data: 'Check', header: true }, { data: 'Result', header: true }, { data: 'Store', header: true }],
+                ...checks.map((c) => [c.name, c.ok ? 'matches' : 'differs', c.store]),
+              ])
+              .write();
+
+            const title = 'Database has drifted from the prose in git';
+            const existing = (await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo, state: 'open',
+            })).data.find((i) => i.title === title);
+
+            if (drifted.length === 0) {
+              // Close a standing issue rather than leaving a fixed problem
+              // open: the next run is a week away and nothing else would.
+              if (existing) {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner, repo: context.repo.repo,
+                  issue_number: existing.number,
+                  body: 'All three stores now match the database. Closing.',
+                });
+                await github.rest.issues.update({
+                  owner: context.repo.owner, repo: context.repo.repo,
+                  issue_number: existing.number, state: 'closed',
+                });
+              }
+              return;
+            }
+
+            const body = [
+              `${drifted.length} of 3 stores disagree with the database.`,
+              '',
+              'These columns hold sentences no adapter regenerates, so the file',
+              'is authoritative and the database is the copy. A difference means',
+              'either an apply was missed after a rebuild or promote, or someone',
+              'edited the database directly.',
+              '',
+              '| Check | Result | Store |',
+              '| --- | --- | --- |',
+              summary,
+              '',
+              '## To fix',
+              '',
+              '```sh',
+              ...drifted.map((c) => c.fix),
+              '```',
+              '',
+              'Read the output first. `*:apply` makes the database match the file,',
+              'which is wrong if the database is the side holding work that was',
+              'never written back.',
+              '',
+              '## Output',
+              '',
+              ...drifted.flatMap((c) => [`### ${c.name}`, '', '```', read(c.log), '```', '']),
+              `[Run](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}) · checked ${new Date().toISOString().slice(0, 10)}`,
+            ].join('\n');
+
+            // One standing issue, kept current. A weekly comment on an
+            // unfixed problem is noise, and a stale body describing drift
+            // that has since changed shape is worse than none.
+            if (existing) {
+              await github.rest.issues.update({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: existing.number, body,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo,
+                title, body, labels: ['data-drift'],
+              });
+            }
+
+            core.setFailed(`${drifted.length} store(s) differ from the database`);

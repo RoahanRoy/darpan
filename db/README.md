@@ -43,6 +43,31 @@ diffable at review time and recoverable afterwards. **A rebuild is not
 finished until `gloss:apply` and `findings:apply` have been run** — the two
 `:check` commands are what tell you it was missed.
 
+They no longer depend on somebody remembering to type them.
+`.github/workflows/drift.yml` runs all three every Monday against the real
+database and opens a single standing issue when any store disagrees, closing
+it once they agree again. It needs the `DATABASE_URL` repository secret, and
+it only reads — the fix is still `*:apply`, run deliberately by a person,
+because a difference does not say which side is wrong. Run it on demand from
+the Actions tab after a rebuild rather than waiting for the Monday run.
+
+The secret is set once, from a shell that already has the URL:
+
+```sh
+node -e 'require("dotenv").config({path:".env.local",quiet:true});
+         process.stdout.write(process.env.DATABASE_URL)' |
+  gh secret set DATABASE_URL
+```
+
+Reading it through dotenv rather than `grep`/`cut` is deliberate: the value is
+quoted in `.env.local`, and a hand-rolled extraction stores the quotes along
+with it. Piping rather than passing `--body` keeps the credential out of the
+process arguments.
+
+Until it exists the workflow stops at its first step and says so, rather than
+reporting drift it never measured. `.github/workflows/ingest.yml` reads the
+same secret.
+
 `findings:apply` deletes and rewrites only `computed_from_source = TRUE`
 rows. Findings quoted from a document's own summary — the CAG observations in
 `seed.sql` — are marked FALSE and are never touched by it.
@@ -124,9 +149,11 @@ The ingestion staging tables (`ingestion_runs`, `raw_documents`,
 proving how each published figure was approved, and that has to outlive any
 rebuild of the tables it describes.
 
-After a reset, re-ingest the papers, then run `gloss:apply` and
-`findings:apply`. Until both have run the pages are missing every sentence
-that was written rather than parsed, and nothing else reports that.
+After a reset, re-ingest the papers, then run `gloss:apply`, `findings:apply`
+and `news:apply`. Until all three have run the pages are missing every
+sentence that was written rather than parsed. The weekly drift workflow will
+catch it, but a week is a long time to serve blank pages — run the three
+`:check` commands yourself before calling the rebuild finished.
 
 ## Backups
 
