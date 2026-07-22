@@ -1,0 +1,95 @@
+{
+  "_comment": "Dated budget news per state, applied to state_budget_news by scripts/apply-news.js. Like ingest/glosses.json and ingest/findings.json, this lives in git because no adapter can regenerate a one-line summary written by a person. Each item credits the outlet that reported the story and links to it; the site does not vouch for the figures inside, it points a reader at who reported them. Keyed by states.slug. Headlines and summaries are written here, not copied from the outlet. Dates are the story's own publication date (YYYY-MM-DD).",
+  "news": {
+    "bihar": [
+      {
+        "headline": "Bihar tables its 2026-27 budget, prioritising education, health and power",
+        "summary": "Finance Minister Bijendra Prasad Yadav presented the state budget on 3 February 2026, the first of the new government. Expenditure excluding debt repayment is put at about ₹3.25 lakh crore, framed around the Saat Nishchay-3 roadmap for 2025-2030.",
+        "outlet": "ANI",
+        "url": "https://aninews.in/news/national/general-news/bihar-minister-dilip-jaiswal-says-states-budget-will-proritise-education-health-and-electricity-focus-also-on-increased-women-participation20260203111026/",
+        "published_on": "2026-02-03"
+      }
+    ],
+    "uttar-pradesh": [
+      {
+        "headline": "Uttar Pradesh tables a record ₹9.12 lakh crore budget for 2026-27",
+        "summary": "Finance Minister Suresh Khanna presented the budget on 11 February 2026, up nearly 13% on the previous year, with new schemes worth about ₹43,565 crore and capital spending pegged near a fifth of the total outlay.",
+        "outlet": "DD News",
+        "url": "https://ddnews.gov.in/en/yogi-govt-presents-rs-9-12-lakh-crore-up-budget-with-focus-on-law-and-order-health-infra/",
+        "published_on": "2026-02-11"
+      }
+    ],
+    "maharashtra": [
+      {
+        "headline": "Maharashtra's 2026-27 budget headlines a ₹2 lakh farm loan waiver",
+        "summary": "Presenting the ₹7.69 lakh crore budget on 6 March 2026, Chief Minister Devendra Fadnavis, who holds finance, announced the Punyashlok Ahilyadevi Holkar Shetkari Karjmafi Yojana, writing off crop loans up to ₹2 lakh outstanding as of 30 September 2025.",
+        "outlet": "DD News",
+        "url": "https://ddnews.gov.in/en/maha-govt-presents-rs-7-69-lakh-crore-budget-announces-farm-loan-waiver-up-to-rs-2-lakh/",
+        "published_on": "2026-03-06"
+      }
+    ],
+    "karnataka": [
+      {
+        "headline": "Siddaramaiah presents a record 16th Karnataka budget",
+        "summary": "The Chief Minister presented a ₹4.48 lakh crore budget for 2026-27, a deficit budget with a revenue gap of about ₹22,957 crore and capital spending of ₹74,682 crore.",
+        "outlet": "Deccan Herald",
+        "url": "https://www.deccanherald.com/india/karnataka/karnataka-budget-today-siddaramaiahs-record-16th-3435878",
+        "published_on": "2026-03-07"
+      }
+    ],
+    "delhi": [
+      {
+        "headline": "Delhi's BJP government tables a ₹1.03 lakh crore budget for 2026-27",
+        "summary": "Chief Minister Rekha Gupta, who holds finance, presented the budget on 24 March 2026. Expenditure excluding debt repayment is about ₹99,446 crore; the ₹1.03 lakh crore headline includes debt repayment.",
+        "outlet": "News on AIR",
+        "url": "https://www.newsonair.gov.in/delhi-cm-rekha-gupta-presents-%E2%82%B91-03-lakh-crore-budget-for-2026-27/",
+        "published_on": "2026-03-24"
+      }
+    ],
+    "west-bengal": [
+      {
+        "headline": "Bengal tables a ₹4.06 lakh crore interim budget ahead of the 2026 polls",
+        "summary": "Finance Minister Chandrima Bhattacharya presented a vote-on-account on 5 February 2026. It raised the monthly Lakshmir Bhandar grant for women and announced Banglar Yuva Sathi, a ₹1,500 monthly allowance for unemployed youth.",
+        "outlet": "BW Businessworld",
+        "url": "https://www.businessworld.in/article/west-bengal-tables-rs-4-06-lakh-cr-interim-budget-ahead-elections-592913",
+        "published_on": "2026-02-05"
+      }
+    ],
+    "rajasthan": [
+      {
+        "headline": "Rajasthan's ₹6.11 lakh crore budget targets Viksit Rajasthan 2047",
+        "summary": "Deputy Chief Minister and Finance Minister Diya Kumari presented the budget on 11 February 2026, with a revenue deficit of ₹24,314 crore and a fiscal deficit of 3.69% of GSDP, within the permissible limit.",
+        "outlet": "News on AIR",
+        "url": "https://www.newsonair.gov.in/rajasthan-deputy-cm-finance-minister-diya-kumari-presents-budget-2026-27-in-assembly",
+        "published_on": "2026-02-11"
+      }
+    ],
+    "kerala": [
+      {
+        "headline": "Kerala's final Pinarayi-2.0 budget nears the ₹2 trillion mark",
+        "summary": "Finance Minister K N Balagopal presented the 2026-27 budget on 29 January 2026, with a ₹1,000 wage hike for anganwadi and ASHA workers and ₹14,500 crore for social security pensions.",
+        "outlet": "The Week",
+        "url": "https://www.theweek.in/news/biz-tech/2026/01/29/kerala-budget-2026-here-is-a-wrap-up-of-all-the-major-announcements.html",
+        "published_on": "2026-01-29"
+      }
+    ],
+    "chhattisgarh": [
+      {
+        "headline": "Chhattisgarh presents its 2026-27 budget",
+        "summary": "Finance Minister O P Choudhary tabled the budget on 24 February 2026. Expenditure excluding debt repayment is estimated at about ₹1.72 lakh crore, roughly 10% over the previous year's revised estimate.",
+        "outlet": "News on AIR",
+        "url": "https://www.newsonair.gov.in/chhattisgarh-fm-o-p-choudhary-presents-budget-for-year-2026-27-in-state-legislative-assembly",
+        "published_on": "2026-02-24"
+      }
+    ],
+    "puducherry": [
+      {
+        "headline": "Puducherry presents a ₹13,600 crore tax-free budget",
+        "summary": "Chief Minister N Rangasamy, who holds finance, presented the 2025-26 budget on 12 March 2025, with ₹11,624.72 crore of revenue expenditure, ₹1,975.28 crore of capital expenditure and ₹2,110 crore earmarked for welfare schemes. PRS publishes no analysis for Puducherry, so this is the only budget record the site holds for the UT.",
+        "outlet": "News on AIR",
+        "url": "https://www.newsonair.gov.in/puducherry-cm-n-rangasamy-presents-rs13600-crore-budget-for-fiscal-2025-26/",
+        "published_on": "2025-03-12"
+      }
+    ]
+  }
+}

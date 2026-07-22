@@ -10,6 +10,7 @@ import Feed from '../components/Feed.jsx';
 import SpendingRail from '../components/SpendingRail.jsx';
 import SchemeGrid from '../components/SchemeGrid.jsx';
 import StatusTable from '../components/StatusTable.jsx';
+import BudgetNews from '../components/BudgetNews.jsx';
 import PosterBanner from '../components/PosterBanner.jsx';
 import { homeNavLinks } from '../data/homeContent.js';
 
@@ -162,6 +163,7 @@ export default function Home({ route }) {
               areaName={data.area.name}
               unitType={data.area.unitType}
             />
+            <BudgetNews items={data.news} stateName={data.state.name} />
           </>
         )}
       </div>

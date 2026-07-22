@@ -22,6 +22,8 @@
     "findings:derive": "node scripts/derive-findings.js",
     "findings:apply": "node scripts/apply-findings.js",
     "findings:check": "node scripts/apply-findings.js --check",
+    "news:apply": "node scripts/apply-news.js",
+    "news:check": "node scripts/apply-news.js --check",
     "ingest:review": "node ingest/review.js",
     "ingest:verify": "node ingest/verify.js",
     "dev:full": "vercel dev",

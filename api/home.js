@@ -122,7 +122,7 @@ export default async function handler(req, res) {
     const FY = area.budget_fiscal_year;
     const schemeFY = area.scheme_fiscal_year;
 
-    const [headlines, sectors, allocations, progress, findingRows, sourceRows] =
+    const [headlines, sectors, allocations, progress, findingRows, newsRows, sourceRows] =
       await Promise.all([
         sql`SELECT label, amount_cr, qualifier FROM state_budget_headlines
             WHERE state_id = ${area.state_id} AND fiscal_year = ${FY}
@@ -155,6 +155,12 @@ export default async function handler(req, res) {
             FROM findings f JOIN sources src ON src.id = f.source_id
             WHERE f.state_id = ${area.state_id}
             ORDER BY f.display_order`,
+
+        sql`SELECT headline, summary, outlet, url,
+                   published_on::text AS published_on
+            FROM state_budget_news
+            WHERE state_id = ${area.state_id}
+            ORDER BY display_order`,
 
         sql`SELECT src.slug, src.title, src.publisher, src.url, src.note,
                    src.document_date_is_inferred,
@@ -260,6 +266,19 @@ export default async function handler(req, res) {
         derived: f.computed_from_source,
         publisher: f.publisher,
         href: f.source_url,
+      })),
+
+      /* Dated pointers to what outlets reported about this state's budget.
+         Deliberately separate from `findings` and `sources`: a finding is this
+         site's own reading of a document it stands behind, a news item is a
+         credited link to someone else's reporting. The page keeps them apart
+         and labels the news as news. */
+      news: newsRows.map((n) => ({
+        headline: n.headline,
+        summary: n.summary,
+        outlet: n.outlet,
+        href: n.url,
+        publishedOn: n.published_on,
       })),
 
       sources: sourceRows.map(serialiseSource),
