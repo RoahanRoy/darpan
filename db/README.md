@@ -157,13 +157,42 @@ catch it, but a week is a long time to serve blank pages — run the three
 
 ## Backups
 
-Neon's point-in-time restore is the recovery path, subject to the retention
-window on the current plan. **It is not a backup** — it does not survive
-project deletion and it expires. Before anything destructive, take a real
-dump:
+Neon's point-in-time restore is the recovery path for an accident, subject to
+the retention window on the current plan. **It is not a backup** — it does not
+survive project deletion and it expires.
+
+`.github/workflows/backup.yml` takes a real dump every Monday at 05:00 UTC,
+ahead of the jobs that change things, and keeps it as a workflow artifact for
+90 days. Run it from the Actions tab before anything destructive rather than
+relying on the weekly one.
+
+Every run restores the dump into a throwaway PostgreSQL container and counts
+the rows that came back, failing if any core table is empty. A backup nobody
+has restored is a belief about a file; the archive's table of contents lists
+an empty table exactly as it lists a full one, so listing it proves nothing
+worth knowing.
+
+Two details in that workflow are easy to break and worth knowing before you
+edit it:
+
+- **The client version is pinned to the server's major version.** Neon serves
+  PostgreSQL 18; the runner ships the 16 client, and `pg_dump` refuses a
+  server newer than itself. When Neon upgrades, this job fails until the
+  pinned version follows.
+- **The dump goes through the direct endpoint, not the pooler.** `DATABASE_URL`
+  names Neon's pooler, which is right for the serverless handlers and wrong
+  here — a pooled session cannot hold the transaction snapshot `pg_dump`
+  needs, so a dump taken through it is inconsistent if anything writes while
+  it runs. The workflow strips the `-pooler` suffix from the host itself.
+
+To take one by hand, with a client matching the server:
 
 ```sh
-pg_dump "$DATABASE_URL" --no-owner --format=custom --file=darpan-$(date +%F).dump
+pg_dump "${DATABASE_URL/-pooler/}" --no-owner --no-privileges \
+  --format=custom --file=darpan-$(date +%F).dump
 ```
 
-Keep the dump off the machine that holds the credential.
+The artifact survives Neon being deleted. It does not survive this GitHub
+account being lost, and it expires — the two are one account away from being
+the same failure. Download a copy periodically and keep it somewhere that
+shares no credential with either.
