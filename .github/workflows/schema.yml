@@ -1,0 +1,113 @@
+# Proves db/schema.sql still renders what the migrations produce.
+#
+# Migration files are checksummed the moment they apply, so nobody can change
+# one after the fact — but a checksum proves the file is unchanged, not that
+# the files still add up to the schema anyone believes they do. db/schema.sql
+# is that schema written out: what the migrations produce against an empty
+# database. This applies them to a throwaway PostgreSQL, regenerates the
+# snapshot, and fails if the committed copy has drifted.
+#
+# It never touches production and needs no secret. The snapshot is generated
+# from the migrations on purpose (see scripts/schema.js): production carries
+# history a clean run does not, so comparing against it would test an accident
+# rather than the migrations. Production is held to the migrations by
+# migrate.yml, not here.
+#
+# Running on pull_request is the point — a migration that does not apply, or
+# one applied without regenerating the snapshot, fails before merge rather
+# than at deploy.
+
+name: schema
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: schema-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  schema:
+    runs-on: ubuntu-latest
+    env:
+      # The throwaway database the migrations are applied into. Nothing here
+      # ever connects to Neon.
+      DATABASE_URL: postgresql://postgres:verify@localhost:5432/postgres
+
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_PASSWORD: verify
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      # pg_dump must match the server it dumps. The service is postgres:18 and
+      # the runner ships the 16 client, which refuses a newer server — so the
+      # 18 client is installed even though the target here is a local
+      # container, for the same reason backup.yml pins it.
+      - name: Install PostgreSQL 18 client
+        run: |
+          set -euo pipefail
+          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc |
+            sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/pgdg.gpg
+          echo "deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" |
+            sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends postgresql-client-18
+          pg_dump --version
+
+      # Applied with psql in filename order, not with db:migrate: the runner
+      # connects through the Neon serverless driver, which does not speak to a
+      # plain container. Applying the files directly reproduces the same
+      # schema, and ON_ERROR_STOP makes a broken migration fail the job here —
+      # a check ci.yml does not perform, since it only parses the JS around the
+      # SQL and never the SQL itself.
+      - name: Apply migrations to the throwaway database
+        run: |
+          set -euo pipefail
+          for f in $(ls db/migrations/*.sql | sort); do
+            echo "applying $f"
+            psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -q -f "$f"
+          done
+
+      # Regenerates the snapshot and compares it to the committed file. On the
+      # very first run db/schema.sql does not exist yet; scripts/schema.js
+      # writes it and passes, so this job goes green and the file it produced
+      # is in the artifact below, ready to commit.
+      - name: Check the snapshot is current
+        id: check
+        run: npm run --silent schema:check
+
+      # Always upload the freshly generated schema, whether the check passed or
+      # failed. On a failure it is the file to commit; on the first run it is
+      # the file to add to the repo; on a pass it is a convenience.
+      - name: Regenerate for the artifact
+        if: always()
+        run: npm run --silent schema:dump
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: schema.sql
+          path: db/schema.sql
+          if-no-files-found: error

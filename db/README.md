@@ -10,20 +10,23 @@ bundle, which would publish the credential.
 | --- | --- |
 | `npm run db:migrate -- --dry` | Lists pending migrations. Touches nothing. |
 | `npm run db:migrate` | Applies pending migrations. Never destroys data. |
+| `npm run schema:check` | Fails if `db/schema.sql` no longer matches the migrations. |
+| `npm run schema:dump` | Rewrites `db/schema.sql`. Needs a v18 `pg_dump`. |
 | `npm run db:seed` | Loads `seed.sql`. Refuses if `sources` is non-empty. |
 | `npm run db:geography` | Loads `geography.sql`. Safe to re-run. |
 | `npm run db:reset` | Destroys and rebuilds. Gated — see below. |
-| `npm run gloss:check` | Fails if `provision_note` differs from `ingest/glosses.json`. |
-| `npm run gloss:apply` | Writes the glosses back. |
-| `npm run findings:check` | Fails if computed findings differ from `ingest/findings.json`. |
-| `npm run findings:apply` | Writes the findings back. |
-| `npm run news:check` | Fails if `state_budget_news` differs from `ingest/budget-news.json`. |
-| `npm run news:apply` | Writes the budget news back. |
+| `npm run db:sync:check` | Fails if any prose store differs from the database. |
+| `npm run db:sync` | Applies every prose store. `-- --dry` to preview. |
+| `npm run gloss:check` / `gloss:apply` | Just the glosses (`db:sync glosses`). |
+| `npm run findings:check` / `findings:apply` | Just the computed findings. |
+| `npm run news:check` / `news:apply` | Just the budget news. |
 
 ## Prose that lives in git
 
-Two columns hold sentences no adapter can regenerate, so both are kept in
-files and applied from there:
+Three stores hold sentences no adapter can regenerate, so each is kept in a
+file and applied from there. `scripts/lib/stores.js` is the registry that
+names them; `npm run db:sync` applies all three and `scripts/sync.js` is the
+one script that does the work:
 
 - `ingest/glosses.json` → `state_sector_budgets.provision_note`, the
   one-line gloss a reviewer writes after reading the paper.
@@ -37,13 +40,47 @@ files and applied from there:
   this project stands behind — so it lives in git and is applied from there,
   never scraped into a public table.
 
-Re-running the ingestion pipeline produces nulls for the first and nothing
-for the second, and `db:reset` destroys both. Keeping them in git makes them
-diffable at review time and recoverable afterwards. **A rebuild is not
-finished until `gloss:apply` and `findings:apply` have been run** — the two
-`:check` commands are what tell you it was missed.
+Re-running the ingestion pipeline produces nulls for the glosses and nothing
+for the findings, and `db:reset` destroys all three. Keeping them in git makes
+them diffable at review time and recoverable afterwards. **A rebuild is not
+finished until `npm run db:sync` has been run** — `db:sync:check` is what
+tells you it was missed.
 
-`findings:apply` deletes and rewrites only `computed_from_source = TRUE`
+The two strategies behind that one command are worth knowing when a store
+misbehaves. Findings and news are *replaced* per state: the store owns every
+row a state has, so applying it deletes the state's rows and rewrites them
+(findings only touch `computed_from_source = TRUE` — the CAG observations in
+`seed.sql` are marked FALSE and never touched). Glosses are *updated in place*:
+the sector row belongs to the adapter and only `provision_note` is ours, so
+nothing is deleted and a gloss whose key matches no row is reported loudly
+rather than dropped.
+
+None of this depends on somebody remembering to type it.
+`.github/workflows/drift.yml` runs the three checks every Monday against the
+real database and opens a single standing issue when any store disagrees,
+closing it once they agree again. It needs the `DATABASE_URL` repository
+secret, and it only reads — the fix is still an apply, run deliberately by a
+person, because a difference does not say which side is wrong. Run it on demand
+from the Actions tab after a rebuild rather than waiting for the Monday run.
+
+The secret is set once, from a shell that already has the URL:
+
+```sh
+node -e 'require("dotenv").config({path:".env.local",quiet:true});
+         process.stdout.write(process.env.DATABASE_URL)' |
+  gh secret set DATABASE_URL
+```
+
+Reading it through dotenv rather than `grep`/`cut` is deliberate: the value is
+quoted in `.env.local`, and a hand-rolled extraction stores the quotes along
+with it. Piping rather than passing `--body` keeps the credential out of the
+process arguments.
+
+Until it exists the workflow stops at its first step and says so, rather than
+reporting drift it never measured. `.github/workflows/ingest.yml` reads the
+same secret.
+
+Applying findings deletes and rewrites only `computed_from_source = TRUE`
 rows. Findings quoted from a document's own summary — the CAG observations in
 `seed.sql` — are marked FALSE and are never touched by it.
 
@@ -105,6 +142,58 @@ CI checks numbering and naming (`scripts/check-migrations.js`), so a
 duplicate `003` from two branches fails the pull request rather than
 surfacing as an out-of-order apply against production.
 
+The second rule is what makes the first paragraph of this section true
+unattended: `.github/workflows/migrate.yml` applies pending migrations on
+every push to main. Nothing has to be run by hand after a merge, and every
+commit on main carries a record of the schema production was actually on. It
+is a no-op that prints `up to date` when nothing pends.
+
+**A merge starts the migration and the deploy at the same time.** Vercel
+builds from the same push, so for the half-minute or so that both take there
+is no ordering guarantee between them. Migrating is the shorter job and
+normally wins, but that is a race, not a promise. Where it matters, ship the
+migration in a commit *before* the code that depends on it — a column that
+exists and is unread costs nothing, and a column that is read before it
+exists is a 500 on a public page.
+
+Note that migrations are not run on pull requests, and that is deliberate:
+`ci.yml` is built so nothing in a pull request can reach the production
+database. To see a plan before merging, run it yourself:
+
+```sh
+npm run db:migrate -- --dry
+```
+
+## The schema snapshot
+
+`db/schema.sql` is the schema the migrations produce, written out. A
+checksummed migration proves the *file* has not changed since it applied; it
+says nothing about whether the files still add up to the schema you picture.
+The snapshot closes that gap — every schema change lands as a readable diff in
+`db/schema.sql` next to the migration that caused it, and a reviewer can see
+the shape of the database without connecting to one.
+
+`.github/workflows/schema.yml` applies the migrations to a throwaway
+PostgreSQL on every push and pull request, regenerates the snapshot, and fails
+if the committed copy has drifted. It needs no secret and never touches
+production. So a migration that does not apply cleanly, or one merged without
+regenerating the snapshot, fails before merge rather than at deploy.
+
+When you add a migration, regenerate the file in the same commit:
+
+```sh
+npm run schema:dump   # needs a pg_dump matching the server major version (18)
+```
+
+The snapshot is generated **from the migrations, never from production.**
+Production carries history a clean run does not — 001 was adopted through
+`IF NOT EXISTS` over a schema an older file had already built — so a snapshot
+taken from it would pin an accident rather than what the migrations mean.
+Production is kept in step with the migrations by `migrate.yml` applying them
+on every push, not by this file. The first CI run writes `db/schema.sql` if it
+is absent and passes; commit the copy it uploads as an artifact to arm the
+check.
+
 ## Rebuilding from scratch
 
 `db:reset` is the only script that deletes published rows. It requires two
@@ -124,19 +213,50 @@ The ingestion staging tables (`ingestion_runs`, `raw_documents`,
 proving how each published figure was approved, and that has to outlive any
 rebuild of the tables it describes.
 
-After a reset, re-ingest the papers, then run `gloss:apply` and
-`findings:apply`. Until both have run the pages are missing every sentence
-that was written rather than parsed, and nothing else reports that.
+After a reset, re-ingest the papers, then run `npm run db:sync`. Until it has
+run the pages are missing every sentence that was written rather than parsed.
+The weekly drift workflow will catch it, but a week is a long time to serve
+blank pages — run `npm run db:sync:check` yourself before calling the rebuild
+finished.
 
 ## Backups
 
-Neon's point-in-time restore is the recovery path, subject to the retention
-window on the current plan. **It is not a backup** — it does not survive
-project deletion and it expires. Before anything destructive, take a real
-dump:
+Neon's point-in-time restore is the recovery path for an accident, subject to
+the retention window on the current plan. **It is not a backup** — it does not
+survive project deletion and it expires.
+
+`.github/workflows/backup.yml` takes a real dump every Monday at 05:00 UTC,
+ahead of the jobs that change things, and keeps it as a workflow artifact for
+90 days. Run it from the Actions tab before anything destructive rather than
+relying on the weekly one.
+
+Every run restores the dump into a throwaway PostgreSQL container and counts
+the rows that came back, failing if any core table is empty. A backup nobody
+has restored is a belief about a file; the archive's table of contents lists
+an empty table exactly as it lists a full one, so listing it proves nothing
+worth knowing.
+
+Two details in that workflow are easy to break and worth knowing before you
+edit it:
+
+- **The client version is pinned to the server's major version.** Neon serves
+  PostgreSQL 18; the runner ships the 16 client, and `pg_dump` refuses a
+  server newer than itself. When Neon upgrades, this job fails until the
+  pinned version follows.
+- **The dump goes through the direct endpoint, not the pooler.** `DATABASE_URL`
+  names Neon's pooler, which is right for the serverless handlers and wrong
+  here — a pooled session cannot hold the transaction snapshot `pg_dump`
+  needs, so a dump taken through it is inconsistent if anything writes while
+  it runs. The workflow strips the `-pooler` suffix from the host itself.
+
+To take one by hand, with a client matching the server:
 
 ```sh
-pg_dump "$DATABASE_URL" --no-owner --format=custom --file=darpan-$(date +%F).dump
+pg_dump "${DATABASE_URL/-pooler/}" --no-owner --no-privileges \
+  --format=custom --file=darpan-$(date +%F).dump
 ```
 
-Keep the dump off the machine that holds the credential.
+The artifact survives Neon being deleted. It does not survive this GitHub
+account being lost, and it expires — the two are one account away from being
+the same failure. Download a copy periodically and keep it somewhere that
+shares no credential with either.

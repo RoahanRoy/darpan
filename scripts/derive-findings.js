@@ -6,7 +6,8 @@
      npm run findings:derive -- --state bihar    just one
 
    Writes proposals into ingest/findings.json. It does NOT touch the database
-   — scripts/apply-findings.js does that, after a person has read the file.
+   — `npm run findings:apply` (scripts/sync.js) does that, after a person has
+   read the file.
 
    Why this is not an ingestion adapter.
 

@@ -1,5 +1,5 @@
 {
-  "_comment": "The one-line gloss under each sector figure, written by hand from the source paper. Keyed \"<state slug>|<sector>\". Applied with scripts/apply-glosses.js. Kept here, not only in the database, because no adapter can regenerate this text: see the header of that script.",
+  "_comment": "The one-line gloss under each sector figure, written by hand from the source paper. Keyed \"<state slug>|<sector>\". Applied with `npm run gloss:apply` (scripts/sync.js, store id 'glosses'). Kept here, not only in the database, because no adapter can regenerate this text: see scripts/lib/stores.js.",
   "glosses": {
     "andhra-pradesh|Agriculture and Allied Activities": "Rs 6,600 crore for the Annadata Sukhibhava scheme. Rs 1,365 crore for various schemes under PM Rashtriya Krushi Vikas Yojana.",
     "andhra-pradesh|Education, Sports, Arts, and Culture": "Rs 20,801 crore for teaching grants to Mandal Praja Parishads, Municipalities and Zila Praja Parishads. Rs 3,036 crore for Samagra Shiksha Abhiyan.",

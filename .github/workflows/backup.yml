@@ -1,0 +1,161 @@
+# Weekly pg_dump, kept off Neon.
+#
+# Neon's point-in-time restore is the recovery path for an accident, but it
+# is not a backup: it expires with the retention window and it does not
+# survive the project being deleted or the account being lost. db/README.md
+# has said to take a real dump "before anything destructive" since the reset
+# script was written, which means the only backups that exist are the ones
+# somebody remembered to take.
+#
+# The dump is verified, not just written. An unread backup is a belief about
+# a file rather than a recovery path, so every run lists the archive's table
+# of contents back and fails if the tables it must contain are missing.
+#
+# Requires the DATABASE_URL repository secret.
+
+name: backup
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 05:00 UTC every Monday, ahead of ingest.yml (06:00) and drift.yml
+    # (07:00) — a backup is worth most taken before the jobs that change
+    # things, not after them.
+    - cron: '0 5 * * 1'
+
+concurrency:
+  group: backup
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      RESTORE_URL: postgresql://postgres:verify@localhost:5432/postgres
+
+    # An empty database to restore into. The only extension the live
+    # database has is plpgsql, which pg_dump never emits, so a stock image
+    # of the matching major version is a faithful target.
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_PASSWORD: verify
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    # Deliberately no actions/checkout: nothing here reads the repository,
+    # and a backup that cannot be taken because the working tree is in some
+    # particular state is not much of a backup. Keep it that way.
+    steps:
+      - name: Require the secret
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "::error::DATABASE_URL secret is not set — there is nothing to back up."
+            exit 1
+          fi
+
+      # ubuntu-latest ships the PostgreSQL 16 client; Neon serves 18. pg_dump
+      # refuses a server newer than itself rather than producing a partial
+      # archive, so pinning the client to the server's major version is not
+      # tidiness — without it this job cannot run at all. Bump the version
+      # here when Neon bumps the server.
+      - name: Install PostgreSQL 18 client
+        run: |
+          set -euo pipefail
+          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc |
+            sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/pgdg.gpg
+          echo "deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" |
+            sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends postgresql-client-18
+          pg_dump --version
+
+      # DATABASE_URL points at Neon's connection pooler, which is right for
+      # the serverless handlers and wrong here: a pooled session cannot hold
+      # the transaction snapshot pg_dump needs, so a dump taken through it is
+      # inconsistent if anything writes while it runs. The direct endpoint is
+      # the same host without the -pooler suffix.
+      - name: Derive the direct connection
+        run: |
+          node -e '
+            const u = new URL(process.env.DATABASE_URL);
+            const direct = u.hostname.replace("-pooler", "");
+            if (direct === u.hostname) {
+              console.log("::notice::DATABASE_URL is already unpooled; using it as is.");
+            }
+            u.hostname = direct;
+            const url = u.toString();
+            // Masked before it is written: the derived URL is not the secret
+            // GitHub knows about, so nothing else would redact it.
+            console.log(`::add-mask::${url}`);
+            require("fs").appendFileSync(process.env.GITHUB_ENV, `DIRECT_URL=${url}\n`);
+          '
+
+      - name: Dump
+        run: |
+          set -euo pipefail
+          name="darpan-$(date -u +%F).dump"
+          echo "DUMP=$name" >> "$GITHUB_ENV"
+          pg_dump "$DIRECT_URL" --no-owner --no-privileges \
+            --format=custom --compress=9 --file="$name"
+          ls -lh "$name"
+
+      # The dump is restored for real rather than inspected. `pg_restore
+      # --list` would only prove the archive's table of contents parses, and
+      # a table of contents lists empty tables exactly as it lists full ones
+      # — so the failure that matters most, a dump that is structurally
+      # perfect and carries no rows, is the one it cannot see.
+      - name: Restore into a throwaway database
+        run: |
+          set -euo pipefail
+          pg_restore --no-owner --no-privileges --exit-on-error \
+            --dbname "$RESTORE_URL" "$DUMP"
+
+      # Counted after the restore, from the restored copy. Zero rows in any
+      # of these means the backup would not bring the site back, whatever
+      # the file size suggested.
+      - name: Count what came back
+        run: |
+          set -euo pipefail
+          fail=0
+          for t in states districts sources findings state_sector_budgets \
+                   state_budget_news union_ministry_budgets schema_migrations; do
+            n=$(psql "$RESTORE_URL" -tAc "SELECT count(*) FROM $t")
+            printf '%8s  %s\n' "$n" "$t"
+            [ "$n" -gt 0 ] || { echo "::error::$t restored empty"; fail=1; }
+          done
+          exit $fail
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.DUMP }}
+          path: ${{ env.DUMP }}
+          retention-days: 90
+          if-no-files-found: error
+
+      # Says plainly what this does and does not protect against, on every
+      # run, so the limit is read by whoever comes looking after an incident
+      # rather than discovered then.
+      - name: Note the retention limit
+        run: |
+          {
+            echo "### Backup"
+            echo
+            echo "\`$DUMP\` — $(du -h "$DUMP" | cut -f1), restored and counted"
+            echo "in this run, not merely written."
+            echo
+            echo "Kept for 90 days as a workflow artifact. This survives Neon"
+            echo "being deleted; it does not survive this GitHub account being"
+            echo "lost, and it expires. For anything you would be sorry to lose"
+            echo "permanently, download a copy and keep it elsewhere."
+          } >> "$GITHUB_STEP_SUMMARY"
