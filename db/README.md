@@ -10,6 +10,8 @@ bundle, which would publish the credential.
 | --- | --- |
 | `npm run db:migrate -- --dry` | Lists pending migrations. Touches nothing. |
 | `npm run db:migrate` | Applies pending migrations. Never destroys data. |
+| `npm run schema:check` | Fails if `db/schema.sql` no longer matches the migrations. |
+| `npm run schema:dump` | Rewrites `db/schema.sql`. Needs a v18 `pg_dump`. |
 | `npm run db:seed` | Loads `seed.sql`. Refuses if `sources` is non-empty. |
 | `npm run db:geography` | Loads `geography.sql`. Safe to re-run. |
 | `npm run db:reset` | Destroys and rebuilds. Gated — see below. |
@@ -161,6 +163,36 @@ database. To see a plan before merging, run it yourself:
 ```sh
 npm run db:migrate -- --dry
 ```
+
+## The schema snapshot
+
+`db/schema.sql` is the schema the migrations produce, written out. A
+checksummed migration proves the *file* has not changed since it applied; it
+says nothing about whether the files still add up to the schema you picture.
+The snapshot closes that gap — every schema change lands as a readable diff in
+`db/schema.sql` next to the migration that caused it, and a reviewer can see
+the shape of the database without connecting to one.
+
+`.github/workflows/schema.yml` applies the migrations to a throwaway
+PostgreSQL on every push and pull request, regenerates the snapshot, and fails
+if the committed copy has drifted. It needs no secret and never touches
+production. So a migration that does not apply cleanly, or one merged without
+regenerating the snapshot, fails before merge rather than at deploy.
+
+When you add a migration, regenerate the file in the same commit:
+
+```sh
+npm run schema:dump   # needs a pg_dump matching the server major version (18)
+```
+
+The snapshot is generated **from the migrations, never from production.**
+Production carries history a clean run does not — 001 was adopted through
+`IF NOT EXISTS` over a schema an older file had already built — so a snapshot
+taken from it would pin an accident rather than what the migrations mean.
+Production is kept in step with the migrations by `migrate.yml` applying them
+on every push, not by this file. The first CI run writes `db/schema.sql` if it
+is absent and passes; commit the copy it uploads as an artifact to arm the
+check.
 
 ## Rebuilding from scratch
 

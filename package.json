@@ -19,6 +19,8 @@
     "prs:check": "node scripts/prs-discover.js --check",
     "db:sync": "node scripts/sync.js",
     "db:sync:check": "node scripts/sync.js --check",
+    "schema:dump": "node scripts/schema.js dump",
+    "schema:check": "node scripts/schema.js check",
     "gloss:apply": "node scripts/sync.js glosses",
     "gloss:check": "node scripts/sync.js glosses --check",
     "findings:derive": "node scripts/derive-findings.js",
