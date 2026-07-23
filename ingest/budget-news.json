@@ -1,5 +1,5 @@
 {
-  "_comment": "Dated budget news per state, applied to state_budget_news by scripts/apply-news.js. Like ingest/glosses.json and ingest/findings.json, this lives in git because no adapter can regenerate a one-line summary written by a person. Each item credits the outlet that reported the story and links to it; the site does not vouch for the figures inside, it points a reader at who reported them. Keyed by states.slug. Headlines and summaries are written here, not copied from the outlet. Dates are the story's own publication date (YYYY-MM-DD).",
+  "_comment": "Dated budget news per state, applied to state_budget_news by `npm run news:apply` (scripts/sync.js, store id 'news'). Like ingest/glosses.json and ingest/findings.json, this lives in git because no adapter can regenerate a one-line summary written by a person. Each item credits the outlet that reported the story and links to it; the site does not vouch for the figures inside, it points a reader at who reported them. Keyed by states.slug. Headlines and summaries are written here, not copied from the outlet. Dates are the story's own publication date (YYYY-MM-DD).",
   "news": {
     "bihar": [
       {

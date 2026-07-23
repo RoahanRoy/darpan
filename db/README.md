@@ -13,17 +13,18 @@ bundle, which would publish the credential.
 | `npm run db:seed` | Loads `seed.sql`. Refuses if `sources` is non-empty. |
 | `npm run db:geography` | Loads `geography.sql`. Safe to re-run. |
 | `npm run db:reset` | Destroys and rebuilds. Gated — see below. |
-| `npm run gloss:check` | Fails if `provision_note` differs from `ingest/glosses.json`. |
-| `npm run gloss:apply` | Writes the glosses back. |
-| `npm run findings:check` | Fails if computed findings differ from `ingest/findings.json`. |
-| `npm run findings:apply` | Writes the findings back. |
-| `npm run news:check` | Fails if `state_budget_news` differs from `ingest/budget-news.json`. |
-| `npm run news:apply` | Writes the budget news back. |
+| `npm run db:sync:check` | Fails if any prose store differs from the database. |
+| `npm run db:sync` | Applies every prose store. `-- --dry` to preview. |
+| `npm run gloss:check` / `gloss:apply` | Just the glosses (`db:sync glosses`). |
+| `npm run findings:check` / `findings:apply` | Just the computed findings. |
+| `npm run news:check` / `news:apply` | Just the budget news. |
 
 ## Prose that lives in git
 
-Two columns hold sentences no adapter can regenerate, so both are kept in
-files and applied from there:
+Three stores hold sentences no adapter can regenerate, so each is kept in a
+file and applied from there. `scripts/lib/stores.js` is the registry that
+names them; `npm run db:sync` applies all three and `scripts/sync.js` is the
+one script that does the work:
 
 - `ingest/glosses.json` → `state_sector_budgets.provision_note`, the
   one-line gloss a reviewer writes after reading the paper.
@@ -37,19 +38,28 @@ files and applied from there:
   this project stands behind — so it lives in git and is applied from there,
   never scraped into a public table.
 
-Re-running the ingestion pipeline produces nulls for the first and nothing
-for the second, and `db:reset` destroys both. Keeping them in git makes them
-diffable at review time and recoverable afterwards. **A rebuild is not
-finished until `gloss:apply` and `findings:apply` have been run** — the two
-`:check` commands are what tell you it was missed.
+Re-running the ingestion pipeline produces nulls for the glosses and nothing
+for the findings, and `db:reset` destroys all three. Keeping them in git makes
+them diffable at review time and recoverable afterwards. **A rebuild is not
+finished until `npm run db:sync` has been run** — `db:sync:check` is what
+tells you it was missed.
 
-They no longer depend on somebody remembering to type them.
-`.github/workflows/drift.yml` runs all three every Monday against the real
-database and opens a single standing issue when any store disagrees, closing
-it once they agree again. It needs the `DATABASE_URL` repository secret, and
-it only reads — the fix is still `*:apply`, run deliberately by a person,
-because a difference does not say which side is wrong. Run it on demand from
-the Actions tab after a rebuild rather than waiting for the Monday run.
+The two strategies behind that one command are worth knowing when a store
+misbehaves. Findings and news are *replaced* per state: the store owns every
+row a state has, so applying it deletes the state's rows and rewrites them
+(findings only touch `computed_from_source = TRUE` — the CAG observations in
+`seed.sql` are marked FALSE and never touched). Glosses are *updated in place*:
+the sector row belongs to the adapter and only `provision_note` is ours, so
+nothing is deleted and a gloss whose key matches no row is reported loudly
+rather than dropped.
+
+None of this depends on somebody remembering to type it.
+`.github/workflows/drift.yml` runs the three checks every Monday against the
+real database and opens a single standing issue when any store disagrees,
+closing it once they agree again. It needs the `DATABASE_URL` repository
+secret, and it only reads — the fix is still an apply, run deliberately by a
+person, because a difference does not say which side is wrong. Run it on demand
+from the Actions tab after a rebuild rather than waiting for the Monday run.
 
 The secret is set once, from a shell that already has the URL:
 
@@ -68,7 +78,7 @@ Until it exists the workflow stops at its first step and says so, rather than
 reporting drift it never measured. `.github/workflows/ingest.yml` reads the
 same secret.
 
-`findings:apply` deletes and rewrites only `computed_from_source = TRUE`
+Applying findings deletes and rewrites only `computed_from_source = TRUE`
 rows. Findings quoted from a document's own summary — the CAG observations in
 `seed.sql` — are marked FALSE and are never touched by it.
 
@@ -171,11 +181,11 @@ The ingestion staging tables (`ingestion_runs`, `raw_documents`,
 proving how each published figure was approved, and that has to outlive any
 rebuild of the tables it describes.
 
-After a reset, re-ingest the papers, then run `gloss:apply`, `findings:apply`
-and `news:apply`. Until all three have run the pages are missing every
-sentence that was written rather than parsed. The weekly drift workflow will
-catch it, but a week is a long time to serve blank pages — run the three
-`:check` commands yourself before calling the rebuild finished.
+After a reset, re-ingest the papers, then run `npm run db:sync`. Until it has
+run the pages are missing every sentence that was written rather than parsed.
+The weekly drift workflow will catch it, but a week is a long time to serve
+blank pages — run `npm run db:sync:check` yourself before calling the rebuild
+finished.
 
 ## Backups
 

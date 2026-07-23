@@ -60,13 +60,16 @@ jobs:
             exit 1
           fi
 
-      # Each check runs even if an earlier one failed: a forgotten
-      # gloss:apply says nothing about whether the findings are current, and
-      # stopping at the first would hide the other two until it was fixed.
+      # One store per step, each pointed at scripts/sync.js by store id, so a
+      # drifted store is named in the report rather than buried in a combined
+      # log. `db:sync --check` would check all three in one process, which is
+      # the right command for a person at a terminal and the wrong shape here:
+      # it exits 1 if any store differs, and the issue could then say only
+      # that something drifted, not which.
       #
-      # These invoke the scripts directly rather than through `npm run` so a
-      # drift exit code does not drag npm's own failure banner into the issue
-      # body below. They are otherwise exactly the documented commands.
+      # Each runs even if an earlier one failed: a forgotten gloss apply says
+      # nothing about whether the findings are current, and stopping at the
+      # first would hide the other two until it was fixed.
       #
       # `shell: bash` is load-bearing, not decoration. The default shell is
       # `bash -e` without pipefail, so `node ... | tee` would exit with tee's
@@ -76,19 +79,19 @@ jobs:
         id: glosses
         continue-on-error: true
         shell: bash
-        run: node scripts/apply-glosses.js --check 2>&1 | tee glosses.log
+        run: node scripts/sync.js glosses --check 2>&1 | tee glosses.log
 
       - name: Findings
         id: findings
         continue-on-error: true
         shell: bash
-        run: node scripts/apply-findings.js --check 2>&1 | tee findings.log
+        run: node scripts/sync.js findings --check 2>&1 | tee findings.log
 
       - name: News
         id: news
         continue-on-error: true
         shell: bash
-        run: node scripts/apply-news.js --check 2>&1 | tee news.log
+        run: node scripts/sync.js news --check 2>&1 | tee news.log
 
       - name: Report
         uses: actions/github-script@v7
