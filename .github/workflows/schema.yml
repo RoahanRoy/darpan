@@ -74,7 +74,12 @@ jobs:
             sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends postgresql-client-18
-          pg_dump --version
+          # The runner ships a 16 client at /usr/bin/pg_dump that shadows the
+          # one just installed. Put the 18 bindir first on PATH so `pg_dump`
+          # resolves to it in every later step, and fail now if it does not.
+          echo "/usr/lib/postgresql/18/bin" >> "$GITHUB_PATH"
+          /usr/lib/postgresql/18/bin/pg_dump --version | grep -q ' 18\.' \
+            || { echo "::error::expected pg_dump 18"; exit 1; }
 
       # Applied with psql in filename order, not with db:migrate: the runner
       # connects through the Neon serverless driver, which does not speak to a
