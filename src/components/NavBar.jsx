@@ -12,14 +12,14 @@ export default function NavBar({ links, currentPath }) {
   const anchors = links.filter((l) => l.href.startsWith('#'));
   const routes = links.filter((l) => l.href.startsWith('/'));
 
-  function handleClick(event, href) {
+  function handleClick(event, href, hash = '') {
     if (!href.startsWith('/')) return;
     // Modified clicks are the user asking for a new tab or window. Taking
     // those over would break a normal browser affordance.
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     if (event.button !== 0) return;
     event.preventDefault();
-    navigate(href);
+    navigate(href, hash ? { hash } : undefined);
   }
 
   return (
@@ -56,8 +56,15 @@ export default function NavBar({ links, currentPath }) {
         {/* The comp said "Refreshed weekly". Nothing refreshes weekly: the
             budget documents are annual and the delivery annexure is from
             2023. Claiming a cadence the data does not have is the same
-            failure as inventing the figures. */}
-        <span className="tag tag-neutral">Sourced documents</span>
+            failure as inventing the figures. So the badge instead points at
+            the record of where every figure came from. */}
+        <a
+          className="tag tag-neutral"
+          href="/about#sources"
+          onClick={(e) => handleClick(e, '/about', 'sources')}
+        >
+          Sourced documents
+        </a>
       </div>
     </header>
   );

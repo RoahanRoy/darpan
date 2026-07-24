@@ -14,20 +14,43 @@ import { parseRoute } from '../lib/routes.js';
 
 const ROUTE_CHANGE = 'yojana:routechange';
 
-export function navigate(path, { replace = false } = {}) {
-  if (path === window.location.pathname) return;
+// An anchor on a page we are also navigating to cannot be scrolled to until
+// that page has mounted, so the scroll waits for the next frame. One retry
+// covers a cross-page jump, where the target renders a commit later than the
+// route change that asked for it.
+function scrollToAnchor(id, attempts = 2) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.scrollIntoView();
+  } else if (attempts > 0) {
+    requestAnimationFrame(() => scrollToAnchor(id, attempts - 1));
+  }
+}
 
+export function navigate(path, { replace = false, hash = '' } = {}) {
+  const samePath = path === window.location.pathname;
+  // Nothing to do when neither the page nor a scroll target would change.
+  if (samePath && !hash) return;
+
+  // pushState keeps the hash in the address bar; the parser only ever reads
+  // window.location.pathname, so the fragment never reaches routing.
+  const url = hash ? `${path}#${hash}` : path;
   if (replace) {
-    window.history.replaceState({}, '', path);
+    window.history.replaceState({}, '', url);
   } else {
-    window.history.pushState({}, '', path);
+    window.history.pushState({}, '', url);
+  }
+
+  if (!samePath) window.dispatchEvent(new Event(ROUTE_CHANGE));
+
+  if (hash) {
+    requestAnimationFrame(() => scrollToAnchor(hash));
+  } else if (!replace) {
     // Only a real navigation should move the reader. A canonicalising
     // replace happens on first paint, where scrolling to the top is either a
     // no-op or an unexplained jump.
     window.scrollTo(0, 0);
   }
-
-  window.dispatchEvent(new Event(ROUTE_CHANGE));
 }
 
 export default function useRoute() {
