@@ -1,16 +1,18 @@
-/* The registry of prose stores, and the pure half of applying one.
+/* The registry of the stores that live in git, and the pure half of applying
+   one.
 
-   Three columns hold sentences no adapter can regenerate, so the file is
-   authoritative and the database is the copy (db/README.md, "Prose that lives
-   in git"). Each arrived with its own script, and by the third the second one
-   opened by explaining how it was like the first. Three instances of a pattern
-   is where the pattern gets a name.
+   These hold what no adapter can regenerate — a reviewer's gloss, a one-line
+   summary of somebody else's reporting, a table read off a PDF and typed in —
+   so the file is authoritative and the database is the copy (db/README.md,
+   "Prose that lives in git"). Each arrived with its own script, and by the
+   third the second one opened by explaining how it was like the first. Three
+   instances of a pattern is where the pattern gets a name.
 
    Two strategies, because the stores are genuinely two shapes and pretending
    otherwise would cost more than it saved:
 
-     rows    the store owns every row a state has in some table, so applying it
-             means replacing that state's rows. findings and budget news both
+     rows    the store owns every row a scope has in some table, so applying it
+             means replacing that scope's rows. findings and budget news both
              work this way — neither has a natural key beyond the sentence
              itself, so there is nothing to update in place.
 
@@ -19,11 +21,17 @@
              provision_note is ours. Nothing is ever deleted, and a key that
              matches no row is a defect rather than a no-op.
 
+   A scope is a state for most of them. It is the centre for the paper leaks,
+   the country for the roundup, and a ministry for the spending breakdown — a
+   distinction sync.js handles with `unscopedKey`, `scopeColumn` and
+   `scopeTable`, and which nothing in this file needs to know about beyond
+   declaring it.
+
    Everything here is pure — given a store and the rows that are live, it says
    what differs. The database half lives in scripts/sync.js, which is what
    makes the comparison testable without one. */
 
-/** Groups live rows by the state slug they carry. */
+/** Groups live rows by the scope slug they carry. */
 export function groupBySlug(rows) {
   const out = new Map();
   for (const r of rows) {
@@ -37,18 +45,22 @@ export function groupBySlug(rows) {
 export const shapeOf = (fields) => (item) =>
   JSON.stringify(fields.map((f) => item[f] ?? null));
 
-/* Compares a whole state at a time rather than row by row. A row-level diff
+/* Compares a whole scope at a time rather than row by row. A row-level diff
    would have to answer which live row a store entry corresponds to, and the
    answer is "none in particular" — that is what having no natural key means.
-   So a state whose list differs in any way is rewritten entirely, and a state
-   the store does not name is never touched at all. */
-export function changedStates({ store, live, fields, sort }) {
+   So a scope whose list differs in any way is rewritten entirely, and a scope
+   the store does not name is never touched at all.
+
+   A scope is a state for most stores, the centre for one, the country for
+   another and a ministry for the last. All this needs to know is that live
+   rows carry the slug of whichever it is. */
+export function changedScopes({ store, live, fields, sort }) {
   const shape = shapeOf(fields);
-  const byState = groupBySlug(live);
+  const byScope = groupBySlug(live);
   const changed = [];
 
   for (const [slug, list] of Object.entries(store)) {
-    const now = (byState.get(slug) ?? []).map(shape).join('\n');
+    const now = (byScope.get(slug) ?? []).map(shape).join('\n');
     const want = sort(list).map(shape).join('\n');
     if (now !== want) changed.push(slug);
   }
@@ -93,6 +105,12 @@ const byYearThenName = (list) =>
     (a, b) => b.occurred_year - a.occurred_year || a.exam_name.localeCompare(b.exam_name)
   );
 
+/* What a leak row is allowed to claim about itself. Mirrors the CHECK in
+   migration 009, which is the authority; this copy is here so the store can
+   refuse a bad value before the transaction has deleted anything. Exported so
+   the API and the test can spell the four values once. */
+export const LEAK_STATUSES = new Set(['confirmed', 'alleged', 'suspected', 'denied']);
+
 export const STORES = [
   {
     id: 'glosses',
@@ -107,6 +125,7 @@ export const STORES = [
     // re-ingested.
     table: 'state_sector_budgets',
     column: 'provision_note',
+    unmatchedHint: 'sector renamed?',
     liveSql: `
       SELECT b.id, s.slug || '|' || b.sector AS key, b.provision_note
       FROM state_sector_budgets b
@@ -250,7 +269,7 @@ export const STORES = [
     unscopedKey: 'union',
 
     fields: [
-      'exam_name', 'conducting_body', 'occurred_year',
+      'exam_name', 'conducting_body', 'occurred_year', 'leak_status',
       'candidates_affected', 'outcome', 'summary', 'outlet', 'url',
     ],
     sort: byYearThenName,
@@ -261,7 +280,7 @@ export const STORES = [
 
     liveSql: `
       SELECT COALESCE(st.slug, 'union') AS slug,
-             l.exam_name, l.conducting_body, l.occurred_year,
+             l.exam_name, l.conducting_body, l.occurred_year, l.leak_status,
              l.candidates_affected, l.outcome, l.summary, l.outlet, l.url
       FROM exam_paper_leaks l
       LEFT JOIN states st ON st.id = l.state_id
@@ -270,25 +289,45 @@ export const STORES = [
     `,
 
     columns: [
-      'exam_name', 'conducting_body', 'occurred_year',
+      'exam_name', 'conducting_body', 'occurred_year', 'leak_status',
       'candidates_affected', 'outcome', 'summary', 'outlet', 'url',
     ],
     values: (l) => [
-      l.exam_name, l.conducting_body, l.occurred_year,
+      l.exam_name, l.conducting_body, l.occurred_year, l.leak_status,
       l.candidates_affected ?? null, l.outcome, l.summary, l.outlet, l.url,
     ],
 
-    /* A year typed as a string would compare unequal to the integer the
+    /* Two checks, both of which exist because the failure is silent rather
+       than loud.
+
+       A year typed as a string would compare unequal to the integer the
        column returns forever, and the store would report the scope changed on
        every single run without ever converging. Cheap to check, tedious to
-       diagnose. */
-    validate: (list, slug) =>
-      list
+       diagnose.
+
+       `leak_status` is checked here as well as by the CHECK constraint
+       (migration 009) for the reason the news store checks `category`: the
+       constraint only fires on the insert, by which point the scope's rows
+       have already been deleted inside the transaction, and the error it
+       raises names a constraint rather than an incident. More to the point,
+       the column has no default any more — an item that omits it would fail
+       on NOT NULL, and "null value in column leak_status" is a worse thing to
+       read than the name of the exam that forgot to say whether it leaked. */
+    validate: (list, slug) => [
+      ...list
         .filter((l) => !Number.isInteger(l.occurred_year))
         .map((l) => `${slug}: occurred_year must be an integer: ${l.exam_name}`),
+      ...list
+        .filter((l) => !LEAK_STATUSES.has(l.leak_status))
+        .map(
+          (l) =>
+            `${slug}: leak_status must be one of ${[...LEAK_STATUSES].join(', ')}: ` +
+            `${l.exam_name} (${l.occurred_year})`
+        ),
+    ],
 
     describe: (l) =>
-      `${l.occurred_year}  ${l.exam_name}` +
+      `${l.occurred_year}  [${l.leak_status}] ${l.exam_name}` +
       (l.conducting_body ? ` (${l.conducting_body})` : '') +
       (l.candidates_affected ? ` · ${l.candidates_affected}` : ''),
   },
@@ -338,6 +377,142 @@ export const STORES = [
     ],
 
     describe: (r) => `${r.happened_on}  [${r.region_label}] ${r.headline}`,
+  },
+
+  {
+    id: 'ministry-lines',
+    strategy: 'rows',
+    file: 'ingest/ministry-spending.json',
+    jsonKey: 'ministryLines',
+    noun: 'ministry line',
+    plural: 'ministry lines',
+
+    table: 'union_ministry_lines',
+
+    /* The first store whose scopes are not states at all. A scope key here is
+       a ministry slug, so the id the rows are written against comes from
+       union_ministry_budgets rather than from states — which is all
+       `scopeTable` says. Everything else is the ordinary rows strategy:
+       a ministry's lines are replaced wholesale. */
+    refs: ['union_ministry_budgets'],
+    scopeTable: 'union_ministry_budgets',
+    scopeNoun: 'ministry',
+    scopeColumn: 'ministry_id',
+
+    fields: [
+      'label', 'parent_label',
+      'actuals_prev_cr', 'budgeted_cr', 'revised_cr', 'next_budget_cr',
+      'basis', 'document_title', 'document_url', 'document_date',
+    ],
+
+    /* The file's order IS the order: a ministry's lines are its departments
+       in the sequence the analysis prints them, each followed by whatever
+       sits under it. Sorting by size would break a parent away from its
+       children, and sorting alphabetically would throw away the ranking the
+       source spent its own judgement on. */
+    sort: (list) => list,
+
+    deleteWhere: '',
+    appendAfterExisting: false,
+
+    liveSql: `
+      SELECT m.slug, l.label, l.parent_label,
+             l.actuals_prev_cr::text, l.budgeted_cr::text,
+             l.revised_cr::text, l.next_budget_cr::text,
+             l.basis, l.document_title, l.document_url, l.document_date::text
+      FROM union_ministry_lines l
+      JOIN union_ministry_budgets m ON m.id = l.ministry_id
+      WHERE m.slug = ANY($1)
+      ORDER BY m.slug, l.display_order
+    `,
+
+    columns: [
+      'label', 'parent_label',
+      'actuals_prev_cr', 'budgeted_cr', 'revised_cr', 'next_budget_cr',
+      'basis', 'document_title', 'document_url', 'document_date',
+    ],
+    values: (l) => [
+      l.label, l.parent_label ?? null,
+      l.actuals_prev_cr ?? null, l.budgeted_cr ?? null,
+      l.revised_cr ?? null, l.next_budget_cr ?? null,
+      l.basis, l.document_title, l.document_url, l.document_date,
+    ],
+
+    /* Three checks, and the first is the one that earns its keep.
+
+       `basis` and the three document fields are repeated on every line of a
+       ministry (migration 010), because the store is a flat list per scope
+       and has nowhere else to put them. Repetition invites drift: an editor
+       who rewrites the basis sentence and misses two rows leaves a ministry
+       that says two different things about what its own figures mean. So the
+       store refuses to apply unless a ministry's lines agree, which converts
+       the denormalisation from a hazard into an invariant.
+
+       A parent_label that matches no top-level label in the same ministry
+       would render as a line under a heading that is not there — visible to
+       nobody until a reader wondered where a scheme went.
+
+       And a money field arrives as a string, because that is what NUMERIC
+       comes back as and the diff compares them as text. A number in the file
+       would report the ministry changed on every run and never converge —
+       the same trap `occurred_year` sets in the leaks store, from the
+       opposite direction. */
+    validate: (list, slug) => {
+      const problems = [];
+
+      for (const field of ['basis', 'document_title', 'document_url', 'document_date']) {
+        const distinct = new Set(list.map((l) => l[field]));
+        if (distinct.size > 1) {
+          problems.push(`${slug}: lines disagree about ${field} (${distinct.size} values)`);
+        }
+      }
+
+      const heads = new Set(list.filter((l) => !l.parent_label).map((l) => l.label));
+      for (const l of list) {
+        if (l.parent_label && !heads.has(l.parent_label)) {
+          problems.push(`${slug}: ${l.label} sits under "${l.parent_label}", which is not a head here`);
+        }
+      }
+
+      for (const l of list) {
+        for (const f of ['actuals_prev_cr', 'budgeted_cr', 'revised_cr', 'next_budget_cr']) {
+          if (l[f] != null && typeof l[f] !== 'string') {
+            problems.push(`${slug}: ${l.label}.${f} must be a string, not ${typeof l[f]}`);
+          }
+        }
+      }
+
+      return problems;
+    },
+
+    describe: (l) =>
+      `${l.parent_label ? '  ' : ''}${l.label} · ${l.next_budget_cr ?? '—'}`,
+  },
+
+  {
+    id: 'scheme-ministries',
+    strategy: 'column',
+    file: 'ingest/ministry-spending.json',
+    jsonKey: 'schemeMinistries',
+    noun: 'scheme attribution',
+    plural: 'scheme attributions',
+
+    /* Keyed by scheme name, which is the column the union table already
+       enforces as UNIQUE — so unlike the glosses, whose sector names PRS has
+       renamed under us, an unmatched key here means the scheme table changed
+       and this file did not.
+
+       The same file as the lines above, under a different key. The two answer
+       one question between them — where does a ministry's money go, and whose
+       money is a scheme — and splitting them across two files would mean
+       editing one and forgetting the other. */
+    table: 'union_scheme_allocations',
+    column: 'ministry',
+    unmatchedHint: 'scheme renamed, or a new budget seeded?',
+    liveSql: `
+      SELECT id, scheme_name AS key, ministry
+      FROM union_scheme_allocations
+    `,
   },
 ];
 

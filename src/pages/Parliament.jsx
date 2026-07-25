@@ -6,6 +6,8 @@ import Feed from '../components/Feed.jsx';
 import BudgetSeriesTable from '../components/BudgetSeriesTable.jsx';
 import PaperLeaks from '../components/PaperLeaks.jsx';
 import PosterBanner from '../components/PosterBanner.jsx';
+import { ministryPath } from '../lib/routes.js';
+import { handleRouteClick } from '../hooks/useRoute.js';
 import { parliamentNavLinks } from '../data/homeContent.js';
 
 /* The central government's budget.
@@ -111,18 +113,48 @@ export default function Parliament() {
                 The thirteen largest ministries, then the published residual for all
                 others. Share is each ministry's {fy} allocation as a
                 percentage of total expenditure — our arithmetic on the document's own
-                figures.
+                figures. Open a ministry to see what its allocation is spent on.
               </p>
-              <BudgetSeriesTable rows={data.ministries} showShare />
+              {/* The residual row carries no slug and stays plain text: it is
+                  not a ministry, and there is nothing behind it to open. */}
+              <BudgetSeriesTable
+                rows={data.ministries}
+                showShare
+                linkFor={(row) => ministryPath(row.slug)}
+              />
             </section>
 
             <section id="union-schemes" className="section-block">
               <h3 className="section-title">Major central schemes</h3>
               <p className="text-muted section-note">
                 Scheme allocations sit inside a ministry's total, so they are not shown
-                as a share and must not be added to the table above.
+                as a share and must not be added to the table above. Each names the
+                ministry it sits inside, and links to it where that ministry is one of
+                the thirteen named separately.
               </p>
-              <BudgetSeriesTable rows={data.schemes} />
+              <BudgetSeriesTable
+                rows={data.schemes}
+                underName={(row) =>
+                  row.ministry ? (
+                    <div className="series-under">
+                      {ministryPath(row.ministrySlug) ? (
+                        <a
+                          href={ministryPath(row.ministrySlug)}
+                          onClick={(e) => handleRouteClick(e, ministryPath(row.ministrySlug))}
+                        >
+                          {row.ministry}
+                        </a>
+                      ) : (
+                        /* Women and Child Development, Labour and Employment,
+                           New and Renewable Energy: real ministries, but
+                           folded into the residual by the source, so there is
+                           no page to send anyone to. The name still shows. */
+                        row.ministry
+                      )}
+                    </div>
+                  ) : null
+                }
+              />
             </section>
 
             <section id="union-findings" className="split split-feed">

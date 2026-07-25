@@ -53,6 +53,21 @@ export function navigate(path, { replace = false, hash = '' } = {}) {
   }
 }
 
+/* The click handler every in-app link needs, in one place.
+
+   Two things it must not do. It must not take over a modified click — those
+   are the reader asking for a new tab, and stealing them breaks an
+   affordance the browser owns. And it must not be used INSTEAD of a real
+   href: the anchor carries the address whether or not this ever fires, which
+   is what makes the link crawlable, hoverable and middle-clickable. */
+export function handleRouteClick(event, href, hash = '') {
+  if (!href || !href.startsWith('/')) return;
+  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+  if (event.button !== 0) return;
+  event.preventDefault();
+  navigate(href, hash ? { hash } : undefined);
+}
+
 export default function useRoute() {
   const [path, setPath] = useState(() => window.location.pathname);
 

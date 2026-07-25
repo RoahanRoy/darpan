@@ -21,7 +21,7 @@ import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { pool, withTransaction } from '../ingest/lib/db.js';
-import { STORES, changedStates, columnDiff, groupBySlug } from './lib/stores.js';
+import { STORES, changedScopes, columnDiff, groupBySlug } from './lib/stores.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -65,17 +65,29 @@ async function syncRows(store) {
   const refs = await resolveRefs(store.refs);
 
   // Every reference in the whole store is checked before a single row is
-  // written. Landing the states that happen to resolve would leave the
+  // written. Landing the scopes that happen to resolve would leave the
   // database in a state no file describes.
-  /* Most stores are keyed by state slug throughout. `leaks` has one scope
-     that is not a state — the centre — and it resolves to a NULL state_id
-     rather than to a row (scripts/lib/stores.js, `unscopedKey`). */
+  /* A scope is usually a state, and for those `scopeTable` is the default.
+     Two stores differ, in different directions:
+
+       `leaks` has one scope that is not a state — the centre — which resolves
+       to a NULL state_id rather than to a row (`unscopedKey`).
+
+       `ministry-lines` has no state scopes at all. Its keys are ministry
+       slugs and its rows carry a ministry_id, so it names the table its
+       scopes live in and the machinery is otherwise unchanged. */
+  const scopeTable = store.scopeTable ?? 'states';
+  const scopeNoun = store.scopeNoun ?? 'state';
+  const scopes = refs[scopeTable];
+
   const isUnscoped = (slug) => slug === store.unscopedKey;
-  const stateIdFor = (slug) => (isUnscoped(slug) ? null : refs.states.get(slug));
+  const scopeIdFor = (slug) => (isUnscoped(slug) ? null : scopes.get(slug));
 
   const unresolved = [];
   for (const [slug, list] of Object.entries(data)) {
-    if (!isUnscoped(slug) && !refs.states.has(slug)) unresolved.push(`no such state: ${slug}`);
+    if (!isUnscoped(slug) && !scopes.has(slug)) {
+      unresolved.push(`no such ${scopeNoun}: ${slug}`);
+    }
     if (store.validate) unresolved.push(...store.validate(list, slug, refs));
   }
   if (unresolved.length) {
@@ -85,18 +97,20 @@ async function syncRows(store) {
   }
 
   const { rows: live } = await pool.query(store.liveSql, [slugs]);
-  const changed = changedStates({ store: data, live, fields: store.fields, sort: store.sort });
+  const changed = changedScopes({ store: data, live, fields: store.fields, sort: store.sort });
   const total = Object.values(data).reduce((n, l) => n + l.length, 0);
-  const liveByState = groupBySlug(live);
+  const liveByScope = groupBySlug(live);
 
   console.log(
-    `${total} ${store.plural} in the store across ${slugs.length} state(s) · ` +
+    `${total} ${store.plural} in the store across ${slugs.length} ${scopeNoun}(s) · ` +
       `${live.length} row(s) live`
   );
 
   if (checkOnly) {
     if (changed.length) {
-      console.error(`${changed.length} state(s) differ from the store: ${changed.join(', ')}`);
+      console.error(
+        `${changed.length} ${scopeNoun}(s) differ from the store: ${changed.join(', ')}`
+      );
     } else {
       console.log(`database matches ${store.file}`);
     }
@@ -105,11 +119,11 @@ async function syncRows(store) {
 
   if (dryRun) {
     for (const slug of changed) {
-      const had = (liveByState.get(slug) ?? []).length;
+      const had = (liveByScope.get(slug) ?? []).length;
       console.log(`${slug}: would replace ${had} with ${data[slug].length}`);
       for (const item of store.sort(data[slug])) console.log(`    ${store.describe(item)}`);
     }
-    console.log(`${changed.length} state(s) would change; nothing written`);
+    console.log(`${changed.length} ${scopeNoun}(s) would change; nothing written`);
     return true;
   }
 
@@ -129,7 +143,7 @@ async function syncRows(store) {
       const scoped = store.scopeColumn !== null;
       const scopeCol = store.scopeColumn ?? 'state_id';
       const where = scoped ? `${scopeCol} IS NOT DISTINCT FROM $1` : 'TRUE';
-      const scopeArgs = scoped ? [stateIdFor(slug)] : [];
+      const scopeArgs = scoped ? [scopeIdFor(slug)] : [];
 
       await client.query(
         `DELETE FROM ${store.table} WHERE ${where} ${store.deleteWhere}`,
@@ -159,7 +173,7 @@ async function syncRows(store) {
     return n;
   });
 
-  console.log(`wrote ${written} ${store.plural} across ${changed.length} state(s)`);
+  console.log(`wrote ${written} ${store.plural} across ${changed.length} ${scopeNoun}(s)`);
   return true;
 }
 
@@ -176,7 +190,7 @@ async function syncColumn(store) {
   );
 
   if (unmatched.length) {
-    console.error(`${unmatched.length} ${store.plural} match no row — sector renamed?`);
+    console.error(`${unmatched.length} ${store.plural} match no row — ${store.unmatchedHint}`);
     for (const k of unmatched) console.error(`  ${k}`);
   }
 

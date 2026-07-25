@@ -1,4 +1,4 @@
-import { navigate } from '../hooks/useRoute.js';
+import { handleRouteClick } from '../hooks/useRoute.js';
 
 /* Links starting with '/' are routes and are handled in-app; links starting
    with '#' are in-page anchors and are left entirely to the browser.
@@ -12,23 +12,13 @@ export default function NavBar({ links, currentPath }) {
   const anchors = links.filter((l) => l.href.startsWith('#'));
   const routes = links.filter((l) => l.href.startsWith('/'));
 
-  function handleClick(event, href, hash = '') {
-    if (!href.startsWith('/')) return;
-    // Modified clicks are the user asking for a new tab or window. Taking
-    // those over would break a normal browser affordance.
-    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-    if (event.button !== 0) return;
-    event.preventDefault();
-    navigate(href, hash ? { hash } : undefined);
-  }
-
   return (
     <header className="nav">
       <div className="wrap nav-inner">
         <a
           className="nav-brand nav-brand-lg"
           href="/"
-          onClick={(e) => handleClick(e, '/')}
+          onClick={(e) => handleRouteClick(e, '/')}
         >
           YOJANA&nbsp;DARPAN
         </a>
@@ -46,7 +36,7 @@ export default function NavBar({ links, currentPath }) {
                 key={link.label}
                 href={link.href}
                 aria-current={link.href === currentPath ? 'page' : undefined}
-                onClick={(e) => handleClick(e, link.href)}
+                onClick={(e) => handleRouteClick(e, link.href)}
               >
                 {link.label}
               </a>
@@ -61,7 +51,7 @@ export default function NavBar({ links, currentPath }) {
         <a
           className="tag tag-neutral"
           href="/about#sources"
-          onClick={(e) => handleClick(e, '/about', 'sources')}
+          onClick={(e) => handleRouteClick(e, '/about', 'sources')}
         >
           Sourced documents
         </a>

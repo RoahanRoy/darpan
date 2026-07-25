@@ -246,29 +246,52 @@ WHERE src.slug = 'prs-union-2025-26';
 -- (descending by 2025-26 allocation). 'Other Ministries' is the source's
 -- own residual row and is kept so the column sums to the published total
 -- rather than to the thirteen ministries alone.
-INSERT INTO union_ministry_budgets (ministry, actuals_prev_cr, budgeted_cr, revised_cr, next_budget_cr, source_id, display_order)
-SELECT v.ministry, v.a, v.b, v.r, v.n, src.id, v.ord
+--
+-- The slug is the ministry's URL (migration 009), which is why it is written
+-- out rather than generated. 'Other Ministries' takes NULL: it is a residual
+-- and not a ministry, so there is nothing for a page about it to say.
+INSERT INTO union_ministry_budgets (ministry, slug, actuals_prev_cr, budgeted_cr, revised_cr, next_budget_cr, source_id, display_order)
+SELECT v.ministry, v.slug, v.a, v.b, v.r, v.n, src.id, v.ord
 FROM sources src, (VALUES
-  ('Defence',                                     609504.00,  621941.00,  641060.00,  681210.00,  1),
-  ('Road Transport and Highways',                 275986.00,  278000.00,  280519.00,  287333.00,  2),
-  ('Railways',                                    245791.00,  255393.00,  255348.00,  255445.00,  3),
-  ('Home Affairs',                                196872.00,  219643.00,  220371.00,  233211.00,  4),
-  ('Consumer Affairs, Food and Public Distribution', 232496.00, 223323.00, 212820.00,  215767.00,  5),
-  ('Rural Development',                           163642.00,  180233.00,  175878.00,  190406.00,  6),
-  ('Chemicals and Fertilisers',                   191165.00,  168500.00,  186653.00,  161965.00,  7),
-  ('Agriculture and Farmers'' Welfare',           118147.00,  132470.00,  141352.00,  137757.00,  8),
-  ('Education',                                   123365.00,  120628.00,  114054.00,  128650.00,  9),
-  ('Communications',                              111339.00,  137294.00,  150201.00,  108105.00, 10),
-  ('Health and Family Welfare',                    83149.00,   90959.00,   89974.00,   99859.00, 11),
-  ('Jal Shakti',                                   95109.00,   98714.00,   51558.00,   99503.00, 12),
-  ('Housing and Urban Affairs',                    68565.00,   82577.00,   63670.00,   96777.00, 13),
-  ('Other Ministries',                           1928316.00, 2210838.00, 2133030.00, 2369358.00, 14)
-) AS v(ministry, a, b, r, n, ord)
+  ('Defence',                                     'defence',
+                                                  609504.00,  621941.00,  641060.00,  681210.00,  1),
+  ('Road Transport and Highways',                 'road-transport-and-highways',
+                                                  275986.00,  278000.00,  280519.00,  287333.00,  2),
+  ('Railways',                                    'railways',
+                                                  245791.00,  255393.00,  255348.00,  255445.00,  3),
+  ('Home Affairs',                                'home-affairs',
+                                                  196872.00,  219643.00,  220371.00,  233211.00,  4),
+  ('Consumer Affairs, Food and Public Distribution', 'consumer-affairs-food-and-public-distribution',
+                                                  232496.00,  223323.00,  212820.00,  215767.00,  5),
+  ('Rural Development',                           'rural-development',
+                                                  163642.00,  180233.00,  175878.00,  190406.00,  6),
+  ('Chemicals and Fertilisers',                   'chemicals-and-fertilisers',
+                                                  191165.00,  168500.00,  186653.00,  161965.00,  7),
+  ('Agriculture and Farmers'' Welfare',           'agriculture-and-farmers-welfare',
+                                                  118147.00,  132470.00,  141352.00,  137757.00,  8),
+  ('Education',                                   'education',
+                                                  123365.00,  120628.00,  114054.00,  128650.00,  9),
+  ('Communications',                              'communications',
+                                                  111339.00,  137294.00,  150201.00,  108105.00, 10),
+  ('Health and Family Welfare',                   'health-and-family-welfare',
+                                                   83149.00,   90959.00,   89974.00,   99859.00, 11),
+  ('Jal Shakti',                                  'jal-shakti',
+                                                   95109.00,   98714.00,   51558.00,   99503.00, 12),
+  ('Housing and Urban Affairs',                   'housing-and-urban-affairs',
+                                                   68565.00,   82577.00,   63670.00,   96777.00, 13),
+  ('Other Ministries',                            NULL,
+                                                 1928316.00, 2210838.00, 2133030.00, 2369358.00, 14)
+) AS v(ministry, slug, a, b, r, n, ord)
 WHERE src.slug = 'prs-union-2025-26';
 
 -- Table 7, scheme-wise allocation. The two NULLs are printed as '-' in the
 -- source: those schemes did not exist in 2023-24, which is not the same as
 -- having been allocated nothing, so they are not seeded as zero.
+--
+-- `ministry` is left unset here and applied from ingest/ministry-spending.json
+-- by `npm run db:sync`, along with the per-ministry breakdown. Table 7 does
+-- not name a ministry against each scheme — that attribution was read off the
+-- Demands for Grants, so it belongs with the rest of what was read by hand.
 INSERT INTO union_scheme_allocations (scheme_name, actuals_prev_cr, budgeted_cr, revised_cr, next_budget_cr, source_id, display_order)
 SELECT v.scheme, v.a, v.b, v.r, v.n, src.id, v.ord
 FROM sources src, (VALUES

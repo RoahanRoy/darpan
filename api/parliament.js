@@ -27,12 +27,18 @@ function serialiseSource(row) {
 /* One leaked examination, as /api/home serialises it. `candidatesAffected`
    stays the string the outlet used ("more than 23 lakh") rather than becoming
    a number: it is reported, not counted here, and two incidents' figures must
-   never be added — the same candidate sits the re-held exam. */
+   never be added — the same candidate sits the re-held exam.
+
+   `status` says whether the leak was established, alleged, suspected by the
+   body itself, or investigated and disproved. UGC-NET 2024 is the row that
+   makes it necessary: cancelled the day after it was held, then closed by the
+   CBI with a finding that no leak had occurred (migration 009). */
 function serialiseLeak(row) {
   return {
     exam: row.exam_name,
     body: row.conducting_body,
     year: row.occurred_year,
+    status: row.leak_status,
     candidatesAffected: row.candidates_affected,
     outcome: row.outcome,
     summary: row.summary,
@@ -83,10 +89,10 @@ export default async function handler(req, res) {
       sql`SELECT label, amount_cr, qualifier FROM union_budget_headlines
           WHERE fiscal_year = ${FY} ORDER BY display_order`,
 
-      sql`SELECT ministry, actuals_prev_cr, budgeted_cr, revised_cr, next_budget_cr
+      sql`SELECT ministry, slug, actuals_prev_cr, budgeted_cr, revised_cr, next_budget_cr
           FROM union_ministry_budgets ORDER BY display_order`,
 
-      sql`SELECT scheme_name, actuals_prev_cr, budgeted_cr, revised_cr, next_budget_cr
+      sql`SELECT scheme_name, ministry, actuals_prev_cr, budgeted_cr, revised_cr, next_budget_cr
           FROM union_scheme_allocations ORDER BY display_order`,
 
       // state_id IS NULL is what makes a finding central. A state's findings
@@ -100,7 +106,7 @@ export default async function handler(req, res) {
       // Same convention as the findings above: state_id IS NULL is what makes
       // an exam central. NEET and the SSC papers were conducted by no state
       // and belong here; a state's own recruitment exams never appear.
-      sql`SELECT exam_name, conducting_body, occurred_year,
+      sql`SELECT exam_name, conducting_body, occurred_year, leak_status,
                  candidates_affected, outcome, summary, outlet, url
           FROM exam_paper_leaks
           WHERE state_id IS NULL
@@ -155,14 +161,32 @@ export default async function handler(req, res) {
         qualifier: h.qualifier,
       })),
 
-      ministries: ministries.map((m) => serialiseSeries(m, m.ministry, totalCr)),
+      /* `slug` is what makes a row openable. It is NULL for the source's own
+         'Other Ministries' residual — not a ministry, with nothing behind it
+         to show — and the table renders that row as plain text (migration
+         010). The breakdown itself is not sent here: it is eighty lines a
+         reader of this page has not asked for, and /api/ministry serves it
+         to whoever clicks. */
+      ministries: ministries.map((m) => ({
+        ...serialiseSeries(m, m.ministry, totalCr),
+        slug: m.slug,
+      })),
 
       // Schemes get no share-of-total: a scheme sits inside a ministry's
       // allocation, so printing both against the same denominator would
       // invite adding them together.
+      /* Each scheme now names the ministry whose allocation it sits inside,
+         which is the answer to the question the note above it raises: these
+         do not add to the ministry table because they are already in it.
+         `ministrySlug` is null where that ministry has no row of its own —
+         Women and Child Development, Labour and Employment and New and
+         Renewable Energy are all inside the residual — so the name is printed
+         either way and only linked when there is somewhere to go. */
       schemes: schemes.map((s) => ({
         ...serialiseSeries(s, s.scheme_name, 0),
         sharePct: null,
+        ministry: s.ministry,
+        ministrySlug: ministries.find((m) => m.ministry === s.ministry)?.slug ?? null,
       })),
 
       findings: findingRows.map((f, i) => ({

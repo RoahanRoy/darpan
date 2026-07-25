@@ -34,6 +34,9 @@ const here = dirname(fileURLToPath(import.meta.url));
 // not matter. Staging tables are absent from this list on purpose.
 const PUBLIC_TABLES = [
   'union_scheme_allocations',
+  // Dropped with the ministries it hangs off, and rebuilt by `db:sync` from
+  // ingest/ministry-spending.json like every other store.
+  'union_ministry_lines',
   'union_ministry_budgets',
   'union_budget_headlines',
   'district_scheme_progress',

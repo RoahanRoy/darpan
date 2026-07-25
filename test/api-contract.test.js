@@ -4,18 +4,19 @@
    here to stop: a syntax error, a bad import path, or a renamed export
    reaching production because the frontend build does not compile api/.
 
-   Method handling is checked for real. The three handlers are read-only
-   endpoints over public records; a write verb reaching one should be refused
-   before it can touch anything, and the refusal is asserted rather than
-   assumed. Nothing here connects to Postgres — a rejected method returns
-   before any query — so these run in CI with no database. */
+   Method handling is checked for real. Every handler is a read-only endpoint
+   over public records; a write verb reaching one should be refused before it
+   can touch anything, and the refusal is asserted rather than assumed.
+   Nothing here connects to Postgres — a rejected method returns before any
+   query, and so does a missing required parameter — so these run in CI with
+   no database. */
 
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 process.env.DATABASE_URL ??= 'postgresql://user:pass@localhost/none';
 
-const HANDLERS = ['home', 'parliament', 'regions', 'roundup'];
+const HANDLERS = ['home', 'ministry', 'parliament', 'regions', 'roundup'];
 
 /** Minimal Vercel-shaped res that records what the handler did to it. */
 function mockRes() {
@@ -58,3 +59,18 @@ for (const name of HANDLERS) {
     });
   }
 }
+
+/* /api/ministry is the one handler that takes a required parameter, and the
+   check it does on it happens before the database is touched. That ordering
+   is the point: without it a bare /api/ministry would open a connection to
+   ask for a ministry called the empty string, which on a free plan is a
+   compute wake-up bought by anyone who trims a URL. */
+test('api/ministry.js refuses a request naming no ministry, without querying', async () => {
+  const { default: handler } = await import('../api/ministry.js');
+
+  for (const query of [{}, { slug: '' }, { slug: '   ' }]) {
+    const res = mockRes();
+    await handler({ method: 'GET', query, url: '/api/ministry', headers: { host: 'localhost' } }, res);
+    assert.equal(res.statusCode, 400);
+  }
+});

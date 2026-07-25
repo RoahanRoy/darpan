@@ -54,12 +54,18 @@ function serialiseSource(row) {
 /* One leaked examination. `candidatesAffected` stays the string the outlet
    used ("nearly 48 lakh") rather than becoming a number: it is reported, not
    counted here, and two incidents' figures must never be added — the same
-   candidate sits the re-held exam. */
+   candidate sits the re-held exam.
+
+   `status` travels with the row because not every incident under this heading
+   is an established leak — some were alleged and never proved, and a few were
+   investigated and disproved (migration 009). The page has to be able to say
+   which, so the field is never dropped on the way out. */
 function serialiseLeak(row) {
   return {
     exam: row.exam_name,
     body: row.conducting_body,
     year: row.occurred_year,
+    status: row.leak_status,
     candidatesAffected: row.candidates_affected,
     outcome: row.outcome,
     summary: row.summary,
@@ -183,7 +189,7 @@ export default async function handler(req, res) {
         // Exams this state conducted. A nationally conducted exam carries
         // state_id IS NULL and belongs to /api/parliament — filing NEET under
         // the state where an arrest happened would name the wrong government.
-        sql`SELECT exam_name, conducting_body, occurred_year,
+        sql`SELECT exam_name, conducting_body, occurred_year, leak_status,
                    candidates_affected, outcome, summary, outlet, url
             FROM exam_paper_leaks
             WHERE state_id = ${area.state_id}

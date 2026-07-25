@@ -33,6 +33,8 @@
     "leaks:check": "node scripts/sync.js leaks --check",
     "roundup:apply": "node scripts/sync.js roundup",
     "roundup:check": "node scripts/sync.js roundup --check",
+    "ministries:apply": "node scripts/sync.js ministry-lines scheme-ministries",
+    "ministries:check": "node scripts/sync.js ministry-lines scheme-ministries --check",
     "roundup:due": "node scripts/roundup-due.js",
     "ingest:review": "node ingest/review.js",
     "ingest:verify": "node ingest/verify.js",

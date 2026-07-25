@@ -1,7 +1,7 @@
 # Weekly check that Neon still matches the prose kept in git.
 #
-# Three columns hold sentences no adapter can regenerate, so they live in
-# files and are applied from them (db/README.md, "Prose that lives in git").
+# Several columns hold what no adapter can regenerate, so they live in files
+# and are applied from them (db/README.md, "Prose that lives in git").
 # The `:check` commands are the only thing that reports a forgotten apply —
 # and until now nothing ran them, so the report existed but never arrived.
 # A db:reset, a re-ingest, or a promote that dropped rows all silently lose
@@ -9,9 +9,9 @@
 #
 # Unlike ci.yml this needs the real database, so it runs on a schedule with
 # the DATABASE_URL secret rather than on every pull request. It only ever
-# reads: the three scripts are invoked with --check, which queries and
-# compares. Nothing here writes, and the fix (`*:apply`) stays a deliberate
-# act run by a person.
+# reads: every store is invoked with --check, which queries and compares.
+# Nothing here writes, and the fix (`*:apply`) stays a deliberate act run by
+# a person.
 #
 # Requires the DATABASE_URL repository secret.
 
@@ -105,6 +105,22 @@ jobs:
         shell: bash
         run: node scripts/sync.js roundup --check 2>&1 | tee roundup.log
 
+      - name: Ministry spending
+        id: ministry_lines
+        continue-on-error: true
+        shell: bash
+        run: node scripts/sync.js ministry-lines --check 2>&1 | tee ministry-lines.log
+
+      # A separate step from the lines above even though both come out of one
+      # file, because they are different tables and fail for different
+      # reasons: the lines drift when a rebuild dropped them, the attributions
+      # drift when a new budget was seeded and the scheme names moved.
+      - name: Scheme attributions
+        id: scheme_ministries
+        continue-on-error: true
+        shell: bash
+        run: node scripts/sync.js scheme-ministries --check 2>&1 | tee scheme-ministries.log
+
       - name: Report
         uses: actions/github-script@v7
         with:
@@ -117,6 +133,8 @@ jobs:
               { name: 'News',     log: 'news.log',     store: 'ingest/budget-news.json',  fix: 'npm run news:apply',     ok: '${{ steps.news.outcome }}' === 'success' },
               { name: 'Leaks',    log: 'leaks.log',    store: 'ingest/paper-leaks.json',  fix: 'npm run leaks:apply',    ok: '${{ steps.leaks.outcome }}' === 'success' },
               { name: 'Roundup',  log: 'roundup.log',  store: 'ingest/policy-roundup.json', fix: 'npm run roundup:apply', ok: '${{ steps.roundup.outcome }}' === 'success' },
+              { name: 'Ministry spending',   log: 'ministry-lines.log',    store: 'ingest/ministry-spending.json', fix: 'npm run ministries:apply', ok: '${{ steps.ministry_lines.outcome }}' === 'success' },
+              { name: 'Scheme attributions', log: 'scheme-ministries.log', store: 'ingest/ministry-spending.json', fix: 'npm run ministries:apply', ok: '${{ steps.scheme_ministries.outcome }}' === 'success' },
             ];
 
             // A check can also fail before it compares anything — an

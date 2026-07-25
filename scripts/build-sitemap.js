@@ -51,11 +51,21 @@ try {
      ORDER BY s.slug, d.display_order`
   );
 
+  /* Ministry pages are listed for the same reason the districts are: the
+     only link to /parliament/jal-shakti is a table cell the union budget
+     page builds at runtime, so without this file a crawler never sees one.
+     NULL slug is the published residual, which has no page. */
+  const { rows: ministries } = await pool.query(
+    `SELECT slug FROM union_ministry_budgets
+     WHERE slug IS NOT NULL ORDER BY display_order`
+  );
+
   const paths = new Set(['/', '/parliament', '/about']);
   for (const row of rows) {
     paths.add(`/${row.state_slug}`);
     if (row.area_slug) paths.add(`/${row.state_slug}/${row.area_slug}`);
   }
+  for (const m of ministries) paths.add(`/parliament/${m.slug}`);
 
   // No <lastmod>: the honest value is the date of the source document behind
   // each page, and that is not the same as the date this file was written.

@@ -10,6 +10,7 @@
      /uttarakhand           a state; canonicalised to its first area
      /uttarakhand/dehradun  a state and one of its areas
      /parliament            the union budget
+     /parliament/defence    one ministry's spending, opened out
      /about                 how the records are chosen and checked
 
    Parsing here is deliberately dumb: it does not know which states exist,
@@ -27,7 +28,7 @@
 // branch and is reported as a state we do not hold, which is true.
 const RESERVED = new Set(['parliament', 'about']);
 
-/** Splits a pathname into { page, stateSlug, areaSlug }. */
+/** Splits a pathname into { page, stateSlug, areaSlug, ministrySlug }. */
 export function parseRoute(pathname) {
   const [first, second] = String(pathname || '/')
     .split('/')
@@ -35,14 +36,37 @@ export function parseRoute(pathname) {
     .map((s) => decodeURIComponent(s).toLowerCase());
 
   if (first && RESERVED.has(first)) {
-    return { page: first, stateSlug: null, areaSlug: null };
+    /* Only /parliament reads its second segment, and it reads it as a
+       ministry. /about takes none: a second segment there is a URL nobody
+       published, and answering it with the same page under a different
+       address is how two addresses come to hold one document. */
+    return {
+      page: first,
+      stateSlug: null,
+      areaSlug: null,
+      ministrySlug: first === 'parliament' ? (second ?? null) : null,
+    };
   }
 
-  return { page: 'home', stateSlug: first ?? null, areaSlug: second ?? null };
+  return {
+    page: 'home',
+    stateSlug: first ?? null,
+    areaSlug: second ?? null,
+    ministrySlug: null,
+  };
 }
 
 /** The canonical path for a state, or a state and one of its areas. */
 export function homePath(stateSlug, areaSlug) {
   if (!stateSlug) return '/';
   return areaSlug ? `/${stateSlug}/${areaSlug}` : `/${stateSlug}`;
+}
+
+/* The canonical path for a ministry, and null for a row that has none — the
+   published residual, which is not a ministry. Returning null rather than
+   '/parliament' is deliberate: the caller has to decide what an unopenable
+   row looks like, and a link that silently goes back to the page you are on
+   is the worst of the options. */
+export function ministryPath(slug) {
+  return slug ? `/parliament/${slug}` : null;
 }

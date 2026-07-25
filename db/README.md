@@ -23,13 +23,14 @@ bundle, which would publish the credential.
 | `npm run news:check` / `news:apply` | Just the budget news. |
 | `npm run leaks:check` / `leaks:apply` | Just the paper leaks. |
 | `npm run roundup:check` / `roundup:apply` | Just the front-page roundup. |
+| `npm run ministries:check` / `ministries:apply` | Just the ministry breakdown and scheme attributions. |
 | `npm run roundup:due` | Fails if the roundup is past its quarterly review. No database. |
 
 ## Prose that lives in git
 
-Five stores hold sentences no adapter can regenerate, so each is kept in a
+Seven stores hold what no adapter can regenerate, so each is kept in a
 file and applied from there. `scripts/lib/stores.js` is the registry that
-names them; `npm run db:sync` applies all five and `scripts/sync.js` is the
+names them; `npm run db:sync` applies all seven and `scripts/sync.js` is the
 one script that does the work:
 
 - `ingest/glosses.json` → `state_sector_budgets.provision_note`, the
@@ -63,6 +64,17 @@ one script that does the work:
   never be summed, because a candidate who sat a re-held exam appears twice
   and is one person.
 
+  Each row also declares a `leak_status` — `confirmed`, `alleged`, `suspected`
+  or `denied` (migration 009). The block is headed "Question papers leaked",
+  and without this field that heading would speak for rows it has no right to:
+  UGC-NET 2024 was cancelled the day after it was held and the CBI then found
+  the screenshot behind the alarm had been doctored and no leak had occurred.
+  Those rows are kept rather than dropped, because an exam called off on a
+  false alarm costs its candidates the year a real leak would have, and the
+  page labels every row instead of letting the heading assert it. The column
+  has a CHECK and no default: an item that forgets to declare a status fails
+  the apply rather than being filed as established fact.
+
 - `ingest/policy-roundup.json` → the `policy_roundup` rows behind the front
   page's twelve-month digest of national policy and scheme changes
   (migration 007). One scope, `india`, and `scopeColumn: null` because the
@@ -79,14 +91,44 @@ one script that does the work:
   prints from the data, so a stale roundup shows its age rather than
   advertising a freshness it lost.
 
+- `ingest/ministry-spending.json` → two tables at once, both about where a
+  Union ministry's money goes (migration 010).
+
+  `ministryLines` → `union_ministry_lines`, the inside of a ministry's
+  allocation: its departments, and the schemes and major heads its Demand for
+  Grants analysis names beneath them. This is the first store whose scopes are
+  not states — a scope key is a ministry slug, so it declares
+  `scopeTable: 'union_ministry_budgets'` and writes `ministry_id`. Eleven of
+  the thirteen named ministries have an analysis; Chemicals and Fertilisers
+  and Communications have none for 2025-26 and their pages say so rather than
+  showing an empty table.
+
+  `schemeMinistries` → `union_scheme_allocations.ministry`, one column,
+  updated in place like the glosses. It is what lets the scheme table say
+  which ministry's allocation each scheme sits inside — the answer to why the
+  two tables do not add up.
+
+  Three fields are repeated on every line of a ministry: `basis`, which says
+  what the lines decompose and whether they sum to the ministry's total, and
+  the title, URL and date of the analysis they were read from. That is a
+  deliberate denormalisation, and the store refuses to apply if a ministry's
+  lines disagree about any of them — which is what makes it safe to read them
+  off the first line and print them once.
+
+  The figures went through no ingestion gate: a person read eleven PDFs and
+  typed the tables out. So they cite the way news and paper leaks cite, with
+  the document named on the row, and not through `sources` — which means a
+  document this project parsed and stands behind (migration 004).
+
 Re-running the ingestion pipeline produces nulls for the glosses and nothing
-for the findings, and `db:reset` destroys all five. Keeping them in git makes
+for the findings, and `db:reset` destroys all of them. Keeping them in git makes
 them diffable at review time and recoverable afterwards. **A rebuild is not
 finished until `npm run db:sync` has been run** — `db:sync:check` is what
 tells you it was missed.
 
 The two strategies behind that one command are worth knowing when a store
-misbehaves. Findings, news, paper leaks and the roundup are *replaced* per
+misbehaves. Findings, news, paper leaks, the roundup and the ministry lines
+are *replaced* per
 scope: the store owns every row a scope has, so applying it deletes that
 scope's rows and rewrites them (findings only touch
 `computed_from_source = TRUE` — the CAG observations in
@@ -96,7 +138,7 @@ nothing is deleted and a gloss whose key matches no row is reported loudly
 rather than dropped.
 
 None of this depends on somebody remembering to type it.
-`.github/workflows/drift.yml` runs the five checks every Monday against the
+`.github/workflows/drift.yml` runs the seven checks every Monday against the
 real database and opens a single standing issue when any store disagrees,
 closing it once they agree again. It needs the `DATABASE_URL` repository
 secret, and it only reads — the fix is still an apply, run deliberately by a

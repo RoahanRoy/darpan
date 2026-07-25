@@ -7,11 +7,12 @@
 
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { parseRoute, homePath } from '../src/lib/routes.js';
+import { parseRoute, homePath, ministryPath } from '../src/lib/routes.js';
 
 test('the bare path names no state, leaving the default to the page', () => {
-  assert.deepEqual(parseRoute('/'), { page: 'home', stateSlug: null, areaSlug: null });
-  assert.deepEqual(parseRoute(''), { page: 'home', stateSlug: null, areaSlug: null });
+  const bare = { page: 'home', stateSlug: null, areaSlug: null, ministrySlug: null };
+  assert.deepEqual(parseRoute('/'), bare);
+  assert.deepEqual(parseRoute(''), bare);
 });
 
 test('one segment is a state, two are a state and an area', () => {
@@ -19,11 +20,13 @@ test('one segment is a state, two are a state and an area', () => {
     page: 'home',
     stateSlug: 'uttarakhand',
     areaSlug: null,
+    ministrySlug: null,
   });
   assert.deepEqual(parseRoute('/uttarakhand/dehradun'), {
     page: 'home',
     stateSlug: 'uttarakhand',
     areaSlug: 'dehradun',
+    ministrySlug: null,
   });
 });
 
@@ -61,6 +64,7 @@ test('an unknown first segment is reported as a state, not swallowed', () => {
     page: 'home',
     stateSlug: 'bihar',
     areaSlug: null,
+    ministrySlug: null,
   });
 });
 
@@ -80,4 +84,32 @@ test('homePath and parseRoute round-trip', () => {
     assert.equal(route.stateSlug, state);
     assert.equal(route.areaSlug, area ?? null);
   }
+});
+
+test('a second segment under /parliament names a ministry', () => {
+  const route = parseRoute('/parliament/jal-shakti');
+  assert.equal(route.page, 'parliament');
+  assert.equal(route.ministrySlug, 'jal-shakti');
+  // Still no region. The union budget does not decompose by state, and a
+  // stray stateSlug here would let the masthead's picker light up on a page
+  // that has nothing to filter.
+  assert.equal(route.stateSlug, null);
+});
+
+test('/parliament alone names no ministry', () => {
+  assert.equal(parseRoute('/parliament').ministrySlug, null);
+  assert.equal(parseRoute('/parliament/').ministrySlug, null);
+});
+
+test('/about ignores a second segment rather than reading it as a ministry', () => {
+  assert.equal(parseRoute('/about/defence').ministrySlug, null);
+  assert.equal(parseRoute('/about/defence').page, 'about');
+});
+
+test('ministryPath builds what parseRoute reads, and nothing for the residual', () => {
+  assert.equal(ministryPath('home-affairs'), '/parliament/home-affairs');
+  assert.equal(parseRoute(ministryPath('home-affairs')).ministrySlug, 'home-affairs');
+  // 'Other Ministries' carries a NULL slug and must not get a URL.
+  assert.equal(ministryPath(null), null);
+  assert.equal(ministryPath(undefined), null);
 });

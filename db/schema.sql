@@ -50,7 +50,9 @@ CREATE TABLE public.exam_paper_leaks (
     summary text NOT NULL,
     outlet text NOT NULL,
     url text NOT NULL,
-    display_order integer DEFAULT 0 NOT NULL
+    display_order integer DEFAULT 0 NOT NULL,
+    leak_status text NOT NULL,
+    CONSTRAINT exam_paper_leaks_status_check CHECK ((leak_status = ANY (ARRAY['confirmed'::text, 'alleged'::text, 'suspected'::text, 'denied'::text])))
 );
 CREATE SEQUENCE public.exam_paper_leaks_id_seq
     AS integer
@@ -305,7 +307,8 @@ CREATE TABLE public.union_ministry_budgets (
     revised_cr numeric(14,2),
     next_budget_cr numeric(14,2),
     source_id integer NOT NULL,
-    display_order integer DEFAULT 0 NOT NULL
+    display_order integer DEFAULT 0 NOT NULL,
+    slug text
 );
 CREATE SEQUENCE public.union_ministry_budgets_id_seq
     AS integer
@@ -315,6 +318,29 @@ CREATE SEQUENCE public.union_ministry_budgets_id_seq
     NO MAXVALUE
     CACHE 1;
 ALTER SEQUENCE public.union_ministry_budgets_id_seq OWNED BY public.union_ministry_budgets.id;
+CREATE TABLE public.union_ministry_lines (
+    id integer NOT NULL,
+    ministry_id integer NOT NULL,
+    label text NOT NULL,
+    parent_label text,
+    actuals_prev_cr numeric(14,2),
+    budgeted_cr numeric(14,2),
+    revised_cr numeric(14,2),
+    next_budget_cr numeric(14,2),
+    basis text NOT NULL,
+    document_title text NOT NULL,
+    document_url text NOT NULL,
+    document_date date NOT NULL,
+    display_order integer DEFAULT 0 NOT NULL
+);
+CREATE SEQUENCE public.union_ministry_lines_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE public.union_ministry_lines_id_seq OWNED BY public.union_ministry_lines.id;
 CREATE TABLE public.union_scheme_allocations (
     id integer NOT NULL,
     scheme_name text NOT NULL,
@@ -323,7 +349,8 @@ CREATE TABLE public.union_scheme_allocations (
     revised_cr numeric(12,2),
     next_budget_cr numeric(12,2),
     source_id integer NOT NULL,
-    display_order integer DEFAULT 0 NOT NULL
+    display_order integer DEFAULT 0 NOT NULL,
+    ministry text
 );
 CREATE SEQUENCE public.union_scheme_allocations_id_seq
     AS integer
@@ -349,6 +376,7 @@ ALTER TABLE ONLY public.state_sector_budgets ALTER COLUMN id SET DEFAULT nextval
 ALTER TABLE ONLY public.states ALTER COLUMN id SET DEFAULT nextval('public.states_id_seq'::regclass);
 ALTER TABLE ONLY public.union_budget_headlines ALTER COLUMN id SET DEFAULT nextval('public.union_budget_headlines_id_seq'::regclass);
 ALTER TABLE ONLY public.union_ministry_budgets ALTER COLUMN id SET DEFAULT nextval('public.union_ministry_budgets_id_seq'::regclass);
+ALTER TABLE ONLY public.union_ministry_lines ALTER COLUMN id SET DEFAULT nextval('public.union_ministry_lines_id_seq'::regclass);
 ALTER TABLE ONLY public.union_scheme_allocations ALTER COLUMN id SET DEFAULT nextval('public.union_scheme_allocations_id_seq'::regclass);
 ALTER TABLE ONLY public.district_scheme_progress
     ADD CONSTRAINT district_scheme_progress_district_id_scheme_name_as_of_date_key UNIQUE (district_id, scheme_name, as_of_date);
@@ -404,6 +432,10 @@ ALTER TABLE ONLY public.union_ministry_budgets
     ADD CONSTRAINT union_ministry_budgets_ministry_key UNIQUE (ministry);
 ALTER TABLE ONLY public.union_ministry_budgets
     ADD CONSTRAINT union_ministry_budgets_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.union_ministry_budgets
+    ADD CONSTRAINT union_ministry_budgets_slug_key UNIQUE (slug);
+ALTER TABLE ONLY public.union_ministry_lines
+    ADD CONSTRAINT union_ministry_lines_pkey PRIMARY KEY (id);
 ALTER TABLE ONLY public.union_scheme_allocations
     ADD CONSTRAINT union_scheme_allocations_pkey PRIMARY KEY (id);
 ALTER TABLE ONLY public.union_scheme_allocations
@@ -458,5 +490,7 @@ ALTER TABLE ONLY public.union_budget_headlines
     ADD CONSTRAINT union_budget_headlines_source_id_fkey FOREIGN KEY (source_id) REFERENCES public.sources(id);
 ALTER TABLE ONLY public.union_ministry_budgets
     ADD CONSTRAINT union_ministry_budgets_source_id_fkey FOREIGN KEY (source_id) REFERENCES public.sources(id);
+ALTER TABLE ONLY public.union_ministry_lines
+    ADD CONSTRAINT union_ministry_lines_ministry_id_fkey FOREIGN KEY (ministry_id) REFERENCES public.union_ministry_budgets(id) ON DELETE CASCADE;
 ALTER TABLE ONLY public.union_scheme_allocations
     ADD CONSTRAINT union_scheme_allocations_source_id_fkey FOREIGN KEY (source_id) REFERENCES public.sources(id);

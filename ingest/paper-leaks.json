@@ -1,14 +1,17 @@
 {
   "_comment": "Examinations whose question papers leaked, applied to exam_paper_leaks by `npm run leaks:apply` (scripts/sync.js, store id 'leaks'). Like the other prose stores this lives in git, because every row is a sentence a person wrote and no adapter can regenerate one. Keyed by states.slug, plus the scope key 'union' for exams conducted nationally, which are written with state_id NULL and appear on the Parliament page rather than any state's (migration 006).",
-  "_sourcing": "Each row cites the one report it was written from and is limited to what that report says. Where a report names the exam but not who conducted it, or gives no figure, or does not say what happened afterwards, the field is left out or reads 'Not reported' rather than being filled in from elsewhere. `candidates_affected` keeps the outlet's own phrasing and must never be summed: a candidate who sat NEET twice after two cancellations is one person.",
-  "_completeness": "This is not every incident. The Tribune counts more than 90 paper leaks and examination irregularities over two decades, of which its own compilations name these individually; the remainder are counted but not itemised anywhere this project could cite. Treat the list as the incidents that have been named in reporting, not as a census.",
-  "_kaggle": "Asked for on 25 July 2026 against a Kaggle dataset (mauryansshivam/india-question-paper-leaks-incidents-details). That file is behind a login and could not be read, and an uploaded CSV with no per-row provenance would not have cleared this project's sourcing bar anyway. The list was rebuilt from reporting instead, one citation per incident.",
+  "_sourcing": "Each row cites the one report it was written from and is limited to what that report says. Where a report names the exam but not who conducted it, or gives no figure, or does not say what happened afterwards, the field is left out or reads 'Not reported' rather than being filled in from elsewhere. Two sources are never blended into one row: where two reports cover the same incident, the better-sourced one is written from and the other is dropped, rather than the row quietly becoming a summary of both. `candidates_affected` keeps the outlet's own phrasing and must never be summed: a candidate who sat NEET twice after two cancellations is one person.",
+  "_status": "`leak_status` (migration 009) says what the cited report established, and is the field that stops this list overclaiming. 'confirmed' is investigators, the conducting body or a court; 'alleged' is claimed and never established either way; 'suspected' is the body acting on its own doubt, as when NEET-PG 2024 was postponed on intelligence with no leak found; 'denied' is investigated and disproved. The denied rows are kept deliberately — UGC-NET 2024 was cancelled the day after it was held and 9 lakh people lost the sitting, and the CBI then found the screenshot behind it was doctored. That is a real cost from a leak that never happened, and dropping the row would hide it while keeping it unlabelled would print something untrue.",
+  "_figures": "Arrest, conviction and death counts are written into the prose of the row that cites them, never into columns of their own. Arrests and convictions move for years after the incident — the Haryana constable case reached 167 arrests over four years — so a number in a column would be a snapshot pretending to be a fact. Deaths are held to a stricter rule still: a death is written only where the row's own citation is about it. The Vyapam deaths appear on the umbrella row, whose Tribune citation reports them, and not on the 2013 PMT row, whose citation does not; the NEET-UG suicide tallies reported in 2024 and 2026 are press counts of contested causation that the rows' own sources do not carry, so they are not here at all.",
+  "_dataset": "Asked for on 25 July 2026 against a Kaggle dataset (mauryansshivam/india-question-paper-leaks-incidents-details), which was behind a login and could not be read; the list was rebuilt from reporting instead. The dataset was supplied directly on 26 July 2026, 110 incidents from 2004 to 2026, and unlike the file that could not be read it carries a named outlet and URL per row — which is the bar this store actually has. It was merged rather than loaded, and the arithmetic is: 104 of its 110 incidents are written up here from their own citation; 14 rows from the earlier rebuild are kept for incidents it does not cover (CAT 2003, the 2006 DocuPen case, JEE Main 2021, three Gujarat leaks, the Vyapam umbrella row and others), for 118 rows in all. Of the six not written from the dataset's own citation, four are dropped outright: three Vyapam sub-exams (the 2012 food inspector, pre-PG and PMT entries) cite only Wikipedia, which is a tertiary source and not the journalism this table points to, and its NEET-UG 2026 row cites Wikipedia too and is superseded by the Deccan Herald report already here. The other two — AIEEE 2011 and the AIIMS postgraduate case — are in the store under the earlier rebuild's Tribune citation rather than the dataset's, which for those two is an exam-listings aggregator; the dataset also dates the AIIMS exam to January 2012 against the Tribune's 2011, and an aggregator is not grounds to move a year. Everywhere else the dataset won, because a report filed about one incident beats a decade-spanning timeline that mentions it: the 2004 AIPMT row is now four sentences from a Tribune report filed the next morning rather than one sentence from a compilation.",
+  "_completeness": "This is not every incident. The Tribune counts more than 90 paper leaks and examination irregularities over two decades and the dataset merged in here names 110, which are not the same 110; both are compilations of what got reported, and a recruitment exam quietly re-held in a district nobody covered is in neither. Treat the list as the incidents that have been named in reporting, not as a census. The dataset's own date precision varies — a good many of its older rows are known only to the year, which is the reason `occurred_year` is a year and not a date (migration 006).",
   "leaks": {
     "union": [
       {
         "exam_name": "NEET-UG",
         "conducting_body": "National Testing Agency",
         "occurred_year": 2026,
+        "leak_status": "confirmed",
         "candidates_affected": "nearly 22.79 lakh",
         "outcome": "Cancelled on 12 May 2026; a re-test was announced",
         "summary": "A whistleblower told the agency on 7 May that the paper was circulating beforehand as a 'guess paper' of important questions. Rajasthan's Special Operations Group traced a multi-state network before the CBI took the case over; investigators suspect the leak began at Nashik, with high-definition scanners and a shadow server, and spread through coaching networks and WhatsApp groups.",
@@ -16,94 +19,185 @@
         "url": "https://www.deccanherald.com/education/a-guess-paper-whistleblower-tip-off-and-cancellation-how-neet-ug-2026-paper-leak-unraveled-4000994"
       },
       {
-        "exam_name": "NEET-UG",
-        "conducting_body": "National Testing Agency",
+        "exam_name": "Chief Loco Pilot departmental promotion examination",
+        "conducting_body": "East Central Railway / Railway Board",
+        "occurred_year": 2025,
+        "leak_status": "confirmed",
+        "outcome": "Cancelled, along with the pending Group-C departmental selections",
+        "summary": "The CBI arrested 26 East Central Railway officials at Mughal Sarai the day before the exam and seized ₹1.17 crore; 17 candidates were found with handwritten photocopies of the question paper. The Railway Board then cancelled the pending Group-C departmental selections and moved every such exam to centralised computer-based tests run by the Railway Recruitment Boards.",
+        "outlet": "India TV News",
+        "url": "https://www.indiatvnews.com/news/india/railways-ropes-in-rrb-for-all-departmental-exams-after-cbi-arrests-26-officials-in-paper-leak-case-2025-03-05-979280"
+      },
+      {
+        "exam_name": "NEET-PG",
+        "conducting_body": "National Board of Examinations in Medical Sciences",
         "occurred_year": 2024,
-        "candidates_affected": "more than 23 lakh",
-        "outcome": "Held; the Supreme Court declined to cancel it nationwide",
-        "summary": "Allegations that the paper leaked in Bihar, and results showing 67 candidates on a perfect 720. The CBI traced the leak to a school in Hazaribagh, Jharkhand and arrested about 50 people, but the court accepted that there was no evidence of a breach affecting every candidate.",
-        "outlet": "The Tribune",
-        "url": "https://www.tribuneindia.com/news/india/vyapam-to-reet-to-neet-heres-a-10-year-timeline-of-paper-leak-scandals"
+        "leak_status": "suspected",
+        "candidates_affected": "about 2.4 lakh",
+        "outcome": "Postponed about 12 hours before it was due; re-held on 11 August 2024",
+        "summary": "Put off overnight as a precaution, on what officials called credible intelligence of possible impersonation or manipulation at some centres. They said there had been no actual leak.",
+        "outlet": "Medical Dialogues",
+        "url": "https://medicaldialogues.in/news/education/neet-pg-2024-was-postponed-due-to-impersonation-threats-report-131706"
       },
       {
         "exam_name": "UGC-NET",
         "conducting_body": "National Testing Agency",
         "occurred_year": 2024,
-        "outcome": "Cancelled the day after it was held",
-        "summary": "Scrapped on cybercrime inputs that its integrity may have been compromised, and referred to the CBI. The agency's director general was removed.",
+        "leak_status": "denied",
+        "candidates_affected": "about 9 lakh",
+        "outcome": "Cancelled the day after it was held; the CBI closed the case",
+        "summary": "The education ministry cancelled the exam a day after it was held, citing compromised integrity after an alert that the paper was circulating on the darknet and Telegram. The CBI later filed a closure report finding that the screenshot behind the alert had been doctored by a student and that no leak had occurred. Nobody was arrested.",
         "outlet": "The Tribune",
-        "url": "https://www.tribuneindia.com/news/india/not-just-2026-neet-over-90-exam-leaks-irregularities-reported-in-two-decades/"
+        "url": "https://www.tribuneindia.com/news/india/cbi-closes-ugc-net-paper-leak-case-finds-no-evidence-of-breach"
+      },
+      {
+        "exam_name": "NEET-UG",
+        "conducting_body": "National Testing Agency",
+        "occurred_year": 2024,
+        "leak_status": "confirmed",
+        "candidates_affected": "about 23 lakh",
+        "outcome": "Held; only the 1,563 grace-mark candidates re-sat it",
+        "summary": "The CBI confirmed a leak confined to Hazaribagh in Jharkhand and Patna in Bihar, where the paper reached a set of candidates for ₹30–32 lakh. The Supreme Court declined to order a nationwide re-test, and only the 1,563 candidates who had been given grace marks sat again, on 23 June 2024. More than 40 people were arrested between the CBI and Bihar's Economic Offences Unit.",
+        "outlet": "National Herald",
+        "url": "https://www.nationalheraldindia.com/national/neet-ug-exam-cbi-confirms-paper-leak-limited-to-bihar-centre"
+      },
+      {
+        "exam_name": "Nursing Officer Recruitment Common Eligibility Test (NORCET-4)",
+        "conducting_body": "AIIMS, New Delhi",
+        "occurred_year": 2023,
+        "leak_status": "confirmed",
+        "outcome": "CBI arrests; a Mohali institute booked",
+        "summary": "The paper leaked during the 3 June test for 3,055 nursing-officer posts, through doctored computer monitors that gave solvers remote access to candidates' screens. The CBI arrested the alleged mastermind and four others and booked an institute in Mohali.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/delhi/cbi-arrests-mastermind-of-aiims-nursing-officer-recruitment-paper-leak-519366"
       },
       {
         "exam_name": "NEET-UG",
         "conducting_body": "National Testing Agency",
         "occurred_year": 2021,
-        "outcome": "Held; the Supreme Court declined to order a re-test",
-        "summary": "Leak allegations surfaced and several arrests were made in Jaipur, but the exam was allowed to stand.",
+        "leak_status": "confirmed",
+        "outcome": "Held; localised arrests, no re-test",
+        "summary": "Invigilators and solver gangs were involved, most visibly an impersonation and solver racket in Rajasthan, but the arrests stayed local. The exam was neither cancelled nor re-held.",
+        "outlet": "Careers360",
+        "url": "https://medicine.careers360.com/articles/how-many-times-neet-paper-leaked"
+      },
+      {
+        "exam_name": "Common Entrance Examination for Soldier (General Duty)",
+        "conducting_body": "Indian Army",
+        "occurred_year": 2021,
+        "leak_status": "confirmed",
+        "outcome": "Cancelled about an hour before it began",
+        "summary": "The pan-India recruitment exam was called off roughly an hour before the start, after Pune Police found the paper on the phones of suspects they had picked up and it matched the paper that had been set. Three people were arrested and the part played by an insider was investigated.",
         "outlet": "The Tribune",
-        "url": "https://www.tribuneindia.com/news/india/not-just-2026-neet-over-90-exam-leaks-irregularities-reported-in-two-decades/"
+        "url": "https://www.tribuneindia.com/news/nation/army-cancels-recruitment-exam-after-paper-leak-218658"
+      },
+      {
+        "exam_name": "General Departmental Competitive Examination (GDCE)",
+        "conducting_body": "Railway Recruitment Cell, Western Railway",
+        "occurred_year": 2021,
+        "leak_status": "confirmed",
+        "candidates_affected": "about 8,600",
+        "outcome": "CBI case registered in January 2024",
+        "summary": "Candidates were allegedly sent the paper with its answers over WhatsApp, for payment, before the computer-based test on 3 January 2021. The CBI registered a case against the examination agency Aptech Ltd and named 15 people, among them ten railway officials and a CRPF constable.",
+        "outlet": "ThePrint",
+        "url": "https://theprint.in/india/railways-exam-paper-leak-cbi-registers-case-against-mumbai-based-aptech-ltd/1916726/"
       },
       {
         "exam_name": "JEE (Main)",
         "conducting_body": "National Testing Agency",
         "occurred_year": 2021,
+        "leak_status": "confirmed",
         "outcome": "CBI case registered",
         "summary": "The CBI booked a private company, its directors and examination-centre staff over the online exam being manipulated: candidates were allegedly helped by remote access from a centre at Sonepat, in exchange for large sums, to win places at premier NITs.",
         "outlet": "The Tribune",
         "url": "https://www.tribuneindia.com/news/india/not-just-2026-neet-over-90-exam-leaks-irregularities-reported-in-two-decades/"
       },
       {
-        "exam_name": "Common Entrance Examination for Soldier (General Duty)",
-        "conducting_body": "Indian Army",
-        "occurred_year": 2021,
-        "outcome": "Cancelled",
-        "summary": "The Army scrapped its pan-India recruitment exam after papers leaked. A joint Military Intelligence and Pune Police operation broke up the racket and led to the arrest of serving officers, soldiers and civilians.",
-        "outlet": "The Tribune",
-        "url": "https://www.tribuneindia.com/news/india/not-just-2026-neet-over-90-exam-leaks-irregularities-reported-in-two-decades/"
-      },
-      {
-        "exam_name": "Class X Mathematics and Class XII Economics board papers",
+        "exam_name": "Class 10 Mathematics board examination",
         "conducting_body": "Central Board of Secondary Education",
         "occurred_year": 2018,
-        "candidates_affected": "more than 20 lakh",
-        "outcome": "Not reported",
-        "summary": "School board papers leaked too: both subjects went out before the exams, in the largest school-level incident in this tally.",
-        "outlet": "The Tribune",
-        "url": "https://www.tribuneindia.com/news/india/not-just-2026-neet-over-90-exam-leaks-irregularities-reported-in-two-decades/"
+        "leak_status": "confirmed",
+        "outcome": "No re-test; the board found no unusual pattern in the scores",
+        "summary": "The maths paper leaked and circulated before the exam, but the board decided against re-holding it after finding nothing unusual in the score pattern. The arrests belonged to the same Delhi and Himachal Pradesh network as the Class 12 economics leak two days earlier.",
+        "outlet": "Careers360",
+        "url": "https://news.careers360.com/cbse-paper-leak-class-12-economics-re-exam-april-25-class-10-maths-likely-july/amp"
       },
       {
-        "exam_name": "Combined Graduate Level Examination",
+        "exam_name": "Class 12 Economics board examination",
+        "conducting_body": "Central Board of Secondary Education",
+        "occurred_year": 2018,
+        "leak_status": "confirmed",
+        "outcome": "Re-held on 25 April 2018",
+        "summary": "The paper was photographed and circulated on WhatsApp before the exam, and the board re-conducted it a month later. Delhi Police arrested teachers, a tutor who ran a coaching centre and bank officials; the leak was traced to Delhi and Himachal Pradesh.",
+        "outlet": "Careers360",
+        "url": "https://news.careers360.com/cbse-paper-leak-class-12-economics-re-exam-april-25-class-10-maths-likely-july/amp"
+      },
+      {
+        "exam_name": "Combined Graduate Level Examination 2017, Tier-II",
         "conducting_body": "Staff Selection Commission",
         "occurred_year": 2018,
-        "outcome": "CBI probe; cases against 17 people",
-        "summary": "Screenshots of papers and answer keys circulated online and the commission called the allegations baseless. Protests spread from its Delhi headquarters to Patna and Bareilly, in one of the country's largest examination protests, before the case went to the CBI — which alleged answer keys had leaked and that some candidates' computers were remotely accessed. Those booked included site supervisors and a question paper custodian.",
+        "leak_status": "confirmed",
+        "outcome": "Held; the Supreme Court refused to scrap it",
+        "summary": "The answer key to the 21 February paper went viral before the exam was due to begin, and candidates protested across the country. The CBI booked 17 people: ten employees of Sify Technologies, which ran the examination centres, and seven candidates.",
         "outlet": "The Tribune",
-        "url": "https://www.tribuneindia.com/news/india/vyapam-to-reet-to-neet-heres-a-10-year-timeline-of-paper-leak-scandals"
+        "url": "https://www.tribuneindia.com/news/archive/nation/sify-employees-among-17-booked-in-ssc-paper-leak-case-593733"
       },
       {
         "exam_name": "NEET-UG",
         "conducting_body": "Central Board of Secondary Education",
         "occurred_year": 2017,
-        "candidates_affected": "more than 11 lakh registered",
+        "leak_status": "alleged",
         "outcome": "Held; arrests made",
-        "summary": "Organised cheating rackets and repeated attempts at leaking the paper. Five people, two of them medical students, were arrested in Patna and four in Panaji for impersonating candidates. Responsibility for the exam passed to the National Testing Agency the following year.",
-        "outlet": "The Tribune",
-        "url": "https://www.tribuneindia.com/news/india/not-just-2026-neet-over-90-exam-leaks-irregularities-reported-in-two-decades/"
+        "summary": "An inter-state racket running through Uttarakhand and Bihar promised leaked papers for between ₹10 lakh and ₹30 lakh. Authorities said many of the papers sold were fakes and that no systemic leak was established. The claims centred on Bihar.",
+        "outlet": "Careers360",
+        "url": "https://medicine.careers360.com/articles/how-many-times-neet-paper-leaked"
+      },
+      {
+        "exam_name": "NEET-UG, Phase II",
+        "conducting_body": "Central Board of Secondary Education",
+        "occurred_year": 2016,
+        "leak_status": "denied",
+        "outcome": "Held; no re-test ordered",
+        "summary": "Allegations of an inter-state leak around the second phase surfaced but were never confirmed nationwide, and no nationwide re-test followed.",
+        "outlet": "Careers360",
+        "url": "https://medicine.careers360.com/articles/how-many-times-neet-paper-leaked"
       },
       {
         "exam_name": "All-India Pre-Medical Test (AIPMT)",
         "conducting_body": "Central Board of Secondary Education",
         "occurred_year": 2015,
-        "candidates_affected": "more than 6.3 lakh",
-        "outcome": "Cancelled by the Supreme Court",
-        "summary": "The court scrapped the exam in June after investigators uncovered a multi-state racket transmitting answer keys over WhatsApp and Bluetooth.",
-        "outlet": "The Tribune",
-        "url": "https://www.tribuneindia.com/news/india/not-just-2026-neet-over-90-exam-leaks-irregularities-reported-in-two-decades/"
+        "leak_status": "confirmed",
+        "candidates_affected": "about 6 lakh",
+        "outcome": "Cancelled by the Supreme Court; re-held on 25 July 2015",
+        "summary": "Haryana Police intercepted a racket in Rohtak relaying answer keys through Bluetooth devices and micro-SIMs. The Supreme Court cancelled the 3 May exam on 15 June and ordered a re-test, held that July. The leak originated in Haryana.",
+        "outlet": "Republic World",
+        "url": "https://www.republicworld.com/education/entrance-exams/when-supreme-court-cancelled-aipmt-2015-a-reminder-for-neet-ug-integrity-amid-paper-leak-row"
+      },
+      {
+        "exam_name": "Class 12 Physics board examination",
+        "conducting_body": "Central Board of Secondary Education",
+        "occurred_year": 2014,
+        "leak_status": "confirmed",
+        "outcome": "Cancelled across Manipur; re-held on 2 April 2014",
+        "summary": "All three sets of the physics paper leaked a day before the 5 March exam and were sold in Manipur. The board cancelled the paper across the state, held a re-test the following month, and an FIR was registered.",
+        "outlet": "India TV News",
+        "url": "https://www.indiatvnews.com/news/india/latest-news-cbse-class-12-physics-paper-leaked-manipur-retest-34302.html"
+      },
+      {
+        "exam_name": "Combined Graduate Level Examination 2013",
+        "conducting_body": "Staff Selection Commission",
+        "occurred_year": 2013,
+        "leak_status": "confirmed",
+        "outcome": "Scrapped; re-exams held in 2014",
+        "summary": "The paper leaked and was being solved off-site when Delhi's crime branch raided a house in Pooth Kalan and arrested nine people mid-solve — among them a Delhi Police constable who had topped the sub-inspector exam. The exam was later scrapped and re-held the next year.",
+        "outlet": "SSC Portal",
+        "url": "https://sscportal.in/news/si-exam-topper-caught-during-ssc-paper-leak-case"
       },
       {
         "exam_name": "AIEEE",
         "conducting_body": "Central Board of Secondary Education",
         "occurred_year": 2011,
+        "leak_status": "confirmed",
         "outcome": "Postponed",
         "summary": "Question papers leaked in Uttar Pradesh and were reported sold for ₹6 lakh, forcing the board to put the exam off.",
         "outlet": "The Tribune",
@@ -113,15 +207,37 @@
         "exam_name": "AIIMS postgraduate entrance examination",
         "conducting_body": "AIIMS, New Delhi",
         "occurred_year": 2011,
+        "leak_status": "confirmed",
         "outcome": "Two doctors arrested",
         "summary": "A high-tech cheating racket: images of the paper were smuggled out of the hall and answers relayed back through Bluetooth earpieces. Candidates were said to have paid between ₹25 lakh and ₹35 lakh.",
         "outlet": "The Tribune",
         "url": "https://www.tribuneindia.com/news/india/not-just-2026-neet-over-90-exam-leaks-irregularities-reported-in-two-decades/"
       },
       {
+        "exam_name": "Class 10 and Class 12 board examinations",
+        "conducting_body": "Central Board of Secondary Education",
+        "occurred_year": 2011,
+        "leak_status": "confirmed",
+        "outcome": "The compromised papers were re-held from reserve sets",
+        "summary": "Class 12 English and maths papers and the Class 10 science paper were photocopied and leaked at a private residence in Car Nicobar. The board re-held the compromised papers using reserve sets. Three people were arrested, and in November 2011 a local court convicted four and acquitted one.",
+        "outlet": "icbse.com",
+        "url": "https://www.icbse.com/news/cbse-question-papers-leaked-nicobar-bjp-mp-p1qv"
+      },
+      {
+        "exam_name": "Assistant Loco Pilot and Assistant Station Master recruitment examination",
+        "conducting_body": "Railway Recruitment Board, Mumbai",
+        "occurred_year": 2010,
+        "leak_status": "confirmed",
+        "outcome": "CBI case; ten convicted in January 2024",
+        "summary": "The CBI registered a case on 15 June 2010 over the leak of question papers for 1,936 assistant loco pilot and station master posts, for an exam scheduled nine days earlier. Nearly fourteen years later a special CBI court convicted ten people, the board's former Mumbai chairman among them, sentencing each to five years' rigorous imprisonment; four were acquitted.",
+        "outlet": "The Week",
+        "url": "https://www.theweek.in/wire-updates/national/2024/01/30/del90-cbi-railways.html"
+      },
+      {
         "exam_name": "All-India Post-Graduate Medical Entrance Examination",
         "conducting_body": "AIIMS, New Delhi",
         "occurred_year": 2006,
+        "leak_status": "confirmed",
         "outcome": "CBI chargesheeted 52 people",
         "summary": "The CBI charged 52 people, several of them doctors, with leaking question papers using a DocuPen — a scanner the size of a pen.",
         "outlet": "The Tribune",
@@ -131,157 +247,257 @@
         "exam_name": "All-India Pre-Medical Test (AIPMT)",
         "conducting_body": "Central Board of Secondary Education",
         "occurred_year": 2004,
-        "outcome": "Cancelled",
-        "summary": "Cancelled after question papers leaked — the earliest national medical entrance leak in this tally.",
+        "leak_status": "confirmed",
+        "outcome": "Cancelled nationally; a CBI inquiry ordered",
+        "summary": "The physics and chemistry papers leaked in New Delhi between ten and fourteen hours before the 11 April exam, and matched the originals. The board cancelled the test nationally, the HRD minister ordered a CBI inquiry, two people were arrested and thirteen candidates detained.",
         "outlet": "The Tribune",
-        "url": "https://www.tribuneindia.com/news/india/not-just-2026-neet-over-90-exam-leaks-irregularities-reported-in-two-decades/"
+        "url": "https://www.tribuneindia.com/2004/20040412/main5.htm"
       },
       {
         "exam_name": "Common Admission Test (CAT)",
         "conducting_body": "Indian Institutes of Management",
         "occurred_year": 2003,
+        "leak_status": "confirmed",
         "outcome": "Not reported",
         "summary": "The leak of the IIMs' entrance paper, and the point at which the tally of national examination scandals begins.",
         "outlet": "The Tribune",
         "url": "https://www.tribuneindia.com/news/india/not-just-2026-neet-over-90-exam-leaks-irregularities-reported-in-two-decades/"
       }
     ],
-    "maharashtra": [
+    "andhra-pradesh": [
       {
-        "exam_name": "Maharashtra Teacher Eligibility Test (TET)",
-        "conducting_body": "Maharashtra State Council of Examination, Pune",
-        "occurred_year": 2026,
-        "outcome": "Postponed the day before; a fresh date awaited",
-        "summary": "Police raided a Bhiwandi hotel on 27 June, the day before the exam, and arrested three men allegedly distributing the paper to candidates; the council confirmed the seized papers matched the originals. Investigators say all four sets came out of the Agra press that printed them, on a deal put at about ₹1.5 crore, through a network running across Uttar Pradesh, Delhi, Haryana, Maharashtra and Bihar.",
-        "outlet": "ETV Bharat",
-        "url": "https://www.etvbharat.com/en/bharat/explainer-how-a-bihar-based-gang-leaked-maharashtra-tet-paper-from-an-agra-printing-press-enn26070106139"
-      }
-    ],
-    "uttar-pradesh": [
-      {
-        "exam_name": "Police Constable recruitment examination",
-        "conducting_body": "Uttar Pradesh Police",
-        "occurred_year": 2024,
-        "candidates_affected": "nearly 48 lakh",
-        "outcome": "Cancelled in February 2024; re-held",
-        "summary": "Scrapped after allegations that question papers leaked before the test. Investigations led to hundreds of reported arrests and the state ordered a fresh examination.",
-        "outlet": "The Tribune",
-        "url": "https://www.tribuneindia.com/news/india/vyapam-to-reet-to-neet-heres-a-10-year-timeline-of-paper-leak-scandals"
-      },
-      {
-        "exam_name": "Review Officer and Assistant Review Officer preliminary examination",
-        "conducting_body": "Uttar Pradesh Public Service Commission",
-        "occurred_year": 2024,
-        "outcome": "Cancelled",
-        "summary": "Cancelled days after the constable exam, candidates having said the paper went viral on social media before it began.",
-        "outlet": "The Tribune",
-        "url": "https://www.tribuneindia.com/news/india/vyapam-to-reet-to-neet-heres-a-10-year-timeline-of-paper-leak-scandals"
-      },
-      {
-        "exam_name": "Uttar Pradesh Teacher Eligibility Test (UPTET)",
-        "conducting_body": "Government of Uttar Pradesh",
-        "occurred_year": 2021,
-        "candidates_affected": "nearly 21 lakh",
-        "outcome": "Cancelled hours before it began; re-held",
-        "summary": "Called off with hours to go after reports that question papers had leaked through messaging platforms. Several arrests followed and the state ordered a fresh examination.",
-        "outlet": "The Tribune",
-        "url": "https://www.tribuneindia.com/news/india/vyapam-to-reet-to-neet-heres-a-10-year-timeline-of-paper-leak-scandals"
-      }
-    ],
-    "rajasthan": [
-      {
-        "exam_name": "Rajasthan Public Service Commission examination",
-        "conducting_body": "Rajasthan Public Service Commission",
+        "exam_name": "Class 10 (SSC) board examinations",
+        "conducting_body": "Board of Secondary Education, Andhra Pradesh",
         "occurred_year": 2022,
-        "outcome": "Not reported",
-        "summary": "Named among the major state-level leaks of this period. The compilation does not say which paper it was or what followed.",
-        "outlet": "The Tribune",
-        "url": "https://www.tribuneindia.com/news/india/not-just-2026-neet-over-90-exam-leaks-irregularities-reported-in-two-decades/"
+        "leak_status": "confirmed",
+        "outcome": "FIRs registered; about 70 arrests",
+        "summary": "Teachers on examination duty photographed papers minutes after the start — Telugu first, then maths and English — and shared them on WhatsApp across three districts.",
+        "outlet": "Siasat",
+        "url": "https://archive.siasat.com/news/andhra-pradesh-how-teachers-plotted-2022-leak-of-class-x-papers-2535422/"
+      }
+    ],
+    "arunachal-pradesh": [
+      {
+        "exam_name": "Assistant Engineer (Civil) examination",
+        "conducting_body": "Arunachal Pradesh Public Service Commission",
+        "occurred_year": 2022,
+        "leak_status": "confirmed",
+        "outcome": "Officials suspended; a CBI inquiry recommended",
+        "summary": "The paper leaked, ten people were arrested, and the commission's secretary and controller of examinations were suspended before a CBI probe was recommended.",
+        "outlet": "Careers360",
+        "url": "https://news.careers360.com/appsc-examination-paper-leak-secretary-joint-secretary-suspended"
+      }
+    ],
+    "assam": [
+      {
+        "exam_name": "Sub-Inspector (unarmed branch) written examination",
+        "conducting_body": "State Level Police Recruitment Board, Assam",
+        "occurred_year": 2020,
+        "leak_status": "confirmed",
+        "candidates_affected": "about 66,000",
+        "outcome": "Cancelled minutes after it began; a CID inquiry followed",
+        "summary": "The paper circulated on WhatsApp on the morning of the test. The exam was called off minutes after it started and three people were arrested.",
+        "outlet": "The Sentinel",
+        "url": "https://www.sentinelassam.com/north-east-india-news/assam-news/3-arrested-in-connection-with-leaking-assam-police-si-written-test-question-paper-503093"
       },
       {
-        "exam_name": "Rajasthan Eligibility Examination for Teachers (REET)",
-        "occurred_year": 2021,
-        "candidates_affected": "more than 16 lakh, for about 31,000 posts",
-        "outcome": "Level-2 paper cancelled in February 2022",
-        "summary": "Leak allegations brought protests, internet shutdowns and heavy police deployment across several districts. After weeks of demonstrations the state cancelled the Level-2 examination.",
-        "outlet": "The Tribune",
-        "url": "https://www.tribuneindia.com/news/india/vyapam-to-reet-to-neet-heres-a-10-year-timeline-of-paper-leak-scandals"
-      },
-      {
-        "exam_name": "Rajasthan Pre-Medical Test",
-        "occurred_year": 2006,
-        "outcome": "Not reported",
-        "summary": "One of the early state medical entrance controversies this two-decade tally traces the pattern back to.",
-        "outlet": "The Tribune",
-        "url": "https://www.tribuneindia.com/news/india/not-just-2026-neet-over-90-exam-leaks-irregularities-reported-in-two-decades/"
+        "exam_name": "Agricultural Development Officer and combined competitive recruitment",
+        "conducting_body": "Assam Public Service Commission",
+        "occurred_year": 2013,
+        "leak_status": "confirmed",
+        "outcome": "34 convicted in 2024, the former chairman among them",
+        "summary": "The cash-for-jobs scam: OMR sheets were altered and marks raised for candidates who paid bribes. The commission's former chairman and dozens of others were convicted more than a decade later.",
+        "outlet": "The Assam Tribune",
+        "url": "https://assamtribune.com/assam/rakesh-paul-33-others-convicted-in-apsc-cash-for-job-scam-1544892"
       }
     ],
     "bihar": [
       {
-        "exam_name": "Constable recruitment examination",
-        "occurred_year": 2023,
-        "outcome": "Cancelled",
-        "summary": "Cancelled over allegations that question papers had circulated digitally before the exam.",
-        "outlet": "The Tribune",
-        "url": "https://www.tribuneindia.com/news/india/vyapam-to-reet-to-neet-heres-a-10-year-timeline-of-paper-leak-scandals"
+        "exam_name": "70th Combined Competitive Examination (Prelims)",
+        "conducting_body": "Bihar Public Service Commission",
+        "occurred_year": 2024,
+        "leak_status": "alleged",
+        "candidates_affected": "about 4.8 lakh",
+        "outcome": "Re-held on 4 January 2025 for one Patna centre only",
+        "summary": "Candidates at the Bapu Pariksha Parisar centre in Patna said the question-paper seal had been broken and the paper leaked. The commission denied any statewide leak but ordered a re-exam for the roughly 12,000 candidates at that centre alone, which set off protests and a case in the Supreme Court.",
+        "outlet": "Careers360",
+        "url": "https://news.careers360.com/bpsc-70th-cce-re-exam-on-january-4-for-patna-bapu-exam-centre-paper-leak-protest-cancelled"
       },
       {
-        "exam_name": "67th Combined Preliminary Examination",
+        "exam_name": "Community Health Officer recruitment examination",
+        "conducting_body": "State Health Society / NHM Bihar",
+        "occurred_year": 2024,
+        "leak_status": "confirmed",
+        "outcome": "Cancelled",
+        "summary": "The computer-based exam for about 4,500 posts was cancelled after the Economic Offences Unit found that a solver gang had reached the examination computers through proxy servers and remote-access software. Around 37 people were detained in raids on several centres.",
+        "outlet": "India TV",
+        "url": "https://www.indiatvnews.com/jobs/news/nhm-bihar-cho-2024-recruitment-exam-cancelled-due-to-paper-leak-2024-12-02-964328"
+      },
+      {
+        "exam_name": "TRE 3.0 school teacher recruitment examination",
+        "conducting_body": "Bihar Public Service Commission",
+        "occurred_year": 2024,
+        "leak_status": "confirmed",
+        "outcome": "Both shifts cancelled; re-held in July 2024",
+        "summary": "The Economic Offences Unit found that a solver gang had obtained the paper before it was bar-coded and printed. The commission cancelled both shifts of the 15 March exam, hundreds of people were detained, and the re-test was held four months later.",
+        "outlet": "Careers360",
+        "url": "https://news.careers360.com/bpsc-tre-30-exam-cancelled-due-paper-leak-re-exam-dates-announced-soon-latest-news"
+      },
+      {
+        "exam_name": "Police Constable recruitment written examination",
+        "conducting_body": "Central Selection Board of Constable",
+        "occurred_year": 2023,
+        "leak_status": "confirmed",
+        "outcome": "Cancelled",
+        "summary": "The board cancelled the 1 October exam, for 21,391 vacancies, after complaints of a paper leak and organised cheating. The Economic Offences Unit registered 67 FIRs across 21 districts and arrested 148 people.",
+        "outlet": "The Week",
+        "url": "https://www.theweek.in/wire-updates/national/2023/10/04/cal1-bh-police-paper-leak.html"
+      },
+      {
+        "exam_name": "3rd Graduate Level Combined Competitive Prelims",
+        "conducting_body": "Bihar Staff Selection Commission",
+        "occurred_year": 2022,
+        "leak_status": "confirmed",
+        "outcome": "The affected shift cancelled; referred to the Economic Offences Unit",
+        "summary": "Pages of the first-shift paper, for 2,187 posts, circulated on WhatsApp and Twitter as the exam began. The commission cancelled that shift amid student protests and a lathi-charge, and referred the matter to the Economic Offences Unit. It was sat at 528 centres across 38 districts.",
+        "outlet": "Careers360",
+        "url": "https://news.careers360.com/bssc-cgl-question-paper-2022-leaked-exam-images-go-viral-on-twitter-bihar"
+      },
+      {
+        "exam_name": "67th Combined Competitive Examination (Prelims)",
         "conducting_body": "Bihar Public Service Commission",
         "occurred_year": 2022,
+        "leak_status": "confirmed",
+        "candidates_affected": "about 6 lakh",
         "outcome": "Cancelled",
-        "summary": "Cancelled after question papers allegedly surfaced on social media before the test — an incident that put the printing, transport and digital circulation of papers under scrutiny.",
+        "summary": "Screenshots of the question paper went viral minutes before the exam. The commission cancelled the prelims, and the Economic Offences Unit arrested a block development officer serving as magistrate-in-charge along with three examination officials, under the IT Act and the state's examination-conduct law.",
+        "outlet": "Careers360",
+        "url": "https://news.careers360.com/bpsc-67th-question-paper-leak-bdo-college-invigilator-four-arrested-in-exam-paper-leak-case"
+      },
+      {
+        "exam_name": "1st Inter-Level Combined competitive examination",
+        "conducting_body": "Bihar Staff Selection Commission",
+        "occurred_year": 2017,
+        "leak_status": "confirmed",
+        "outcome": "Cancelled; about 30 arrests",
+        "summary": "The clerical-grade recruitment paper leaked on WhatsApp. The state cancelled the exam and a special investigation team arrested the commission's chairman, a senior IAS officer, along with several of his relatives and others — about thirty people in all.",
         "outlet": "The Tribune",
-        "url": "https://www.tribuneindia.com/news/india/vyapam-to-reet-to-neet-heres-a-10-year-timeline-of-paper-leak-scandals"
+        "url": "https://www.tribuneindia.com/news/archive/nation/paper-leak-case-bihar-staff-service-commission-chairman-arrested-in-jharkhand-368898"
       }
     ],
-    "madhya-pradesh": [
+    "chhattisgarh": [
       {
-        "exam_name": "Vyapam examinations (13 exams)",
-        "conducting_body": "Madhya Pradesh Professional Examination Board (Vyapam)",
-        "occurred_year": 2013,
-        "candidates_affected": "nearly 32 lakh a year",
-        "outcome": "634 doctors' degrees cancelled by the Supreme Court in 2017",
-        "summary": "The scandal the rest are measured against: impersonators, leaked answer keys and tampered answer sheets across medical admissions and recruitment exams from the mid-2000s. Probe records referred to at least 23 unnatural deaths linked to the case; more than 2,000 people had been arrested by 2015 and the Supreme Court moved the investigation to the CBI. Convictions are still coming more than a decade on.",
-        "outlet": "The Tribune",
-        "url": "https://www.tribuneindia.com/news/india/vyapam-to-reet-to-neet-heres-a-10-year-timeline-of-paper-leak-scandals"
-      }
-    ],
-    "uttarakhand": [
+        "exam_name": "Class 12 Hindi board examination",
+        "conducting_body": "Chhattisgarh Board of Secondary Education",
+        "occurred_year": 2026,
+        "leak_status": "confirmed",
+        "outcome": "Cancelled on 23 March 2026; re-held statewide on 10 April",
+        "summary": "The Hindi paper leaked and circulated on social media, allegedly sold for ₹3,000. The board filed a cyber-cell FIR, cancelled the exam and re-held it across the state. Three people were arrested.",
+        "outlet": "Careers360",
+        "url": "https://news.careers360.com/chhattisgarh-board-12th-hindi-re-exam-2026-on-april-10-timings-cgbse-paper-leak-social-media-claims"
+      },
       {
-        "exam_name": "Graduate-level recruitment examination",
-        "conducting_body": "Uttarakhand Subordinate Service Selection Commission",
-        "occurred_year": 2022,
-        "outcome": "Multiple arrests; the state passed an anti-copying law",
-        "summary": "The probe into the leak led to arrests and allegations of organised networks, intermediaries and officials, and pushed the state to bring in a stringent anti-copying law.",
-        "outlet": "The Tribune",
-        "url": "https://www.tribuneindia.com/news/india/vyapam-to-reet-to-neet-heres-a-10-year-timeline-of-paper-leak-scandals"
-      }
-    ],
-    "telangana": [
-      {
-        "exam_name": "Telangana Public Service Commission examination",
-        "conducting_body": "Telangana Public Service Commission",
+        "exam_name": "State Service Examination 2021",
+        "conducting_body": "Chhattisgarh Public Service Commission",
         "occurred_year": 2023,
-        "candidates_affected": "more than 25,000",
-        "outcome": "Not reported",
-        "summary": "A question paper leak at the state public service commission in March 2023 hit more than 25,000 candidates who had already sat the exam.",
+        "leak_status": "alleged",
+        "candidates_affected": "1,29,206",
+        "outcome": "CBI investigation; the former chairman arrested",
+        "summary": "A CBI inquiry into nepotism in recruitment for deputy collector, deputy superintendent of police and other posts. The chargesheet alleges the then chairman leaked question papers to his relatives and manipulated results, and that a businessman paid ₹45 lakh to have his son and daughter-in-law selected. The investigation spans the 2020 to 2022 examination cycles.",
         "outlet": "The Tribune",
-        "url": "https://www.tribuneindia.com/news/india/50-cases-of-public-exam-paper-leak-since-2015-588102"
+        "url": "https://www.tribuneindia.com/news/chhattisgarh/cgpsc-nepotism-scam-cbi-arrests-ex-chairman-businessman-for-rs-45-lakh-bribe/"
+      },
+      {
+        "exam_name": "Chhattisgarh Pre-Medical Test",
+        "occurred_year": 2014,
+        "leak_status": "alleged",
+        "outcome": "Not reported",
+        "summary": "Came under scrutiny over alleged irregularities, in the same run of state medical entrance controversies as Vyapam next door.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/india/not-just-2026-neet-over-90-exam-leaks-irregularities-reported-in-two-decades/"
+      },
+      {
+        "exam_name": "Chhattisgarh Pre-Medical Test",
+        "conducting_body": "Chhattisgarh Professional Examination Board",
+        "occurred_year": 2011,
+        "leak_status": "confirmed",
+        "candidates_affected": "about 20,000 registered",
+        "outcome": "Scrapped",
+        "summary": "The test was scrapped after a crime-branch raid on a rest house in Takhatpur, near Bilaspur, found around 80 aspirants being coached from the leaked paper. Twelve people were held, some of them dental and medical students. It was the second cancellation within weeks — the May sitting had already been deferred.",
+        "outlet": "India TV News",
+        "url": "https://www.indiatvnews.com/news/india/chhatisgarh-pmt-rescheduled-after-paper-leak-12-held-8582.html"
+      }
+    ],
+    "delhi": [
+      {
+        "exam_name": "Primary Teacher recruitment examination for municipal schools",
+        "conducting_body": "Delhi Subordinate Services Selection Board",
+        "occurred_year": 2017,
+        "leak_status": "confirmed",
+        "candidates_affected": "about 70,000",
+        "outcome": "Cancelled by the Lieutenant Governor; ordered to be re-held",
+        "summary": "Papers for the 29 October exam leaked amid complaints of mass cheating. Delhi Police registered an FIR the same day, and the Lieutenant Governor cancelled the exam on the strength of a police report and directed the board to hold it again. The deputy chief minister separately asked for a CBI inquiry.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/archive/delhi/cm-urges-lg-to-cancel-dsssb-papers-hold-exams-again-507254"
+      },
+      {
+        "exam_name": "Head Clerk (Grade II DASS) recruitment, Tier-I",
+        "conducting_body": "Delhi Subordinate Services Selection Board",
+        "occurred_year": 2014,
+        "leak_status": "alleged",
+        "outcome": "Selection cancelled in 2016; upheld by the Supreme Court in 2021",
+        "summary": "Complaints filed between October 2014 and March 2015 alleged leaked question papers, mass cheating and impersonation across both tiers. An inquiry committee found systemic irregularities, the selection was cancelled in March 2016, and the Supreme Court upheld that cancellation five years later.",
+        "outlet": "SCC Online",
+        "url": "https://www.scconline.com/blog/post/2021/03/05/recruitment-to-public-services-must-command-public-confidence-supreme-court-upholds-cancellation-of-dsssb-head-clerk-selection-process-in-light-of-systematic-irregularities/"
       }
     ],
     "gujarat": [
       {
+        "exam_name": "Junior Clerk recruitment examination",
+        "conducting_body": "Gujarat Panchayat Service Selection Board",
+        "occurred_year": 2023,
+        "leak_status": "confirmed",
+        "candidates_affected": "about 9.53 lakh",
+        "outcome": "Postponed hours before it began",
+        "summary": "Called off hours before the start after a copy of the question paper was seized. The state anti-terrorism squad traced an inter-state racket and 19 people were arrested.",
+        "outlet": "Careers360",
+        "url": "https://news.careers360.com/gujarat-junior-clerk-exam-cancelled-after-question-paper-leak-1-suspect-detained"
+      },
+      {
         "exam_name": "Forest Guard recruitment examination",
+        "conducting_body": "Gujarat University / State Forest Department",
         "occurred_year": 2022,
-        "outcome": "Not reported",
-        "summary": "One of 14 question paper leaks counted in Gujarat since 2015, and the most recent named in that count.",
-        "outlet": "The Tribune",
-        "url": "https://www.tribuneindia.com/news/india/50-cases-of-public-exam-paper-leak-since-2015-588102"
+        "leak_status": "alleged",
+        "outcome": "FIR registered",
+        "summary": "A candidate in Mehsana was found with a full answer sheet during the exam. The state minister called it a case of copying; the opposition called it a leak.",
+        "outlet": "Careers360",
+        "url": "https://news.careers360.com/gujarat-forest-guard-recruitment-exam-candidate-detained-sheet-answers-aap-congress-slam-bjp-govt-gujarat-university-forest-department/amp"
+      },
+      {
+        "exam_name": "Head Clerk recruitment examination",
+        "conducting_body": "Gujarat Subordinate Services Selection Board",
+        "occurred_year": 2021,
+        "leak_status": "confirmed",
+        "candidates_affected": "about 88,000",
+        "outcome": "Cancelled; a re-test ordered",
+        "summary": "The paper was obtained from a printing-press manager and sold to candidates before the test. The exam was cancelled, a re-test ordered and fourteen people arrested.",
+        "outlet": "Careers360",
+        "url": "https://news.careers360.com/guj-exam-for-recruitment-govt-posts-cancelled-after-paper-leak-key-accused-held-gujarat-head-clerk-scam"
+      },
+      {
+        "exam_name": "Non-Secretariat Clerk recruitment examination",
+        "conducting_body": "Gujarat Subordinate Services Selection Board",
+        "occurred_year": 2019,
+        "leak_status": "confirmed",
+        "outcome": "Cancelled in December 2019",
+        "summary": "Cancelled after allegations that the question paper had leaked — one of a documented run of Gujarat recruitment leaks that led the state to propose a new law.",
+        "outlet": "The Federal",
+        "url": "https://thefederal.com/states/west/gujarat/after-13-govt-exam-paper-leaks-in-nine-years-gujarat-proposes-new-law"
       },
       {
         "exam_name": "Talati examinations, Surendranagar and Gandhinagar",
         "occurred_year": 2016,
+        "leak_status": "confirmed",
         "outcome": "Not reported",
         "summary": "Village accountant recruitment papers leaked in two districts, among the 14 Gujarat leaks counted since 2015.",
         "outlet": "The Tribune",
@@ -290,6 +506,7 @@
       {
         "exam_name": "Talati examination",
         "occurred_year": 2015,
+        "leak_status": "confirmed",
         "outcome": "Not reported",
         "summary": "The village accountant recruitment paper leaked, the first of the 14 Gujarat incidents counted from 2015 onwards.",
         "outlet": "The Tribune",
@@ -299,30 +516,758 @@
         "exam_name": "Chief Officer examination",
         "conducting_body": "Gujarat Public Service Commission",
         "occurred_year": 2014,
+        "leak_status": "confirmed",
         "outcome": "Not reported",
         "summary": "A leak in the commission's chief officer recruitment, named among Gujarat's repeated examination failures.",
         "outlet": "The Tribune",
         "url": "https://www.tribuneindia.com/news/india/50-cases-of-public-exam-paper-leak-since-2015-588102"
       }
     ],
-    "chhattisgarh": [
+    "haryana": [
       {
-        "exam_name": "Chhattisgarh Pre-Medical Test",
-        "occurred_year": 2014,
-        "outcome": "Not reported",
-        "summary": "Came under scrutiny over alleged irregularities, in the same run of state medical entrance controversies as Vyapam next door.",
+        "exam_name": "Haryana Teacher Eligibility Test, Level-3 (PGT)",
+        "conducting_body": "Haryana Board of School Education",
+        "occurred_year": 2026,
+        "leak_status": "alleged",
+        "outcome": "No re-test; the board invited objections instead",
+        "summary": "The Congress alleged a leak, citing broken seals, mismatched OMR serial numbers and printing errors across 238 centres. The board denied it, said the process had been videographed and secure, and invited objections rather than ordering a fresh exam.",
         "outlet": "The Tribune",
-        "url": "https://www.tribuneindia.com/news/india/not-just-2026-neet-over-90-exam-leaks-irregularities-reported-in-two-decades/"
+        "url": "https://www.tribuneindia.com/news/haryana/haryana-teacher-eligibility-test-marred-by-controversy/"
+      },
+      {
+        "exam_name": "Police Constable (Male) recruitment examination",
+        "conducting_body": "Haryana Staff Selection Commission",
+        "occurred_year": 2021,
+        "leak_status": "confirmed",
+        "outcome": "Cancelled",
+        "summary": "The written exam was cancelled after the paper and its answer key leaked from a printing agency in Jammu and were sold for lakhs a candidate. The investigation reached 167 arrests over nearly four years.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/haryana/four-years-on-one-more-held-in-hssc-constable-exam-leak-case"
+      },
+      {
+        "exam_name": "Gram Sachiv (Panchayat Secretary) examination",
+        "conducting_body": "Haryana Staff Selection Commission",
+        "occurred_year": 2021,
+        "leak_status": "confirmed",
+        "candidates_affected": "about 8 lakh",
+        "outcome": "Cancelled",
+        "summary": "The exams held on 9 and 10 January for 697 posts were cancelled after an answer-key and impersonation racket surfaced. Eighteen suspects were arrested across two centres.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/punjab/paper-leak-hssc-cancels-gram-sachiv-examination-two-more-arrested-in-hisar-199422"
+      },
+      {
+        "exam_name": "Haryana Civil Service (Judicial Branch) Preliminary Examination",
+        "conducting_body": "Punjab and Haryana High Court",
+        "occurred_year": 2017,
+        "leak_status": "confirmed",
+        "outcome": "Prelims scrapped; three convicted",
+        "summary": "A High Court committee found the paper had leaked and the preliminary exam, for 109 judicial posts, was scrapped. The then Registrar (Recruitment) and two others were convicted, two of them given five-year jail terms in 2024.",
+        "outlet": "Careers360",
+        "url": "https://news.careers360.com/2017-hcs-exam-paper-leak-case-delhi-court-sentences-punjab-haryana-judicial-hc-ex-registrar-5-year-jail"
+      },
+      {
+        "exam_name": "Haryana Teacher Eligibility Test, Level-3",
+        "conducting_body": "Haryana Board of School Education",
+        "occurred_year": 2015,
+        "leak_status": "confirmed",
+        "candidates_affected": "about 1.37 lakh",
+        "outcome": "Cancelled the same day",
+        "summary": "The board cancelled the exam the same day, after a leak surfaced from Jind and the leaked paper was found to match the original. Five people were arrested.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/archive/haryana/htet-paper-leaked-in-jind-exam-cancelled-158218"
+      }
+    ],
+    "himachal-pradesh": [
+      {
+        "exam_name": "Junior Office Assistant (IT) recruitment examination",
+        "conducting_body": "Himachal Pradesh Staff Selection Commission, Hamirpur",
+        "occurred_year": 2022,
+        "leak_status": "confirmed",
+        "candidates_affected": "about 1.5 lakh",
+        "outcome": "Cancelled; the commission was suspended and then dissolved",
+        "summary": "A solved paper and ₹2.5 lakh were seized in Hamirpur on 23 December 2022, matching the paper held in the commission's strongroom. Six people were arrested initially, one of them an employee of its secrecy branch, and the exam was cancelled. The state suspended the commission three days later and dissolved it in February 2023, moving recruitment to the public service commission.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/himachal/jr-asst-paper-leaked-in-hamirpur-six-arrested-464017"
+      },
+      {
+        "exam_name": "Police Constable recruitment written test",
+        "conducting_body": "Himachal Pradesh Police",
+        "occurred_year": 2022,
+        "leak_status": "confirmed",
+        "candidates_affected": "about 75,000",
+        "outcome": "Cancelled on 6 May 2022; re-held on 3 July",
+        "summary": "The written test of 27 March, for 1,334 constable posts, was cancelled six weeks later when the paper was found to have leaked. A re-test that July selected 1,214 candidates. The CBI filed two chargesheets against 88 accused in March 2024.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/himachal/cbi-chargesheets-88-in-cop-recruitment-paper-leak-case-599581/"
+      },
+      {
+        "exam_name": "Combined Pre-Medical Test",
+        "conducting_body": "Himachal Pradesh University",
+        "occurred_year": 2006,
+        "leak_status": "confirmed",
+        "outcome": "A re-test was held",
+        "summary": "The medical entrance paper leaked through a network of touts and tutors linked to a printing press in Lucknow. Police found a post-dated cheque for ₹7 lakh written against a guaranteed seat, and a re-test was held.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/2006/20060831/himachal.htm"
+      }
+    ],
+    "jammu-and-kashmir": [
+      {
+        "exam_name": "Common Entrance Test (MBBS/BDS)",
+        "conducting_body": "J&K Board of Professional Entrance Examinations",
+        "occurred_year": 2012,
+        "leak_status": "confirmed",
+        "outcome": "Eleven candidates convicted",
+        "summary": "Medical entrance papers were sold with their answer keys ahead of the exam. The scam surfaced in 2013, the Crime Branch arrested the board's then chairman that November, 24 beneficiaries were identified, and eleven candidates were later convicted and given a year each.",
+        "outlet": "Greater Kashmir",
+        "url": "https://www.greaterkashmir.com/kashmir/bopee-scam-convicted-students-had-made-astronomical-jump-in-ranking/"
+      }
+    ],
+    "jharkhand": [
+      {
+        "exam_name": "Excise Constable Competitive Examination",
+        "conducting_body": "Jharkhand Staff Selection Commission",
+        "occurred_year": 2026,
+        "leak_status": "alleged",
+        "outcome": "FIRs and arrests; a chargesheet naming scores of accused",
+        "summary": "Police breaking up a cheating racket detained 164 people during the exam, 159 of them candidates, and recovered question papers in printed and digital form — though these did not exactly match the paper actually set. Candidates had allegedly paid between ₹10 lakh and ₹15 lakh each to an inter-state gang.",
+        "outlet": "ThePrint",
+        "url": "https://theprint.in/india/jkhand-159-candidates-among-164-held-over-paper-leak-allegations-in-excise-recruitment-exam/2903103/"
+      },
+      {
+        "exam_name": "Combined Graduate Level Examination (re-conducted)",
+        "conducting_body": "Jharkhand Staff Selection Commission",
+        "occurred_year": 2024,
+        "leak_status": "alleged",
+        "candidates_affected": "over 3 lakh",
+        "outcome": "Results withheld for a year, then released on the High Court's order",
+        "summary": "Leak allegations dogged the re-held exam. A special investigation team and the CID arrested at least ten people, five of them Indian Reserve Battalion jawans, but investigators found no physical evidence of an actual leak and concluded that a gang had extorted money from candidates in the name of one. Results were held back from December 2024 until the High Court dismissed a plea for a CBI inquiry and ordered their release a year later.",
+        "outlet": "ThePrint",
+        "url": "https://theprint.in/india/5-irb-jawans-among-8-arrested-by-jharkhand-cid-over-recruitment-exam-paper-leak/2564847/"
+      },
+      {
+        "exam_name": "Combined Civil Services Preliminary Examination",
+        "conducting_body": "Jharkhand Public Service Commission",
+        "occurred_year": 2024,
+        "leak_status": "denied",
+        "outcome": "Held; the claim was rejected",
+        "summary": "Candidates at centres in Jamtara, Chatra and Dhanbad protested that the paper had leaked, saying the seals were already open. The commission, the deputy commissioners and the state government rejected the claim, ruled out a leak and said action would be taken against those spreading it.",
+        "outlet": "ETV Bharat",
+        "url": "https://www.etvbharat.com/en/!state/jharkhand-alleged-question-paper-leak-of-jpsc-examination-enn24031702642"
+      },
+      {
+        "exam_name": "Combined Graduate Level Examination",
+        "conducting_body": "Jharkhand Staff Selection Commission",
+        "occurred_year": 2024,
+        "leak_status": "confirmed",
+        "outcome": "The third-shift paper cancelled; the next sitting postponed",
+        "summary": "The commission cancelled the general knowledge paper of the third shift after roughly 70 questions and their answers circulated on WhatsApp before the test, and postponed the 4 February sitting. About 54,300 aspirants had sat it that day across 108 centres in Ranchi. President Murmu asked the state to investigate and the opposition demanded a CBI inquiry.",
+        "outlet": "Careers360",
+        "url": "https://news.careers360.com/jssc-cgl-2024-exam-postponed-due-paper-leak-new-dates-soon"
+      }
+    ],
+    "karnataka": [
+      {
+        "exam_name": "Police Sub-Inspector recruitment examination",
+        "conducting_body": "Karnataka State Police, Recruitment Wing",
+        "occurred_year": 2021,
+        "leak_status": "confirmed",
+        "candidates_affected": "54,041",
+        "outcome": "Results annulled; a re-exam held",
+        "summary": "OMR answer sheets were tampered with to favour particular candidates. The results were annulled and the exam re-held, with senior police officers among the thirty people arrested.",
+        "outlet": "The Quint",
+        "url": "https://www.thequint.com/news/politics/explained-all-you-need-to-know-about-psi-scam-for-the-recruitment-of-police-sub-inspectors-in-karnataka"
+      },
+      {
+        "exam_name": "Second PU (Class 12) board examination",
+        "conducting_body": "Department of Pre-University Education, Karnataka",
+        "occurred_year": 2012,
+        "leak_status": "confirmed",
+        "outcome": "CID inquiry; ten arrests",
+        "summary": "Physics, maths and biology papers were stolen from a sub-treasury strongroom in Chikmagalur district and circulated by email, fax and in person. The CID arrested ten people, three of them teachers.",
+        "outlet": "Careerindia",
+        "url": "https://www.careerindia.com/news/2012/04/05/karnataka-pu-paper-leak-case-10-arrested-by-cid.html"
+      }
+    ],
+    "madhya-pradesh": [
+      {
+        "exam_name": "State Service and State Forest Service Prelims",
+        "conducting_body": "Madhya Pradesh Public Service Commission",
+        "occurred_year": 2024,
+        "leak_status": "denied",
+        "candidates_affected": "about 1.83 lakh",
+        "outcome": "Held as scheduled; an FIR filed over the fake",
+        "summary": "A Telegram account claimed the general studies paper had leaked and offered it for sale. The commission compared it with the original and declared it a fake; Indore police filed an FIR against an unidentified person and the exam went ahead on schedule.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/india/case-registered-for-bid-to-sell-online-fake-question-paper-of-madhya-pradesh-public-service-commission-exam-633671/amp"
+      },
+      {
+        "exam_name": "Forest Guard (Vanrakshak) recruitment examination",
+        "conducting_body": "Madhya Pradesh Employees Selection Board",
+        "occurred_year": 2023,
+        "leak_status": "suspected",
+        "candidates_affected": "about one lakh",
+        "outcome": "Results of 113 candidates withheld pending re-verification",
+        "summary": "The board held back the results of 113 candidates after detecting what it called abnormal patterns suggesting possible irregularity or document manipulation. The exam ran online from 25 May to 20 June 2023 for 1,670 posts.",
+        "outlet": "Bansal News",
+        "url": "https://bansalnews.com/mp-forest-guard-bharti-scam-result-hold-esb-investigation-hindi-news-zvj/"
+      },
+      {
+        "exam_name": "Patwari recruitment examination",
+        "conducting_body": "Madhya Pradesh Employees Selection Board",
+        "occurred_year": 2023,
+        "leak_status": "alleged",
+        "candidates_affected": "about 9.74 lakh",
+        "outcome": "Appointments stayed, then resumed after a clean chit",
+        "summary": "After the results in June 2023, aspirants and the Congress alleged irregularities — seven of the top ten and 114 selections from a single Gwalior centre, and disputes over normalisation. The chief minister stayed the appointments amid statewide protests; a state committee gave a clean chit in February 2024 and appointments resumed. No paper leak was established.",
+        "outlet": "The Week",
+        "url": "https://www.theweek.in/news/india/2023/07/13/mp-patwari-recruitment-scam-worry-for-bjp-govt-as-youths-hold-massive-statewide-protests.html"
+      },
+      {
+        "exam_name": "Vyapam examinations (13 exams)",
+        "conducting_body": "Madhya Pradesh Professional Examination Board (Vyapam)",
+        "occurred_year": 2013,
+        "leak_status": "confirmed",
+        "candidates_affected": "nearly 32 lakh a year",
+        "outcome": "634 doctors' degrees cancelled by the Supreme Court in 2017",
+        "summary": "The scandal the rest are measured against: impersonators, leaked answer keys and tampered answer sheets across medical admissions and recruitment exams from the mid-2000s. Probe records referred to at least 23 unnatural deaths linked to the case; more than 2,000 people had been arrested by 2015 and the Supreme Court moved the investigation to the CBI. Convictions are still coming more than a decade on.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/india/vyapam-to-reet-to-neet-heres-a-10-year-timeline-of-paper-leak-scandals"
+      },
+      {
+        "exam_name": "Pre-Medical Test",
+        "conducting_body": "Madhya Pradesh Professional Examination Board (Vyapam)",
+        "occurred_year": 2013,
+        "leak_status": "confirmed",
+        "outcome": "A special task force was constituted on 26 August 2013",
+        "summary": "On the night before the exam, Indore police detained twenty men brought in from out of state to impersonate candidates, and the racket came apart. A list of 317 candidates was later seized from a mastermind, and the state constituted a special task force seven weeks afterwards.",
+        "outlet": "Careers360",
+        "url": "https://news.careers360.com/vyapam-scam-five-sentenced-imprisonment-for-fraud-at-mp-medical-entrance-test-in-2013/amp"
+      },
+      {
+        "exam_name": "Police Constable recruitment examination",
+        "conducting_body": "Madhya Pradesh Professional Examination Board (Vyapam)",
+        "occurred_year": 2013,
+        "leak_status": "confirmed",
+        "outcome": "31 convicted in November 2019",
+        "summary": "Impersonation and forgery in the constable exam. A CBI court convicted 31 people, among them twelve impostors and seven middlemen, sentencing one to ten years and thirty to seven years' rigorous imprisonment.",
+        "outlet": "India TV",
+        "url": "https://www.indiatvnews.com/news/india/2013-police-constable-recruitment-vyapam-scam-cbi-court-sentence-improsinment-31-accused-566413"
+      },
+      {
+        "exam_name": "Transport Constable recruitment test",
+        "conducting_body": "Madhya Pradesh Professional Examination Board (Vyapam)",
+        "occurred_year": 2012,
+        "leak_status": "confirmed",
+        "outcome": "CBI chargesheet against 26 people",
+        "summary": "OMR sheets were altered by board employees to pass favoured candidates.",
+        "outlet": "Outlook India",
+        "url": "https://www.outlookindia.com/national/india-news-cbi-gives-clean-chit-to-former-mp-minister-in-vyapam-scam-news-323886"
+      },
+      {
+        "exam_name": "Police Constable recruitment examination",
+        "conducting_body": "Madhya Pradesh Professional Examination Board (Vyapam)",
+        "occurred_year": 2012,
+        "leak_status": "confirmed",
+        "outcome": "Eleven sentenced to seven years each in May 2024",
+        "summary": "Candidates arranged for impersonators to sit the 30 September exam in their place. A special CBI court sentenced eleven people — six candidates and five impersonators — to seven years' rigorous imprisonment each.",
+        "outlet": "India TV",
+        "url": "https://www.indiatvnews.com/madhya-pradesh/vyapam-case-special-cbi-court-sentences-11-to-7-years-mpesb-case-madhya-pradesh-police-constable-recruitment-examination-mpre-act-2024-05-27-933724"
+      },
+      {
+        "exam_name": "Contract Teacher Eligibility Test (Samvida Shala Shikshak, Varg-3)",
+        "conducting_body": "Madhya Pradesh Professional Examination Board (Vyapam)",
+        "occurred_year": 2011,
+        "leak_status": "confirmed",
+        "outcome": "CBI chargesheet against 95 people",
+        "summary": "The marks of 84 favoured candidates were inflated on the OMR and computer records to qualify them. The CBI chargesheeted 95 accused in January 2018, including a former state minister, two board officials, six middlemen and 83 candidates.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/archive/nation/vyapam-cbi-chargesheets-ex-minister-529713/amp"
+      },
+      {
+        "exam_name": "Pre-Medical Test",
+        "conducting_body": "Madhya Pradesh Professional Examination Board (Vyapam)",
+        "occurred_year": 2009,
+        "leak_status": "confirmed",
+        "candidates_affected": "114 qualified through impersonation",
+        "outcome": "Convictions in the CBI courts",
+        "summary": "Paid solvers and impersonators sat the exam in place of registered candidates, using forged photo identification. A state committee reported in November 2011 that 114 candidates had qualified this way, and CBI courts later convicted several of those involved.",
+        "outlet": "The Free Press Journal",
+        "url": "https://www.freepressjournal.in/education/indore-5-years-imprisonment-to-candidate-and-impersonator-in-2009-pmt-exam-case"
+      },
+      {
+        "exam_name": "Patwari recruitment examination",
+        "conducting_body": "Madhya Pradesh Professional Examination Board (Vyapam)",
+        "occurred_year": 2008,
+        "leak_status": "confirmed",
+        "outcome": "Ten sentenced to five years each in December 2025",
+        "summary": "The accused produced forged educational certificates to fake their eligibility and secure patwari posts. A CBI court sentenced ten of them to five years' rigorous imprisonment each, seventeen years after the exam.",
+        "outlet": "The420.in",
+        "url": "https://the420.in/vyapam-scam-cbi-court-patwari-exam-fraud-10-convicts-sentenced/"
+      }
+    ],
+    "maharashtra": [
+      {
+        "exam_name": "Class 12 Chemistry board examination",
+        "conducting_body": "Maharashtra State Board of Secondary and Higher Secondary Education",
+        "occurred_year": 2026,
+        "leak_status": "confirmed",
+        "outcome": "An arrest under the malpractices act; a special investigation team formed",
+        "summary": "Questions from a coaching academy's practice test matched the board paper. The academy's director was arrested in Umred, near Nagpur, and a special investigation team was formed.",
+        "outlet": "Careers360",
+        "url": "https://news.careers360.com/maharashtra-board-exams-2026-class-12-chemistry-paper-leak-coaching-class-director-arrested-in-nagpurs-umred-area/amp"
+      },
+      {
+        "exam_name": "Maharashtra Teacher Eligibility Test (TET)",
+        "conducting_body": "Maharashtra State Council of Examination, Pune",
+        "occurred_year": 2026,
+        "leak_status": "confirmed",
+        "outcome": "Postponed the day before; a fresh date awaited",
+        "summary": "Police raided a Bhiwandi hotel on 27 June, the day before the exam, and arrested three men allegedly distributing the paper to candidates; the council confirmed the seized papers matched the originals. Investigators say all four sets came out of the Agra press that printed them, on a deal put at about ₹1.5 crore, through a network running across Uttar Pradesh, Delhi, Haryana, Maharashtra and Bihar.",
+        "outlet": "ETV Bharat",
+        "url": "https://www.etvbharat.com/en/bharat/explainer-how-a-bihar-based-gang-leaked-maharashtra-tet-paper-from-an-agra-printing-press-enn26070106139"
+      },
+      {
+        "exam_name": "Teacher Eligibility Test (TET)",
+        "conducting_body": "Maharashtra State Council of Examination",
+        "occurred_year": 2025,
+        "leak_status": "confirmed",
+        "outcome": "FIRs and arrests",
+        "summary": "Kolhapur police broke up a ring selling leaked papers for about ₹3 lakh each, catching test-takers waiting for the materials in a raid. Eighteen people were arrested.",
+        "outlet": "Careers360",
+        "url": "https://news.careers360.com/maharashtra-tet-paper-leak-18-arrested-in-kolhapur-for-alleged-exam-scam"
+      },
+      {
+        "exam_name": "Talathi (village accountant) recruitment examination",
+        "conducting_body": "Maharashtra Revenue Department / TCS-iON",
+        "occurred_year": 2023,
+        "leak_status": "alleged",
+        "candidates_affected": "about 8.65 lakh",
+        "outcome": "FIR registered",
+        "summary": "A man already suspected in an earlier leak was caught in Nashik on the first day with 186 photographs of the paper and spy equipment. Separate allegations of topper-favouritism were made against the agency conducting the exam.",
+        "outlet": "Lokmat Times",
+        "url": "https://www.lokmattimes.com/maharashtra/leaks-cheating-and-cries-for-justice-unraveling-the-talathi-exam-scandal-a475/"
+      },
+      {
+        "exam_name": "MHADA staff recruitment examination",
+        "conducting_body": "Maharashtra Housing and Area Development Authority",
+        "occurred_year": 2021,
+        "leak_status": "confirmed",
+        "outcome": "Cancelled pre-emptively",
+        "summary": "Three people were held in Pune with digital copies of the paper, one of them a question-setter working for the private vendor. The exam was cancelled before it was sat.",
+        "outlet": "India TV",
+        "url": "https://www.indiatvnews.com/education/news-mhada-recruitment-exam-cancelled-after-3-held-for-bid-to-leak-question-paper-749260"
+      },
+      {
+        "exam_name": "Teacher Eligibility Test (TET)",
+        "conducting_body": "Maharashtra State Council of Examination",
+        "occurred_year": 2020,
+        "leak_status": "confirmed",
+        "candidates_affected": "about 7,800",
+        "outcome": "Arrests, including the council's commissioner",
+        "summary": "The marks of thousands of candidates were manipulated for money. Thirteen people were arrested, among them the council's commissioner and an IAS officer.",
+        "outlet": "Careers360",
+        "url": "https://news.careers360.com/tet-case-ias-officer-held-in-thane-count-of-arrested-rises-13"
+      }
+    ],
+    "odisha": [
+      {
+        "exam_name": "Junior Engineer (Civil) main written examination",
+        "conducting_body": "Odisha Staff Selection Commission",
+        "occurred_year": 2023,
+        "leak_status": "confirmed",
+        "outcome": "Cancelled; re-held on 3 September 2023",
+        "summary": "Seized papers matched the original and police confirmed the leak. The exam was cancelled, a fresh test held seven weeks later, and 55 candidates were issued show-cause notices. Seventeen people were arrested.",
+        "outlet": "Outlook India",
+        "url": "https://www.outlookindia.com/education/ossc-cancels-main-written-exam-of-je-civil-as-police-confirm-leak-of-question-paper-news-305233"
       }
     ],
     "punjab": [
       {
+        "exam_name": "Pharmacist Officer recruitment examination",
+        "conducting_body": "Baba Farid University of Health Sciences",
+        "occurred_year": 2026,
+        "leak_status": "denied",
+        "candidates_affected": "about 7,000",
+        "outcome": "Arrests; police found no advance leak",
+        "summary": "Police broke up a high-tech cheating racket in which a candidate photographed the paper with a pen camera and solvers relayed answers back through wireless micro-devices. Seven conspirators were arrested and 28 candidates detained, some of whom had given post-dated cheques of between ₹3.5 lakh and ₹13 lakh. Police stated that the paper had not leaked in advance and that no officials were involved.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/punjab/police-arrest-7-kingpins-28-candidates-in-punjab-pharmacist-officer-recruitment-exam-scam/"
+      },
+      {
+        "exam_name": "Group-B recruitment examination (408 posts)",
+        "conducting_body": "Punjab Subordinate Services Selection Board",
+        "occurred_year": 2025,
+        "leak_status": "suspected",
+        "candidates_affected": "about one lakh",
+        "outcome": "Referred to the Vigilance Bureau; still pending after six months",
+        "summary": "Aspirants alleged irregularities — answer sheets corrected with whitener, and toppers clustering at Bathinda. The board referred the matter to the Vigilance Bureau in January 2026, but six months on the inquiry had produced no arrests and candidates were still demanding a re-exam. The posts included naib tehsildars, treasury officers and senior assistants.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/bathinda/six-months-on-probe-into-punjab-group-b-paper-leak-still-pending/"
+      },
+      {
+        "exam_name": "Naib Tehsildar recruitment test",
+        "conducting_body": "Punjab Public Service Commission",
+        "occurred_year": 2022,
+        "leak_status": "confirmed",
+        "outcome": "The merit list scrapped and the exam ordered to be re-held",
+        "summary": "Dummy candidates photographed the question paper with hidden cameras and sent it to solvers in Haryana, who relayed the answers back over Bluetooth and GSM devices; a deal of about ₹22 lakh was struck. Five people were arrested, and the government scrapped the merit list for the 78 posts and ordered a fresh exam.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/punjab/5-arrested-for-helping-candidates-cheat-in-punjab-naib-tehsildar-recruitment-test-451278"
+      },
+      {
+        "exam_name": "Medical Officer (Dental) recruitment test",
+        "conducting_body": "Baba Farid University of Health Sciences",
+        "occurred_year": 2020,
+        "leak_status": "confirmed",
+        "candidates_affected": "about 11,000",
+        "outcome": "The dental paper alone was re-conducted",
+        "summary": "The dental officer paper went viral on social media about eighty minutes into the test. The university traced the leak to a single centre, withheld the dental result and re-held only that paper — the general medical officer and pharmacist papers stood. The re-test found 1,957 of about 3,000 candidates eligible for 35 posts. The leak was traced to Goindwal Sahib in Tarn Taran.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/punjab/1-957-clear-dental-medical-officer-retest-161116"
+      },
+      {
         "exam_name": "Punjab Medical Entrance Test",
         "occurred_year": 2007,
+        "leak_status": "confirmed",
         "outcome": "Not reported",
         "summary": "One of the earlier state medical entrance leaks named in this two-decade tally.",
         "outlet": "The Tribune",
         "url": "https://www.tribuneindia.com/news/india/not-just-2026-neet-over-90-exam-leaks-irregularities-reported-in-two-decades/"
+      }
+    ],
+    "rajasthan": [
+      {
+        "exam_name": "Rajasthan Eligibility Examination for Teachers (REET)",
+        "conducting_body": "Board of Secondary Education, Rajasthan",
+        "occurred_year": 2023,
+        "leak_status": "alleged",
+        "outcome": "Held as scheduled; 37 arrested over the attempt",
+        "summary": "Police raided a marriage hall in Jodhpur hours before the exam and arrested 37 people — thirty students and seven others — over an alleged attempt to leak the paper. The paper recovered did not match the one actually set, and the exam went ahead.",
+        "outlet": "Free Press Journal",
+        "url": "https://www.freepressjournal.in/education/reet-2023-37-arrested-in-police-raid-over-alleged-attempts-to-leak-question-paper"
+      },
+      {
+        "exam_name": "Senior Teacher Grade II General Knowledge examination",
+        "conducting_body": "Rajasthan Public Service Commission",
+        "occurred_year": 2022,
+        "leak_status": "confirmed",
+        "outcome": "The shift cancelled; at least 44 arrested",
+        "summary": "Candidates were caught solving the leaked general knowledge paper in a bus near Udaipur, hours before the exam, and the shift was cancelled. At least 44 people were arrested — 37 students and seven tutors. A member of the commission was accused of taking ₹60 lakh to leak the paper and was later arrested.",
+        "outlet": "ThePrint",
+        "url": "https://theprint.in/india/rajasthan-2nd-grade-teacher-recruitment-exam-paper-leaked-44-held/1280589/"
+      },
+      {
+        "exam_name": "Forest Guard recruitment examination",
+        "conducting_body": "Rajasthan Staff Selection Board",
+        "occurred_year": 2022,
+        "leak_status": "confirmed",
+        "outcome": "The evening shift cancelled",
+        "summary": "The evening shift was cancelled after a paper-leak gang was broken up in Rajsamand, where a technical assistant had been sent the answers on WhatsApp an hour before the test. Nine people were held initially and the Special Operations Group's inquiry took the total to about eleven.",
+        "outlet": "Careers360",
+        "url": "https://news.careers360.com/rajasthan-forest-guard-exams-one-shift-cancelled-over-paper-leak-9-held/amp"
+      },
+      {
+        "exam_name": "Police Constable recruitment examination",
+        "conducting_body": "Rajasthan Police Recruitment and Promotion Board",
+        "occurred_year": 2022,
+        "leak_status": "confirmed",
+        "candidates_affected": "about 1.6 lakh",
+        "outcome": "The second shift cancelled; re-held on 2 July 2022",
+        "summary": "The second-shift paper leaked through a screenshot taken at a Jhotwara examination centre. That shift was cancelled and a fresh test held for the affected candidates seven weeks later. Eight people were arrested, one of them an assistant sub-inspector.",
+        "outlet": "Careers360",
+        "url": "https://news.careers360.com/rajasthan-police-constable-exam-paper-leak-fresh-test-on-july-2/amp"
+      },
+      {
+        "exam_name": "Lower Division Clerk recruitment examination",
+        "conducting_body": "Rajasthan High Court",
+        "occurred_year": 2022,
+        "leak_status": "confirmed",
+        "outcome": "Cancelled",
+        "summary": "The High Court's own clerical recruitment paper leaked at Jodhpur and the exam was cancelled.",
+        "outlet": "Daijiworld",
+        "url": "https://daijiworld.com/news/newsDisplay?newsID=1054403"
+      },
+      {
+        "exam_name": "Rajasthan Eligibility Examination for Teachers (REET), Level 2",
+        "conducting_body": "Board of Secondary Education, Rajasthan",
+        "occurred_year": 2021,
+        "leak_status": "confirmed",
+        "outcome": "Cancelled and re-conducted; posts raised from 32,000 to 62,000",
+        "summary": "The Level-2 paper leaked, and the state cancelled and re-held the exam, nearly doubling the posts on offer. About 38 people were arrested by the Special Operations Group, the board's chairman was sacked and its secretary and two others suspended.",
+        "outlet": "Careers360",
+        "url": "https://news.careers360.com/reet-2021-rajasthan-govt-cancels-level-2-exam/amp"
+      },
+      {
+        "exam_name": "Sub-Inspector recruitment examination",
+        "conducting_body": "Rajasthan Public Service Commission",
+        "occurred_year": 2021,
+        "leak_status": "confirmed",
+        "outcome": "Recruitment quashed by the High Court in August 2025, then stayed on appeal",
+        "summary": "A large-scale leak involving two members of the commission — one accused of passing the paper to his two children, who topped the exam and who was arrested in September 2024 — along with dummy candidates and distribution gangs. More than fifty trainee sub-inspectors and their associates were arrested. The High Court quashed the recruitment to 859 posts, an order later stayed on appeal.",
+        "outlet": "ETV Bharat",
+        "url": "https://www.etvbharat.com/en/!state/rajasthan-high-court-cancels-2021-si-recruitment-exam-over-paper-leak-enn25082802897"
+      },
+      {
+        "exam_name": "Patwari recruitment examination",
+        "conducting_body": "Rajasthan Staff Selection Board",
+        "occurred_year": 2021,
+        "leak_status": "alleged",
+        "candidates_affected": "about 15.62 lakh registered",
+        "outcome": "Held; the paper sold was found to be a fake",
+        "summary": "A coaching-institute owner was arrested for selling a fake question paper, having taken ₹4 lakh in advance, and a government clerk for sitting as a dummy candidate. The paper sold was not the official one, the exam was not cancelled and it concluded as planned, for more than 5,300 posts.",
+        "outlet": "Careers360",
+        "url": "https://news.careers360.com/patwari-exam-coaching-institute-owner-govt-school-clerk-held-in-rajasthan-for-malpractice/amp"
+      },
+      {
+        "exam_name": "Junior Engineer recruitment examination",
+        "conducting_body": "Rajasthan Staff Selection Board",
+        "occurred_year": 2020,
+        "leak_status": "confirmed",
+        "outcome": "Cancelled; the September 2021 re-test was compromised too",
+        "summary": "The paper leaked from a government school in Jaipur ahead of the test and the board cancelled the exam. Around 24 people were arrested. The re-test held the following September was also found to have been compromised, and an assistant engineer who had used the leaked re-test paper was later arrested.",
+        "outlet": "Careers360",
+        "url": "https://news.careers360.com/rajasthan-je-recruitment-2020-question-paper-for-exam-recruit-junior-engineers-was-leaked-even-during-re-test-police/amp"
+      },
+      {
+        "exam_name": "Librarian Grade III recruitment examination",
+        "conducting_body": "Rajasthan Staff Selection Board",
+        "occurred_year": 2019,
+        "leak_status": "confirmed",
+        "candidates_affected": "about 55,000",
+        "outcome": "Cancelled; a re-test ordered",
+        "summary": "The question paper and answer key circulated on WhatsApp roughly two hours before the exam. The board cancelled it and ordered a re-test; about six people were arrested.",
+        "outlet": "Daijiworld",
+        "url": "https://daijiworld.com/news/newsDisplay?newsID=1054403"
+      },
+      {
+        "exam_name": "Rajasthan Administrative Service Preliminary Examination",
+        "conducting_body": "Rajasthan Public Service Commission",
+        "occurred_year": 2013,
+        "leak_status": "confirmed",
+        "outcome": "Scrapped; arrests followed",
+        "summary": "The prelims were scrapped after the Special Operations Group found that about twenty of the top fifty selected candidates — the mastermind's wife among them — had seen the leaked paper. The alleged mastermind himself died in suspicious circumstances during a custody transfer from Varanasi to Jaipur in 2014, and his family alleged murder.",
+        "outlet": "Careers360",
+        "url": "https://news.careers360.com/rajasthan-ras-paper-leak-mastermind-dies-under-suspicious-circumstances-family-alleges-murder"
+      },
+      {
+        "exam_name": "Rajasthan Pre-Medical Test",
+        "occurred_year": 2006,
+        "leak_status": "confirmed",
+        "outcome": "Not reported",
+        "summary": "One of the early state medical entrance controversies this two-decade tally traces the pattern back to.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/india/not-just-2026-neet-over-90-exam-leaks-irregularities-reported-in-two-decades/"
+      }
+    ],
+    "tamil-nadu": [
+      {
+        "exam_name": "Class 10 Science and Class 12 Maths revision examinations",
+        "conducting_body": "Tamil Nadu School Education Department",
+        "occurred_year": 2022,
+        "leak_status": "confirmed",
+        "outcome": "The district Chief Educational Officer suspended",
+        "summary": "Papers from two private schools in Tiruvannamalai were photographed and circulated on WhatsApp. The district's chief educational officer was suspended for breaching the rules on distributing papers.",
+        "outlet": "The News Minute",
+        "url": "https://www.thenewsminute.com/article/tn-revision-exam-papers-class-10-and-12-leaked-official-suspended-160999"
+      }
+    ],
+    "telangana": [
+      {
+        "exam_name": "Assistant Engineer (Civil) recruitment examination",
+        "conducting_body": "Telangana State Public Service Commission",
+        "occurred_year": 2023,
+        "leak_status": "confirmed",
+        "outcome": "Several exams cancelled; a special investigation team formed",
+        "summary": "Staff in the commission's confidential section allegedly stole question papers from an office computer and sold them. Several examinations were cancelled — the Group-I prelims, the assistant executive engineer and divisional accounts officer papers among them — and twelve people were arrested.",
+        "outlet": "The South First",
+        "url": "https://thesouthfirst.com/news/tspsc-paper-leak-fees-waived-for-those-reappearing-in-cancelled-exams-sit-gets-custody-of-accused/"
+      }
+    ],
+    "uttar-pradesh": [
+      {
+        "exam_name": "Assistant Professor recruitment examination",
+        "conducting_body": "Uttar Pradesh Education Service Selection Commission",
+        "occurred_year": 2025,
+        "leak_status": "confirmed",
+        "candidates_affected": "about 1.14 lakh",
+        "outcome": "Cancelled; the chairperson resigned",
+        "summary": "The exam of 16 and 17 April, for 1,017 posts, was cancelled after the Special Task Force found a racket. Three people were arrested, one of whom had been confidential assistant to the commission's chairperson — who resigned.",
+        "outlet": "Careers360",
+        "url": "https://news.careers360.com/upessc-assistant-professor-exam-cancellation-paper-leak-stf-arrests-fir-chairperson-resignation-fresh-recruitment-examination/amp"
+      },
+      {
+        "exam_name": "Police Constable recruitment examination",
+        "conducting_body": "Uttar Pradesh Police Recruitment and Promotion Board",
+        "occurred_year": 2024,
+        "leak_status": "confirmed",
+        "candidates_affected": "over 48 lakh",
+        "outcome": "Cancelled; a re-examination ordered",
+        "summary": "The exam of 17 and 18 February, for 60,244 posts, was cancelled after the paper leaked while in transit from the press. The Special Task Force arrested the three masterminds and dozens more, and the board's chairperson was removed.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/uttar-pradesh/up-government-cancels-police-constable-recruitment-exam-orders-re-examination-594134"
+      },
+      {
+        "exam_name": "Review Officer and Assistant Review Officer Preliminary Examination",
+        "conducting_body": "Uttar Pradesh Public Service Commission",
+        "occurred_year": 2024,
+        "leak_status": "confirmed",
+        "outcome": "Cancelled; a re-exam ordered within six months",
+        "summary": "After complaints that questions had gone viral on social media, the government cancelled the 11 February prelims, ordered a re-examination within six months and handed the inquiry to the Special Task Force.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/uttar-pradesh/up-government-cancels-ro-aro-exam-over-paper-leak-596545"
+      },
+      {
+        "exam_name": "Lekhpal (Mains) recruitment examination",
+        "conducting_body": "Uttar Pradesh Subordinate Services Selection Commission",
+        "occurred_year": 2022,
+        "leak_status": "alleged",
+        "candidates_affected": "about 2.5 lakh",
+        "outcome": "Held; the commission denied any leak",
+        "summary": "Twenty-one people, solvers and impersonators among them, were arrested for using unfair means. The Samajwadi Party alleged a paper leak; the commission denied one, calling these individual cases of impersonation.",
+        "outlet": "ThePrint",
+        "url": "https://theprint.in/india/up-lekhpal-exam-solvers-candidates-among-21-arrested-akhilesh-alleges-paper-leak/1063273/"
+      },
+      {
+        "exam_name": "Uttar Pradesh Teacher Eligibility Test (UPTET)",
+        "conducting_body": "UP Examination Regulatory Authority / Basic Education Board",
+        "occurred_year": 2021,
+        "leak_status": "confirmed",
+        "candidates_affected": "nearly 20 lakh",
+        "outcome": "Cancelled before the 10 am start",
+        "summary": "The paper circulated on WhatsApp in several districts before the exam was due to begin, forcing its cancellation for nearly twenty lakh candidates. The Special Task Force arrested at least 23 people, later around 29, among them the suspended secretary of the examination authority and a director of a Delhi printing firm.",
+        "outlet": "India TV News",
+        "url": "https://www.indiatvnews.com/education/news-uptet-2021-question-paper-leaked-uttar-pradesh-tet-exam-cancelled-updeled-gov-in-747079"
+      },
+      {
+        "exam_name": "Tubewell Operator (Nalkoop Chalak) recruitment examination",
+        "conducting_body": "Uttar Pradesh Subordinate Services Selection Commission",
+        "occurred_year": 2018,
+        "leak_status": "confirmed",
+        "candidates_affected": "about 2.5 lakh",
+        "outcome": "Postponed",
+        "summary": "The Hindi question paper leaked and was sold for about ₹7 lakh a copy. The Special Task Force arrested eleven people including the alleged mastermind, and the exam for 3,210 posts was put off.",
+        "outlet": "Ground Report",
+        "url": "https://www.groundreport.in/education/how-many-exam-papers-leaked-in-yogi-govt-rule/"
+      },
+      {
+        "exam_name": "Junior Engineer and Technician online recruitment examinations",
+        "conducting_body": "Uttar Pradesh Power Corporation Ltd",
+        "occurred_year": 2018,
+        "leak_status": "confirmed",
+        "outcome": "Nullified; the conducting agency blacklisted",
+        "summary": "The corporation nullified its online recruitment exams after the Special Task Force detected irregularities and a paper leak. The private agency running them was blacklisted and commission officials were suspended.",
+        "outlet": "Ground Report",
+        "url": "https://www.groundreport.in/education/how-many-exam-papers-leaked-in-yogi-govt-rule/"
+      },
+      {
+        "exam_name": "Police Sub-Inspector and Inspector online recruitment test",
+        "conducting_body": "UP Police Recruitment and Promotion Board",
+        "occurred_year": 2017,
+        "leak_status": "confirmed",
+        "candidates_affected": "about 1.2 lakh",
+        "outcome": "Postponed; a Special Task Force inquiry ordered",
+        "summary": "The online test for 3,307 inspector posts, due on 25 and 26 July, was called off after the question paper went viral on WhatsApp, and the director general of police ordered a Special Task Force inquiry.",
+        "outlet": "Ground Report",
+        "url": "https://www.groundreport.in/education/how-many-exam-papers-leaked-in-yogi-govt-rule/"
+      },
+      {
+        "exam_name": "UPPCS Preliminary Examination",
+        "conducting_body": "Uttar Pradesh Public Service Commission",
+        "occurred_year": 2015,
+        "leak_status": "confirmed",
+        "candidates_affected": "about 4.5 lakh",
+        "outcome": "Cancelled on the chief minister's orders",
+        "summary": "The paper was photographed about an hour before the test at a Lucknow centre and circulated on WhatsApp. The chief minister ordered the exam cancelled and three people were arrested.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/archive/nation/uppcs-exam-cancelled-after-paper-leak-three-arrested-60480"
+      },
+      {
+        "exam_name": "Uttar Pradesh Teacher Eligibility Test (UPTET)",
+        "conducting_body": "UP Secondary Education Board / Directorate of Education",
+        "occurred_year": 2011,
+        "leak_status": "confirmed",
+        "outcome": "Arrests; a Special Investigation Team inquiry",
+        "summary": "A marks-manipulation and bribery racket rather than a leak before the exam: candidates paid between ₹2 lakh and ₹5 lakh to be passed. The board's director and eleven others were arrested — he in February 2012 — and more than ₹1.8 crore in cash was recovered across the arrests.",
+        "outlet": "India TV News",
+        "url": "https://www.indiatvnews.com/news/india/up-secondary-education-board-director-arrested-in-tet-scam-cash-documents-seized-14180.html"
+      }
+    ],
+    "uttarakhand": [
+      {
+        "exam_name": "Graduate-level recruitment examination",
+        "conducting_body": "Uttarakhand Subordinate Service Selection Commission",
+        "occurred_year": 2025,
+        "leak_status": "confirmed",
+        "candidates_affected": "over one lakh",
+        "outcome": "Cancelled on 11 October 2025; to be re-held within three months",
+        "summary": "Three pages of the paper leaked from a centre in Haridwar during the 21 September exam for 416 posts. The state cancelled it three weeks later, recommended a CBI inquiry and formed a special investigation team; four people were named as accused.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/examcancelled/paper-leak-uttarakhand-govt-cancels-graduate-level-recruitment-examination-to-be-held-within-3-months"
+      },
+      {
+        "exam_name": "Patwari and Lekhpal recruitment examination",
+        "conducting_body": "Uttarakhand Public Service Commission",
+        "occurred_year": 2023,
+        "leak_status": "confirmed",
+        "candidates_affected": "over one lakh",
+        "outcome": "Cancelled; re-held on 12 February 2023",
+        "summary": "The exam for 563 posts held on 8 January was cancelled after the paper leaked, an official having allegedly sold 380 questions. At least five people were arrested and an official suspended. The re-exam five weeks later passed without incident.",
+        "outlet": "Careers360",
+        "url": "https://news.careers360.com/after-series-of-paper-leak-cases-incident-free-lekhpal-exam-in-uttarakhand"
+      },
+      {
+        "exam_name": "Assistant Engineer and Junior Engineer recruitment examination",
+        "conducting_body": "Uttarakhand Public Service Commission",
+        "occurred_year": 2022,
+        "leak_status": "confirmed",
+        "outcome": "FIR against nine; three arrested",
+        "summary": "A special investigation team found the paper had been leaked for ₹28 lakh. Nine people were named in an FIR at Kankhal police station in February 2023 and three were arrested, one of them a section officer of the commission.",
+        "outlet": "Siasat",
+        "url": "https://archive.siasat.com/news/3-arrested-in-uttarakhand-assistant-and-junior-engineer-paper-leak-case-2518878/"
+      },
+      {
+        "exam_name": "Graduate-level (Snatak) recruitment examination",
+        "conducting_body": "Uttarakhand Subordinate Service Selection Commission",
+        "occurred_year": 2021,
+        "leak_status": "confirmed",
+        "outcome": "Scrapped in August 2022; a Special Task Force inquiry",
+        "summary": "The exam for 854 posts across 13 departments was held on 4 and 5 December 2021, and question papers were sold to candidates for between ₹15 lakh and ₹20 lakh. It was scrapped eight months later and a Special Task Force inquiry launched; arrests eventually reached around forty.",
+        "outlet": "ThePrint",
+        "url": "https://theprint.in/india/20-people-arrested-in-uksssc-paper-leak-case-so-far-uttarakhand-police/1089684/"
+      },
+      {
+        "exam_name": "Forest Guard, Secretariat Security Guard and graduate-level examinations",
+        "conducting_body": "Uttarakhand Subordinate Service Selection Commission",
+        "occurred_year": 2021,
+        "leak_status": "confirmed",
+        "outcome": "All three cancelled on 31 December 2022; fresh exams ordered",
+        "summary": "Three exams held during 2021 — graduate-level in May, forest guard in July and secretariat security guard in September — covering 1,282 posts were cancelled together at the end of the following year, after a Special Task Force inquiry found the papers had leaked.",
+        "outlet": "Careers360",
+        "url": "https://news.careers360.com/uttarakhand-three-government-recruitment-exams-uksssc-graduate-level-forest-guard-secretariat-guard-exam-cancelled-uksssc-chairman"
+      },
+      {
+        "exam_name": "Village Panchayat Development Officer recruitment examination",
+        "conducting_body": "Uttarakhand Subordinate Service Selection Commission",
+        "occurred_year": 2016,
+        "leak_status": "confirmed",
+        "outcome": "Cancelled in December 2017; an Enforcement Directorate prosecution followed",
+        "summary": "The exam held on 6 March 2016 was cancelled twenty-one months later. Later inquiries found the paper had leaked through the printing contractor and been sold for between ₹10 lakh and ₹15 lakh a copy. It was among the exams covered by a 2024 money-laundering prosecution naming 17 accused.",
+        "outlet": "Prokerala",
+        "url": "https://www.prokerala.com/news/articles/a1588652.html"
+      }
+    ],
+    "west-bengal": [
+      {
+        "exam_name": "State Level Selection Test (SLST) teacher and Group C/D recruitment",
+        "conducting_body": "West Bengal School Service Commission",
+        "occurred_year": 2016,
+        "leak_status": "confirmed",
+        "candidates_affected": "25,752 appointments voided",
+        "outcome": "Appointments declared null and void; upheld by the Supreme Court in 2025",
+        "summary": "OMR sheets were manipulated and appointments made beyond the vacancies advertised. The Calcutta High Court voided about 25,752 appointments, and the Supreme Court upheld that decision, ordering fresh appointments.",
+        "outlet": "DD News",
+        "url": "https://ddnews.gov.in/en/west-bengal-teacher-recruitment-scam-calcutta-hc-declares-2016-ssc-recruitment-null-and-void-orders-fresh-appointments/"
       }
     ]
   }

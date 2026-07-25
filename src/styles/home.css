@@ -133,6 +133,28 @@
   color: var(--color-neutral-700);
 }
 .leak-count, .leak-outcome { color: var(--color-neutral-900); font-weight: 700; }
+
+/* Whether the leak was established. The label is the signal — see the note in
+   PaperLeaks.jsx — so these rules only reinforce what the words already say.
+   A confirmed row is deliberately the quietest: it is four rows in five, and
+   shouting the ordinary case would drown the two that are not it. */
+.leak-status {
+  font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+  font-weight: 700; padding: 1px 6px; border: 1px solid var(--color-neutral-400);
+  color: var(--color-neutral-700);
+}
+.leak-status--alleged, .leak-status--suspected {
+  border-color: var(--color-accent-400); color: var(--color-accent-700);
+}
+.leak-status--denied {
+  border-color: var(--color-accent-2-400); color: var(--color-accent-2-700);
+}
+
+/* The left spine repeats the same distinction at scanning distance, so a
+   reader running down a long state list sees where the disproved rows are
+   without reading each label. */
+.leak-item--alleged, .leak-item--suspected { border-left-color: var(--color-accent-400); }
+.leak-item--denied { border-left-color: var(--color-accent-2-400); }
 .leak-summary { font-size: 13.5px; margin: 0 0 5px; max-width: 68ch; }
 .leak-credit { font-size: 11px; margin: 0; }
 .leak-credit a { color: var(--color-accent); }
@@ -217,6 +239,39 @@
 }
 .series-delivered { width: 132px; }
 .series-pct { font-size: 13px; margin-bottom: 4px; }
+
+/* A ministry row that can be opened. Underlined at rest rather than on
+   hover: on a touch screen there is no hover, and a row that only reveals it
+   is a row nobody discovers. */
+.series-link { text-decoration: underline; }
+
+/* The ministry a scheme is demanded under, under the scheme's own name.
+   Weight and size are reset because it inherits the row header's 600. */
+.series-under {
+  font-weight: 400; font-size: 12px; margin-top: 2px;
+  color: var(--color-neutral-700);
+}
+
+/* A line that sits inside the one above it. Indent plus the "of which"
+   prefix, because indentation alone disappears the moment the table is
+   scrolled sideways on a phone and the first column is all that is left. */
+.series-nested .series-name { padding-left: var(--space-5); font-weight: 400; }
+.series-ofwhich { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
+
+/* — a ministry's own page — */
+/* The list of every ministry, in the rail. A column of links rather than a
+   select: they are real addresses, and a select would hide them from a
+   crawler and from anyone middle-clicking to compare two side by side. */
+.ministry-switch { display: flex; flex-direction: column; gap: var(--space-2); }
+.ministry-switch a { font-size: 13px; text-decoration: none; }
+.ministry-switch a:hover { text-decoration: underline; }
+.ministry-switch a[aria-current='page'] {
+  color: var(--color-text); font-weight: 600; text-decoration: none;
+}
+
+/* The way back up to the union budget, sitting in the kicker above the
+   ministry's name. */
+.crumb-link { color: inherit; text-decoration: underline; }
 
 /* — poster — */
 .poster { background: var(--color-accent); color: var(--color-bg); padding: var(--space-8) 0; }

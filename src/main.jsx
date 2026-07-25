@@ -14,6 +14,7 @@ import Home from './pages/Home.jsx';
    bundle meant every reader of /about downloaded 68 kB (gzipped) of map
    geometry that page has no use for. Split out, they cost only themselves. */
 const Parliament = lazy(() => import('./pages/Parliament.jsx'));
+const Ministry = lazy(() => import('./pages/Ministry.jsx'));
 const About = lazy(() => import('./pages/About.jsx'));
 
 function App() {
@@ -21,9 +22,16 @@ function App() {
 
   switch (route.page) {
     case 'parliament':
+      /* A ministry named in the URL is its own page, in its own chunk. It
+         shares nothing with the union budget page but the nav, and a reader
+         opening one ministry has no use for the other thirteen's tables. */
       return (
         <Suspense fallback={null}>
-          <Parliament />
+          {route.ministrySlug ? (
+            <Ministry key={route.ministrySlug} slug={route.ministrySlug} />
+          ) : (
+            <Parliament />
+          )}
         </Suspense>
       );
     case 'about':
