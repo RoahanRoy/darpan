@@ -24,6 +24,20 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
+    # Only when a migration actually lands. Every other push — a component, a
+    # store, a README — used to start this job, which connects to Neon,
+    # takes the advisory lock, finds nothing pending and disconnects. On a
+    # free plan that is a compute wake-up bought for no information: the
+    # answer is already in the diff.
+    #
+    # The runner is what is being gated, not the guarantee. Migrations are
+    # applied in filename order and checksummed, so a push that adds one is
+    # still the push that applies it. `workflow_dispatch` remains for the
+    # case where somebody needs to force the check by hand.
+    paths:
+      - 'db/migrations/**'
+      - 'db/migrate.js'
+      - '.github/workflows/migrate.yml'
 
 # Serialised, never cancelled. db/migrate.js takes a session-level advisory
 # lock so two runners cannot interleave, but cancelling a run mid-apply

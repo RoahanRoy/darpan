@@ -15,6 +15,7 @@ bundle, which would publish the credential.
 | `npm run db:seed` | Loads `seed.sql`. Refuses if `sources` is non-empty. |
 | `npm run db:geography` | Loads `geography.sql`. Safe to re-run. |
 | `npm run db:reset` | Destroys and rebuilds. Gated — see below. |
+| `npm run db:prune` | Reports pipeline scratch that could be freed. `-- --apply` frees it. |
 | `npm run db:sync:check` | Fails if any prose store differs from the database. |
 | `npm run db:sync` | Applies every prose store. `-- --dry` to preview. |
 | `npm run gloss:check` / `gloss:apply` | Just the glosses (`db:sync glosses`). |
@@ -122,6 +123,37 @@ same secret.
 Applying findings deletes and rewrites only `computed_from_source = TRUE`
 rows. Findings quoted from a document's own summary — the CAG observations in
 `seed.sql` — are marked FALSE and are never touched by it.
+
+## Keeping it small
+
+Neon's free plan gives half a gigabyte of storage and a fixed budget of
+compute hours. Storage has never been the binding constraint — the whole
+database is about 13 MB, of which the site's own tables are under 2 MB — but
+two of them grow with every ingest run and neither is read by any page:
+
+- `raw_documents.extracted_text`, the text of every PDF parsed, kept so a bad
+  figure is diagnosable without re-fetching a document that may have moved.
+  Nothing in the codebase reads it; a person does.
+- `staged_facts`, one proposed row per public row, read by `ingest/review.js`
+  only while a run is being reviewed.
+
+`npm run db:prune` reports what could be freed and writes nothing until it is
+given `--apply`. It only ever touches runs that a **later successful run of
+the same adapter and target has superseded** — the newest run of anything
+keeps its evidence however old it is, because the figure worth diagnosing is
+the one currently on the site.
+
+Compute, not storage, is what a free plan actually runs out of, and compute is
+spent waking a suspended endpoint. Two things follow, and both are already
+done:
+
+- Cache in proportion to how often the data changes. `/api/roundup` changes
+  four times a year and is cached for a day; the state and union routes carry
+  ten minutes. The `s-maxage` on a route is a statement about its data, not a
+  default to copy.
+- Do not connect to say nothing. `migrate.yml` runs only on pushes that touch
+  `db/migrations/**`; before that, every push to main woke the database to
+  discover there was nothing to apply.
 
 ## Geography
 

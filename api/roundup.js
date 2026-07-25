@@ -49,7 +49,18 @@ export default async function handler(req, res) {
       })),
     };
 
-    res.setHeader('Cache-Control', 's-maxage=600, stale-while-revalidate=3600');
+    /* A day at the edge, a week serving stale while it refreshes. Far longer
+       than the ten minutes the other routes use, and the reason is the data:
+       this list changes four times a year. At s-maxage=600 the front page —
+       the most-visited page on the site — was waking the database every ten
+       minutes to re-read ten rows that had not moved since April.
+
+       On a Neon free plan the scarce resource is compute hours, not the
+       half-gigabyte of storage, and compute is spent by waking a suspended
+       endpoint. Caching in proportion to how often a thing actually changes
+       is most of the lever. The quarterly refresh is a deploy, which clears
+       the edge cache anyway, so nothing goes stale in practice. */
+    res.setHeader('Cache-Control', 's-maxage=86400, stale-while-revalidate=604800');
     return res.status(200).json(payload);
   } catch (err) {
     console.error('GET /api/roundup failed', err);

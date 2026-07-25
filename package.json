@@ -13,6 +13,7 @@
     "geography:fetch": "node scripts/fetch-lgd-geography.js",
     "geography:check": "node scripts/fetch-lgd-geography.js --check",
     "db:reset": "node db/reset.js",
+    "db:prune": "node scripts/db-prune.js",
     "ingest": "node ingest/run.js",
     "ingest:states": "node ingest/run-states.js",
     "prs:discover": "node scripts/prs-discover.js",

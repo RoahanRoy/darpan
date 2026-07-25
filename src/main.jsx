@@ -1,20 +1,37 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { createRoot } from 'react-dom/client';
 import './styles/tokens.css';
 import './styles/home.css';
 import useRoute from './hooks/useRoute.js';
 import Home from './pages/Home.jsx';
-import Parliament from './pages/Parliament.jsx';
-import About from './pages/About.jsx';
+
+/* Home is imported eagerly and the other two are not, because Home is what
+   almost every arrival renders — the front page, every state, every district.
+   Splitting it would add a round trip to the common case and save nothing.
+
+   Parliament and About are the opposite: rarely an entry point, and neither
+   draws the India map. In the main chunk they still shipped with it: one
+   bundle meant every reader of /about downloaded 68 kB (gzipped) of map
+   geometry that page has no use for. Split out, they cost only themselves. */
+const Parliament = lazy(() => import('./pages/Parliament.jsx'));
+const About = lazy(() => import('./pages/About.jsx'));
 
 function App() {
   const route = useRoute();
 
   switch (route.page) {
     case 'parliament':
-      return <Parliament />;
+      return (
+        <Suspense fallback={null}>
+          <Parliament />
+        </Suspense>
+      );
     case 'about':
-      return <About />;
+      return (
+        <Suspense fallback={null}>
+          <About />
+        </Suspense>
+      );
     default:
       // Everything else names a state, real or not. Home decides which, once
       // /api/regions has told it which states exist — an unknown slug gets a

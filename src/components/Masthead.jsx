@@ -1,4 +1,17 @@
-import IndiaMap from './IndiaMap.jsx';
+import { Suspense, lazy } from 'react';
+
+/* The map is loaded on its own, after the rest of the page.
+
+   @svg-maps/india is 176 kB of path data — 68 kB gzipped, which was 54% of
+   the entire bundle. Statically imported it sat in the main chunk, so every
+   reader downloaded and parsed the outline of India before anything rendered,
+   and /parliament and /about downloaded it despite never drawing a map.
+
+   The placeholder holds the exact aspect ratio of the map's viewBox
+   (612 × 696), so the shapes appear in a box already the right size and
+   nothing below them moves. A lazy chunk that reflows the page on arrival
+   trades a load-time win for a layout shift, which is the worse bargain. */
+const IndiaMap = lazy(() => import('./IndiaMap.jsx'));
 
 export default function Masthead({
   regions,
@@ -90,7 +103,9 @@ export default function Masthead({
           </select>
         </div>
 
-        <IndiaMap regions={regions} activeSlug={stateSlug} onSelect={onStateChange} />
+        <Suspense fallback={<div className="india-map-placeholder" aria-hidden="true" />}>
+          <IndiaMap regions={regions} activeSlug={stateSlug} onSelect={onStateChange} />
+        </Suspense>
       </div>
     </section>
   );

@@ -1,0 +1,37 @@
+-- 008 — remove two indexes that were added for queries nobody wrote.
+--
+-- Both were added in the last week, by 005 and 007, on the reasoning that the
+-- page would ask for one category or one date range at a time. It does not.
+-- The state page fetches a state's whole news list in one query and splits it
+-- into budget and loss blocks in the browser, and /api/roundup reads all ten
+-- rows in display order. Neither index has ever been consulted:
+--
+--   idx_scan = 0 on both, against a pg_stat_database whose stats_reset is
+--   NULL — the counters run to the database's creation, so this is "never",
+--   not "not since somebody reset them".
+--
+-- EXPLAIN agrees. Both queries seq-scan and always will: the planner will not
+-- walk an index to fetch 10 rows out of 10, or 3 out of 24.
+--
+--   Sort → Seq Scan on state_budget_news  (Filter: state_id = 1)
+--   Sort → Seq Scan on policy_roundup
+--
+-- The cost of keeping them was never the disk — 16 kB each, nothing on a free
+-- plan's half-gigabyte. It is that every INSERT and DELETE maintains them, and
+-- the prose stores rewrite a whole scope at a time: applying the news store
+-- deletes and re-inserts every row a state has, and each of those writes was
+-- updating an index no read has ever touched. A speculative index is a write
+-- tax collected forever against a read that never comes.
+--
+-- Dropping an index destroys no data and is reversible by one CREATE INDEX,
+-- so this does not run against the rule that migrations never destroy
+-- anything: the rows, and every constraint over them, are untouched.
+--
+-- What is deliberately NOT dropped: `exam_paper_leaks_union_idx` and
+-- `exam_paper_leaks_state_idx`, which the parliament and state routes do use;
+-- and every primary key and unique index that reads 0 scans, because those
+-- enforce constraints rather than serve lookups and a scan count says nothing
+-- about their worth.
+
+DROP INDEX IF EXISTS state_budget_news_category_idx;
+DROP INDEX IF EXISTS policy_roundup_date_idx;

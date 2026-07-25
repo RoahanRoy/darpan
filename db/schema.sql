@@ -413,13 +413,11 @@ CREATE INDEX districts_state_idx ON public.districts USING btree (state_id, disp
 CREATE INDEX exam_paper_leaks_state_idx ON public.exam_paper_leaks USING btree (state_id, occurred_year DESC);
 CREATE INDEX exam_paper_leaks_union_idx ON public.exam_paper_leaks USING btree (occurred_year DESC) WHERE (state_id IS NULL);
 CREATE INDEX findings_state_idx ON public.findings USING btree (state_id, display_order);
-CREATE INDEX policy_roundup_date_idx ON public.policy_roundup USING btree (happened_on DESC);
 CREATE INDEX progress_district_idx ON public.district_scheme_progress USING btree (district_id);
 CREATE UNIQUE INDEX raw_documents_run_url_idx ON public.raw_documents USING btree (run_id, url);
 CREATE INDEX sector_state_idx ON public.state_sector_budgets USING btree (state_id, display_order);
 CREATE INDEX staged_facts_key_idx ON public.staged_facts USING btree (target_table, natural_key, id DESC);
 CREATE INDEX staged_facts_review_idx ON public.staged_facts USING btree (status, target_table) WHERE (status = ANY (ARRAY['pending'::text, 'approved'::text]));
-CREATE INDEX state_budget_news_category_idx ON public.state_budget_news USING btree (state_id, category, published_on DESC);
 CREATE INDEX state_budget_news_state_idx ON public.state_budget_news USING btree (state_id, published_on DESC);
 CREATE UNIQUE INDEX states_lgd_code_idx ON public.states USING btree (lgd_code);
 CREATE INDEX union_ministry_idx ON public.union_ministry_budgets USING btree (display_order);
