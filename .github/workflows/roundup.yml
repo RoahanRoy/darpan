@@ -1,0 +1,128 @@
+# Keeps the front page's quarterly promise without anyone remembering it.
+#
+# The roundup block says "reviewed every quarter" on its face. A promise a
+# person has to remember is one that breaks silently: the page keeps saying
+# "reviewed quarterly" while the newest item drifts eight months old, and the
+# only signal is a reader noticing. This runs monthly, reads the review date
+# out of ingest/policy-roundup.json, and opens a standing issue once it has
+# passed — closing it again when the file is refreshed.
+#
+# Monthly, not quarterly, on purpose. A quarterly cron that fires the day
+# before a review falls due waits three months to mention it. Checking twelve
+# times a year to answer a question that changes four times costs nothing and
+# bounds the lateness at a month.
+#
+# No database and no secret: the promise lives in a file in git, so the check
+# that enforces it needs nothing else. That is also why this is its own
+# workflow rather than a step in drift.yml, which cannot run without
+# DATABASE_URL.
+
+name: roundup
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 07:00 UTC on the 1st. Well clear of the Monday drift run.
+    - cron: '0 7 1 * *'
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  due:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      # Exits 1 when the review date has passed, or when an item has drifted
+      # outside the window the file declares. `continue-on-error` so the
+      # report step below always runs and can say which.
+      - name: Is the roundup due?
+        id: due
+        continue-on-error: true
+        shell: bash
+        run: node scripts/roundup-due.js 2>&1 | tee roundup.log
+
+      - name: Report
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const ok = '${{ steps.due.outcome }}' === 'success';
+            const log = (() => {
+              try { return fs.readFileSync('roundup.log', 'utf8').trim(); }
+              catch { return '(no output — the check did not run to completion)'; }
+            })();
+
+            await core.summary
+              .addHeading('Front-page roundup', 2)
+              .addRaw(ok ? 'Current.' : 'Due a refresh.')
+              .addCodeBlock(log)
+              .write();
+
+            const title = 'Front-page roundup is due its quarterly refresh';
+            const existing = (await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo, state: 'open',
+            })).data.find((i) => i.title === title);
+
+            if (ok) {
+              // Close it rather than leaving a kept promise looking broken.
+              if (existing) {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner, repo: context.repo.repo,
+                  issue_number: existing.number,
+                  body: 'The roundup has been refreshed and is inside its window again. Closing.',
+                });
+                await github.rest.issues.update({
+                  owner: context.repo.owner, repo: context.repo.repo,
+                  issue_number: existing.number, state: 'closed',
+                });
+              }
+              return;
+            }
+
+            const body = [
+              'The front page carries a roundup of the last twelve months of policy',
+              'and scheme changes, and tells readers it is reviewed every quarter.',
+              'That review is now due, or an item has drifted outside the window the',
+              'file declares.',
+              '',
+              '## To fix',
+              '',
+              '1. Edit `ingest/policy-roundup.json`: move `covers_from`/`covers_to`',
+              '   forward a quarter, set the next `next_review_by`, drop what has',
+              '   fallen out of the twelve months and add what has landed since.',
+              '   Keep it to about ten items — this is a front page, not an archive.',
+              '2. Each item needs a source that was read, an `impact` line saying who',
+              '   the change lands on, and a `happened_on` that is the date the change',
+              '   took effect rather than the date it was written about.',
+              '3. `npm run roundup:due` to confirm, then `npm run roundup:apply`.',
+              '',
+              'The page never claims a window wider than its rows — `/api/roundup`',
+              'derives the dates it prints — so nothing is currently lying to anyone.',
+              'It is just going stale.',
+              '',
+              '## Output',
+              '',
+              '```',
+              log,
+              '```',
+            ].join('\n');
+
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: existing.number, body,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo, title, body,
+              });
+            }

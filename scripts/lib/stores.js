@@ -292,6 +292,53 @@ export const STORES = [
       (l.conducting_body ? ` (${l.conducting_body})` : '') +
       (l.candidates_affected ? ` · ${l.candidates_affected}` : ''),
   },
+
+  {
+    id: 'roundup',
+    strategy: 'rows',
+    file: 'ingest/policy-roundup.json',
+    jsonKey: 'roundup',
+    noun: 'roundup item',
+    plural: 'roundup items',
+
+    table: 'policy_roundup',
+    refs: ['states'],
+
+    /* One scope, and it is not a state: this is the national digest on the
+       front page. `refs: ['states']` is still declared because sync.js
+       resolves it before checking anything, and an empty list would be a
+       stranger thing to explain than an unused map. */
+    unscopedKey: 'india',
+
+    /* The table has no scope column at all — it holds one list and always
+       will. Saying so is what stops sync.js reaching for `state_id`, which
+       here does not exist. A nullable state_id kept only to satisfy the
+       apply machinery would be a column that describes nothing. */
+    scopeColumn: null,
+
+    fields: ['happened_on', 'region_label', 'headline', 'summary', 'impact', 'outlet', 'url'],
+    sort: (list) => [...list].sort((a, b) => b.happened_on.localeCompare(a.happened_on)),
+
+    deleteWhere: '',
+    appendAfterExisting: false,
+
+    /* No state join at all — the table has no state_id. The literal keeps the
+       shape sync.js expects, where every live row says which scope it is in. */
+    liveSql: `
+      SELECT 'india' AS slug, r.happened_on::text, r.region_label,
+             r.headline, r.summary, r.impact, r.outlet, r.url
+      FROM policy_roundup r
+      WHERE 'india' = ANY($1)
+      ORDER BY r.display_order
+    `,
+
+    columns: ['happened_on', 'region_label', 'headline', 'summary', 'impact', 'outlet', 'url'],
+    values: (r) => [
+      r.happened_on, r.region_label, r.headline, r.summary, r.impact, r.outlet, r.url,
+    ],
+
+    describe: (r) => `${r.happened_on}  [${r.region_label}] ${r.headline}`,
+  },
 ];
 
 export const storeById = (id) => STORES.find((s) => s.id === id);

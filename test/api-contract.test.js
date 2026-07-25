@@ -15,7 +15,7 @@ import { test } from 'node:test';
 
 process.env.DATABASE_URL ??= 'postgresql://user:pass@localhost/none';
 
-const HANDLERS = ['home', 'parliament', 'regions'];
+const HANDLERS = ['home', 'parliament', 'regions', 'roundup'];
 
 /** Minimal Vercel-shaped res that records what the handler did to it. */
 function mockRes() {

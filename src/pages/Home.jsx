@@ -12,6 +12,7 @@ import SchemeGrid from '../components/SchemeGrid.jsx';
 import StatusTable from '../components/StatusTable.jsx';
 import BudgetNews from '../components/BudgetNews.jsx';
 import PaperLeaks from '../components/PaperLeaks.jsx';
+import PolicyRoundup from '../components/PolicyRoundup.jsx';
 import PosterBanner from '../components/PosterBanner.jsx';
 import { homeNavLinks } from '../data/homeContent.js';
 
@@ -52,6 +53,10 @@ export default function Home({ route }) {
       : null
   );
   const data = homeReq.data;
+
+  // Only on the front page. `useJson(null)` skips the request entirely, so a
+  // reader who lands straight on a district never fetches the digest.
+  const roundupReq = useJson(resolved.status === 'choose' ? '/api/roundup' : null);
 
   useDocumentMeta({
     title: ready
@@ -102,14 +107,21 @@ export default function Home({ route }) {
             <p className="text-muted section-note">{regionsReq.error}</p>
           </section>
         ) : resolved.status === 'choose' ? (
-          <section className="section-block">
-            <h3 className="section-title">Pick a state or union territory</h3>
-            <p className="text-muted section-note">
-              All {regions.length} are listed. {withRecords.length} of them have budget
-              figures published so far — those are the coloured ones on the map. The
-              rest are here by name while their documents are read.
-            </p>
-          </section>
+          <>
+            <section className="section-block">
+              <h3 className="section-title">Pick a state or union territory</h3>
+              <p className="text-muted section-note">
+                All {regions.length} are listed. {withRecords.length} of them have budget
+                figures published so far — those are the coloured ones on the map. The
+                rest are here by name while their documents are read.
+              </p>
+            </section>
+
+            {/* The front page is the one view with no state to report on, so it
+                is the one place a national digest belongs. Fetched only here —
+                see the note in api/roundup.js. */}
+            <PolicyRoundup covers={roundupReq.data?.covers} items={roundupReq.data?.items} />
+          </>
         ) : resolved.status === 'unknown-state' ? (
           <section className="section-block">
             <h3 className="section-title">No records for “{stateSlug}”</h3>

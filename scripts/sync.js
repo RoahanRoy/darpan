@@ -118,34 +118,40 @@ async function syncRows(store) {
   const written = await withTransaction(async (client) => {
     let n = 0;
     for (const slug of changed) {
-      const stateId = stateIdFor(slug);
-
       /* IS NOT DISTINCT FROM, not `=`. For every state this is the same
          comparison; for the centre's NULL state_id, `= NULL` matches no row,
          so the delete would quietly do nothing and the insert that follows
-         would double the scope on every run. */
+         would double the scope on every run.
+
+         `scopeColumn: null` is the other case: a table that holds one list
+         and has no scope column to filter on. Its whole content is the scope,
+         so the delete is unqualified and no scope value is written. */
+      const scoped = store.scopeColumn !== null;
+      const scopeCol = store.scopeColumn ?? 'state_id';
+      const where = scoped ? `${scopeCol} IS NOT DISTINCT FROM $1` : 'TRUE';
+      const scopeArgs = scoped ? [stateIdFor(slug)] : [];
+
       await client.query(
-        `DELETE FROM ${store.table} WHERE state_id IS NOT DISTINCT FROM $1 ${store.deleteWhere}`,
-        [stateId]
+        `DELETE FROM ${store.table} WHERE ${where} ${store.deleteWhere}`,
+        scopeArgs
       );
 
       let order = 0;
       if (store.appendAfterExisting) {
         const { rows } = await client.query(
-          `SELECT COALESCE(max(display_order), 0) AS n FROM ${store.table}
-           WHERE state_id IS NOT DISTINCT FROM $1`,
-          [stateId]
+          `SELECT COALESCE(max(display_order), 0) AS n FROM ${store.table} WHERE ${where}`,
+          scopeArgs
         );
         order = Number(rows[0].n);
       }
 
-      const cols = ['state_id', ...store.columns, 'display_order'];
+      const cols = [...(scoped ? [scopeCol] : []), ...store.columns, 'display_order'];
       const params = cols.map((_, i) => `$${i + 1}`).join(',');
 
       for (const item of store.sort(data[slug])) {
         await client.query(
           `INSERT INTO ${store.table} (${cols.join(',')}) VALUES (${params})`,
-          [stateId, ...store.values(item, refs), ++order]
+          [...scopeArgs, ...store.values(item, refs), ++order]
         );
         n++;
       }

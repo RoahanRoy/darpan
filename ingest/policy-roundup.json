@@ -1,0 +1,105 @@
+{
+  "_comment": "The national policy and scheme roundup on the front page, applied to policy_roundup by `npm run roundup:apply` (scripts/sync.js, store id 'roundup'). One scope, 'india', because the table holds one list — see migration 007. Every item is written here rather than scraped: the `impact` line in particular is a judgement about who a change lands on, and no adapter can make one.",
+  "_dates": "`happened_on` is the date the change TOOK EFFECT, or was announced or established where there is no commencement — never the date the report was filed. The Income-tax Act gets 1 April 2026, the day it came into force, not the day the release went out. Sorting by publication would put a retrospective above a law that changed the country a month earlier.",
+  "_window": "This block covers the twelve months ending on `covers_to`. The page does not take that claim from here: /api/roundup derives the span it shows from the rows themselves, so a block nobody has refreshed says so on its face instead of promising a freshness it lost. These two dates exist for the review workflow and for whoever picks the file up next.",
+  "review": {
+    "covers_from": "2025-07-26",
+    "covers_to": "2026-07-25",
+    "next_review_by": "2026-10-25",
+    "note": "Refreshed quarterly. .github/workflows/roundup.yml opens an issue once next_review_by has passed. When refreshing: move the window forward a quarter, drop items that fall out of the twelve months, and add what has landed since. Keep it to about ten — this is a front page, not an archive."
+  },
+  "roundup": {
+    "india": [
+      {
+        "happened_on": "2026-07-24",
+        "region_label": "All India",
+        "headline": "Cabinet clears a harsher paper-leak law: seven years, ₹10 crore, two-month probes",
+        "summary": "The draft Public Examinations (Prevention of Unfair Means) Amendment Act, 2026 raises the minimum sentence for organised cheating from five years to seven and the minimum fine from ₹1 crore to ₹10 crore. It obliges investigations to finish within two months, lets every state designate a Court of Session as a special fast-track court, and lets the Centre raise a special task force.",
+        "impact": "The answer to a year of cancelled exams and student protest, and an admission of how little the 2024 Act achieved. It changes what happens after a leak, not the printing and transport where every recent leak began.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/india/centre-proposes-tougher-law-against-exam-malpractices-rs-10-crore-fine-two-month-probe-deadline/"
+      },
+      {
+        "happened_on": "2026-07-01",
+        "region_label": "All India",
+        "headline": "MGNREGA is repealed; VB-G RAM G takes its place in every state",
+        "summary": "The Viksit Bharat-G RAM G Act, 2025 replaced the 2005 employment guarantee across all states and union territories. The statutory guarantee rises from 100 days a household to 125, and the funding split moves from near-complete central funding to 60:40 between Centre and state, with 10% for Himalayan and north-eastern states.",
+        "impact": "The largest change to a welfare entitlement in two decades. The guarantee is no longer purely demand-driven but capped within a budget the Centre fixes, and states now carry 40% of it — which is why several objected, and why the two figures to watch are days actually worked and how much of the state share gets paid.",
+        "outlet": "Deccan Herald",
+        "url": "https://www.deccanherald.com/india/mgnrega-to-be-replaced-across-all-states-and-uts-by-new-viksit-bharat-g-ram-g-act-from-july-1-3998474"
+      },
+      {
+        "happened_on": "2026-06-24",
+        "region_label": "All India",
+        "headline": "A year of SIR: over 5 crore voters deleted, and welfare tied to the roll",
+        "summary": "Twelve months after the Election Commission began the Special Intensive Revision, more than 5 crore voters had been deleted across 13 states and union territories. In West Bengal about 27 lakh could not vote in the April assembly election and were still waiting on appeals. The Commission has published no figure for the foreign nationals the exercise was announced to find.",
+        "impact": "The reason it belongs on a budget site: deletion is being used to withhold benefits. Governments in West Bengal and Bihar have refused rations, Annapurna Yojana and caste certificates to people struck off, appeals still pending — Bihar cancelled 22 lakh ration cards. The Supreme Court has said deletion does not end citizenship and that those excluded keep certain entitlements.",
+        "outlet": "The Wire",
+        "url": "https://m.thewire.in/article/government/one-year-of-sir-over-five-crore-voters-deleted"
+      },
+      {
+        "happened_on": "2026-05-12",
+        "region_label": "All India",
+        "headline": "NEET-UG cancelled for nearly 22.79 lakh candidates",
+        "summary": "The National Testing Agency scrapped the medical entrance exam after a whistleblower reported on 7 May that the paper was circulating beforehand as a 'guess paper'. Rajasthan's Special Operations Group traced a multi-state network before the CBI took over; investigators suspect the leak began at a press in Nashik. A re-test was announced.",
+        "impact": "The single largest exam cancellation of the year, and the trigger for the protests, the fast-track courts and the amendment now before Parliament. Every candidate sat the year twice.",
+        "outlet": "Deccan Herald",
+        "url": "https://www.deccanherald.com/education/a-guess-paper-whistleblower-tip-off-and-cancellation-how-neet-ug-2026-paper-leak-unraveled-4000994"
+      },
+      {
+        "happened_on": "2026-04-01",
+        "region_label": "All India",
+        "headline": "The Income-tax Act, 2025 comes into force, replacing the 1961 Act",
+        "summary": "Passed in August 2025 and commenced on 1 April 2026, the new Act rewrites six decades of direct tax law in plainer language and a shorter structure. The Income-tax Rules, 2026 were notified on 20 March. Rates and slabs are unchanged; the Act is a rewrite, not a rate cut.",
+        "impact": "Compliance changes for every filer even though nobody's bill does: a 'tax year' replaces the assessment-year and previous-year pair, and the forms are reissued. Worth knowing precisely because the headline invites the opposite assumption.",
+        "outlet": "Press Information Bureau",
+        "url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2248005&reg=3&lang=2"
+      },
+      {
+        "happened_on": "2026-02-01",
+        "region_label": "All India",
+        "headline": "Union Budget 2026-27: ₹53.5 lakh crore of spending, 4.3% fiscal deficit",
+        "summary": "Total expenditure is put at ₹53.5 lakh crore against non-debt receipts of ₹36.5 lakh crore, with net tax receipts of ₹28.7 lakh crore and gross market borrowing of ₹17.2 lakh crore. The fiscal deficit is estimated at 4.3% of GDP, against 4.4% in the revised estimate for 2025-26, and debt at 55.6% of GDP.",
+        "impact": "The frame every state budget on this site sits inside, and the source of the transfers they depend on. Health goes to ₹1.06 lakh crore, up about 10% on the revised estimate; the gender budget to ₹1.07 lakh crore.",
+        "outlet": "Press Information Bureau",
+        "url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2221455&lang=1&reg=3"
+      },
+      {
+        "happened_on": "2026-01-01",
+        "region_label": "All India",
+        "headline": "8th Pay Commission's award takes effect from this date, once it reports",
+        "summary": "The Cabinet approved the commission's terms of reference on 28 October 2025, under former Supreme Court judge Ranjana Prakash Desai, with 18 months to report. Following the ten-year cycle, its recommendations are expected to apply retrospectively from 1 January 2026.",
+        "impact": "About 50 lakh serving central government employees and 69 lakh pensioners, and — because states usually adopt the award with modifications — a bill that lands on state budgets a year or two later. The terms of reference explicitly tell the commission to weigh that state impact and the unfunded cost of non-contributory pensions.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/india/8th-pay-commission-cabinet-approves-terms-of-reference-likely-to-come-into-effect-from-jan-2026/"
+      },
+      {
+        "happened_on": "2025-11-21",
+        "region_label": "All India",
+        "headline": "The four labour codes commence, replacing 29 central laws",
+        "summary": "The Code on Wages, the Industrial Relations Code, the Code on Social Security and the Occupational Safety, Health and Working Conditions Code all took effect on 21 November 2025, consolidating 29 statutes, most of them pre-Independence or early post-Independence.",
+        "impact": "Minimum wage entitlement extends to every category of worker rather than the roughly 30% in scheduled employments; gratuity for fixed-term staff falls from five years' service to one; ESI can reach an establishment with a single employee in hazardous work; and gig and platform workers are recognised, with aggregators owing a share of revenue to a social security fund. Nine central trade unions oppose the codes and want them repealed.",
+        "outlet": "DD News",
+        "url": "https://ddnews.gov.in/en/centre-implements-four-labour-codes-overhauling-29-existing-laws/"
+      },
+      {
+        "happened_on": "2025-09-22",
+        "region_label": "All India",
+        "headline": "GST is rebuilt into two rates, and insurance comes out of it entirely",
+        "summary": "The 56th GST Council collapsed the four-tier structure into a standard 18% and a merit 5%, with a 40% de-merit rate for a short list of goods. Individual life and health insurance policies, including family floater and senior citizen cover, were exempted outright.",
+        "impact": "The broadest change to household prices in the window. Hair oil, soap, shampoo, toothpaste, bicycles and kitchenware fell from 18% or 12% to 5%; UHT milk, paneer and Indian breads to nil; most packaged food to 5%; air conditioners, all televisions, dishwashers, small cars and motorcycles up to 350cc from 28% to 18%; farm machinery from 12% to 5%.",
+        "outlet": "Press Information Bureau",
+        "url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2163555"
+      },
+      {
+        "happened_on": "2026-07-13",
+        "region_label": "Maharashtra",
+        "headline": "92 lakh names come off Ladki Bahin after verification",
+        "summary": "Maharashtra's verification drive cut the flagship cash transfer's rolls from a peak of 2.43 crore to just over 1.5 crore. About 62 lakh failed e-KYC, 16 lakh were over the ₹2.5 lakh income ceiling, 4.42 lakh had a government employee in the family, and roughly 29,000 men had been enrolled on a women's scheme.",
+        "impact": "The largest correction yet to an Indian cash transfer, and the clearest measure of what weak enrolment costs: officials put the money already paid to those later removed at about ₹14,000 crore. It is here rather than only on Maharashtra's page because every state now running a women's cash transfer is watching it.",
+        "outlet": "The Federal",
+        "url": "https://thefederal.com/category/states/west/maharashtra/92-lakh-dropped-maharashtra-ladki-bahin-scheme-after-verification-drive-250012"
+      }
+    ]
+  }
+}

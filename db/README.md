@@ -21,12 +21,14 @@ bundle, which would publish the credential.
 | `npm run findings:check` / `findings:apply` | Just the computed findings. |
 | `npm run news:check` / `news:apply` | Just the budget news. |
 | `npm run leaks:check` / `leaks:apply` | Just the paper leaks. |
+| `npm run roundup:check` / `roundup:apply` | Just the front-page roundup. |
+| `npm run roundup:due` | Fails if the roundup is past its quarterly review. No database. |
 
 ## Prose that lives in git
 
-Four stores hold sentences no adapter can regenerate, so each is kept in a
+Five stores hold sentences no adapter can regenerate, so each is kept in a
 file and applied from there. `scripts/lib/stores.js` is the registry that
-names them; `npm run db:sync` applies all four and `scripts/sync.js` is the
+names them; `npm run db:sync` applies all five and `scripts/sync.js` is the
 one script that does the work:
 
 - `ingest/glosses.json` → `state_sector_budgets.provision_note`, the
@@ -60,24 +62,40 @@ one script that does the work:
   never be summed, because a candidate who sat a re-held exam appears twice
   and is one person.
 
+- `ingest/policy-roundup.json` → the `policy_roundup` rows behind the front
+  page's twelve-month digest of national policy and scheme changes
+  (migration 007). One scope, `india`, and `scopeColumn: null` because the
+  table holds one list and has no scope column to filter on. Each item carries
+  an `impact` line — who the change lands on — which is the one sentence in
+  the store that is not restated from a press release, and the first thing a
+  hurried refresh drops.
+
+  The block promises readers a quarterly review. That promise is kept by
+  `.github/workflows/roundup.yml`, which runs `npm run roundup:due` on the 1st
+  of every month and opens a standing issue once `next_review_by` has passed
+  or an item has drifted outside the declared window. The page itself never
+  claims a window wider than its rows: `/api/roundup` derives the span it
+  prints from the data, so a stale roundup shows its age rather than
+  advertising a freshness it lost.
+
 Re-running the ingestion pipeline produces nulls for the glosses and nothing
-for the findings, and `db:reset` destroys all four. Keeping them in git makes
+for the findings, and `db:reset` destroys all five. Keeping them in git makes
 them diffable at review time and recoverable afterwards. **A rebuild is not
 finished until `npm run db:sync` has been run** — `db:sync:check` is what
 tells you it was missed.
 
 The two strategies behind that one command are worth knowing when a store
-misbehaves. Findings, news and paper leaks are *replaced* per scope: the store
-owns every row a scope has, so applying it deletes that scope's rows and
-rewrites them
-(findings only touch `computed_from_source = TRUE` — the CAG observations in
+misbehaves. Findings, news, paper leaks and the roundup are *replaced* per
+scope: the store owns every row a scope has, so applying it deletes that
+scope's rows and rewrites them (findings only touch
+`computed_from_source = TRUE` — the CAG observations in
 `seed.sql` are marked FALSE and never touched). Glosses are *updated in place*:
 the sector row belongs to the adapter and only `provision_note` is ours, so
 nothing is deleted and a gloss whose key matches no row is reported loudly
 rather than dropped.
 
 None of this depends on somebody remembering to type it.
-`.github/workflows/drift.yml` runs the four checks every Monday against the
+`.github/workflows/drift.yml` runs the five checks every Monday against the
 real database and opens a single standing issue when any store disagrees,
 closing it once they agree again. It needs the `DATABASE_URL` repository
 secret, and it only reads — the fix is still an apply, run deliberately by a

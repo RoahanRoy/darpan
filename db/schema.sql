@@ -99,6 +99,25 @@ CREATE SEQUENCE public.ingestion_runs_id_seq
     NO MAXVALUE
     CACHE 1;
 ALTER SEQUENCE public.ingestion_runs_id_seq OWNED BY public.ingestion_runs.id;
+CREATE TABLE public.policy_roundup (
+    id integer NOT NULL,
+    happened_on date NOT NULL,
+    region_label text NOT NULL,
+    headline text NOT NULL,
+    summary text NOT NULL,
+    impact text NOT NULL,
+    outlet text NOT NULL,
+    url text NOT NULL,
+    display_order integer DEFAULT 0 NOT NULL
+);
+CREATE SEQUENCE public.policy_roundup_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE public.policy_roundup_id_seq OWNED BY public.policy_roundup.id;
 CREATE TABLE public.raw_documents (
     id integer NOT NULL,
     run_id integer NOT NULL,
@@ -319,6 +338,7 @@ ALTER TABLE ONLY public.districts ALTER COLUMN id SET DEFAULT nextval('public.di
 ALTER TABLE ONLY public.exam_paper_leaks ALTER COLUMN id SET DEFAULT nextval('public.exam_paper_leaks_id_seq'::regclass);
 ALTER TABLE ONLY public.findings ALTER COLUMN id SET DEFAULT nextval('public.findings_id_seq'::regclass);
 ALTER TABLE ONLY public.ingestion_runs ALTER COLUMN id SET DEFAULT nextval('public.ingestion_runs_id_seq'::regclass);
+ALTER TABLE ONLY public.policy_roundup ALTER COLUMN id SET DEFAULT nextval('public.policy_roundup_id_seq'::regclass);
 ALTER TABLE ONLY public.raw_documents ALTER COLUMN id SET DEFAULT nextval('public.raw_documents_id_seq'::regclass);
 ALTER TABLE ONLY public.sources ALTER COLUMN id SET DEFAULT nextval('public.sources_id_seq'::regclass);
 ALTER TABLE ONLY public.staged_facts ALTER COLUMN id SET DEFAULT nextval('public.staged_facts_id_seq'::regclass);
@@ -344,6 +364,8 @@ ALTER TABLE ONLY public.findings
     ADD CONSTRAINT findings_pkey PRIMARY KEY (id);
 ALTER TABLE ONLY public.ingestion_runs
     ADD CONSTRAINT ingestion_runs_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.policy_roundup
+    ADD CONSTRAINT policy_roundup_pkey PRIMARY KEY (id);
 ALTER TABLE ONLY public.raw_documents
     ADD CONSTRAINT raw_documents_pkey PRIMARY KEY (id);
 ALTER TABLE ONLY public.sources
@@ -391,6 +413,7 @@ CREATE INDEX districts_state_idx ON public.districts USING btree (state_id, disp
 CREATE INDEX exam_paper_leaks_state_idx ON public.exam_paper_leaks USING btree (state_id, occurred_year DESC);
 CREATE INDEX exam_paper_leaks_union_idx ON public.exam_paper_leaks USING btree (occurred_year DESC) WHERE (state_id IS NULL);
 CREATE INDEX findings_state_idx ON public.findings USING btree (state_id, display_order);
+CREATE INDEX policy_roundup_date_idx ON public.policy_roundup USING btree (happened_on DESC);
 CREATE INDEX progress_district_idx ON public.district_scheme_progress USING btree (district_id);
 CREATE UNIQUE INDEX raw_documents_run_url_idx ON public.raw_documents USING btree (run_id, url);
 CREATE INDEX sector_state_idx ON public.state_sector_budgets USING btree (state_id, display_order);

@@ -99,6 +99,12 @@ jobs:
         shell: bash
         run: node scripts/sync.js leaks --check 2>&1 | tee leaks.log
 
+      - name: Roundup
+        id: roundup
+        continue-on-error: true
+        shell: bash
+        run: node scripts/sync.js roundup --check 2>&1 | tee roundup.log
+
       - name: Report
         uses: actions/github-script@v7
         with:
@@ -110,6 +116,7 @@ jobs:
               { name: 'Findings', log: 'findings.log', store: 'ingest/findings.json',     fix: 'npm run findings:apply', ok: '${{ steps.findings.outcome }}' === 'success' },
               { name: 'News',     log: 'news.log',     store: 'ingest/budget-news.json',  fix: 'npm run news:apply',     ok: '${{ steps.news.outcome }}' === 'success' },
               { name: 'Leaks',    log: 'leaks.log',    store: 'ingest/paper-leaks.json',  fix: 'npm run leaks:apply',    ok: '${{ steps.leaks.outcome }}' === 'success' },
+              { name: 'Roundup',  log: 'roundup.log',  store: 'ingest/policy-roundup.json', fix: 'npm run roundup:apply', ok: '${{ steps.roundup.outcome }}' === 'success' },
             ];
 
             // A check can also fail before it compares anything — an
