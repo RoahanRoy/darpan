@@ -40,6 +40,15 @@ one script that does the work:
   this project stands behind — so it lives in git and is applied from there,
   never scraped into a public table.
 
+  Each item declares a `category`. `budget` is coverage of what a state
+  announced; `loss` is a story putting a figure on scheme money reported as
+  wrongly paid, diverted or unaccounted for, and may carry `scheme_name` and
+  `reported_amount` (migration 005). `reported_amount` is text, not a number:
+  it quotes the outlet's figure with the outlet's hedges intact, because it is
+  an allegation or an audit observation and not a total this project computed.
+  The page renders the two categories as separate blocks under separate
+  headings, for the same reason news is separate from findings.
+
 Re-running the ingestion pipeline produces nulls for the glosses and nothing
 for the findings, and `db:reset` destroys all three. Keeping them in git makes
 them diffable at review time and recoverable afterwards. **A rebuild is not

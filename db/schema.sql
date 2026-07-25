@@ -172,7 +172,11 @@ CREATE TABLE public.state_budget_news (
     outlet text NOT NULL,
     url text NOT NULL,
     published_on date NOT NULL,
-    display_order integer DEFAULT 0 NOT NULL
+    display_order integer DEFAULT 0 NOT NULL,
+    category text DEFAULT 'budget'::text NOT NULL,
+    scheme_name text,
+    reported_amount text,
+    CONSTRAINT state_budget_news_category_check CHECK ((category = ANY (ARRAY['budget'::text, 'loss'::text])))
 );
 CREATE SEQUENCE public.state_budget_news_id_seq
     AS integer
@@ -366,6 +370,7 @@ CREATE UNIQUE INDEX raw_documents_run_url_idx ON public.raw_documents USING btre
 CREATE INDEX sector_state_idx ON public.state_sector_budgets USING btree (state_id, display_order);
 CREATE INDEX staged_facts_key_idx ON public.staged_facts USING btree (target_table, natural_key, id DESC);
 CREATE INDEX staged_facts_review_idx ON public.staged_facts USING btree (status, target_table) WHERE (status = ANY (ARRAY['pending'::text, 'approved'::text]));
+CREATE INDEX state_budget_news_category_idx ON public.state_budget_news USING btree (state_id, category, published_on DESC);
 CREATE INDEX state_budget_news_state_idx ON public.state_budget_news USING btree (state_id, published_on DESC);
 CREATE UNIQUE INDEX states_lgd_code_idx ON public.states USING btree (lgd_code);
 CREATE INDEX union_ministry_idx ON public.union_ministry_budgets USING btree (display_order);

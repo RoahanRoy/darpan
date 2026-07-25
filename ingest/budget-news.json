@@ -1,17 +1,37 @@
 {
   "_comment": "Dated budget news per state, applied to state_budget_news by `npm run news:apply` (scripts/sync.js, store id 'news'). Like ingest/glosses.json and ingest/findings.json, this lives in git because no adapter can regenerate a one-line summary written by a person. Each item credits the outlet that reported the story and links to it; the site does not vouch for the figures inside, it points a reader at who reported them. Keyed by states.slug. Headlines and summaries are written here, not copied from the outlet. Dates are the story's own publication date (YYYY-MM-DD).",
+  "_categories": "Every item declares a `category`, and the page renders the two as separate blocks (migration 005). 'budget' is coverage of what a state announced or tabled. 'loss' is a story in which an auditor, an investigating agency or the government itself put a figure on money paid out that should not have been — wrongly paid, diverted or unaccounted for. A 'loss' item may also carry `scheme_name`, the scheme the money was paid out under, and `reported_amount`, the outlet's figure with the outlet's own hedges left in ('about ₹14,000 crore'). Both are omitted rather than guessed at: not every such story names a scheme, and not every one carries a number. `reported_amount` is text and never arithmetic — it is a quotation of someone else's estimate, not a figure this project stands behind, and figures from different stories are not commensurable.",
+  "_window": "The items added in July 2026 were gathered by searching for coverage published on or after each state's own 2026-27 budget date, so a state's feed reads forward from the budget the page reports.",
   "news": {
     "bihar": [
       {
+        "category": "budget",
         "headline": "Bihar tables its 2026-27 budget, prioritising education, health and power",
         "summary": "Finance Minister Bijendra Prasad Yadav presented the state budget on 3 February 2026, the first of the new government. Expenditure excluding debt repayment is put at about ₹3.25 lakh crore, framed around the Saat Nishchay-3 roadmap for 2025-2030.",
         "outlet": "ANI",
         "url": "https://aninews.in/news/national/general-news/bihar-minister-dilip-jaiswal-says-states-budget-will-proritise-education-health-and-electricity-focus-also-on-increased-women-participation20260203111026/",
         "published_on": "2026-02-03"
+      },
+      {
+        "category": "budget",
+        "headline": "Bihar draws ₹3,662 crore from its Contingency Fund to pay social security pensions",
+        "summary": "The state cabinet approved the withdrawal to cover pensions for May, June and July 2026. The Leader of the Opposition, Tejashwi Yadav, argued that a fund meant for the unforeseen was being used for a recurring commitment the budget should have carried, and asked whether the state was near bankruptcy.",
+        "outlet": "ETV Bharat",
+        "url": "https://www.etvbharat.com/en/state/rjd-leader-tejashwi-yadav-asks-why-the-bihar-government-withdrew-money-from-the-contingency-fund-enn26061002947",
+        "published_on": "2026-06-10"
+      },
+      {
+        "category": "loss",
+        "headline": "Bihar's vigilance unit arrests three officials over cleared project bills",
+        "summary": "The Special Vigilance Unit arrested a joint secretary in the Finance Department and two engineers in the Rishu Shree tender case, in which officials are alleged to have taken payment for awarding contracts and clearing bills. The projects under scrutiny include drain bioremediation works and sewerage schemes at Biharsharif and Muzaffarpur. No figure has been put on the amount involved; two IAS officers have been suspended and a third is untraceable.",
+        "outlet": "The Hans India",
+        "url": "https://www.thehansindia.com/news/national/bihar-3-officials-arrested-in-tender-scam-probe-one-ias-officer-absconding-1084855",
+        "published_on": "2026-06-10"
       }
     ],
     "uttar-pradesh": [
       {
+        "category": "budget",
         "headline": "Uttar Pradesh tables a record ₹9.12 lakh crore budget for 2026-27",
         "summary": "Finance Minister Suresh Khanna presented the budget on 11 February 2026, up nearly 13% on the previous year, with new schemes worth about ₹43,565 crore and capital spending pegged near a fifth of the total outlay.",
         "outlet": "DD News",
@@ -21,69 +41,192 @@
     ],
     "maharashtra": [
       {
+        "category": "budget",
         "headline": "Maharashtra's 2026-27 budget headlines a ₹2 lakh farm loan waiver",
         "summary": "Presenting the ₹7.69 lakh crore budget on 6 March 2026, Chief Minister Devendra Fadnavis, who holds finance, announced the Punyashlok Ahilyadevi Holkar Shetkari Karjmafi Yojana, writing off crop loans up to ₹2 lakh outstanding as of 30 September 2025.",
         "outlet": "DD News",
         "url": "https://ddnews.gov.in/en/maha-govt-presents-rs-7-69-lakh-crore-budget-announces-farm-loan-waiver-up-to-rs-2-lakh/",
         "published_on": "2026-03-06"
+      },
+      {
+        "category": "budget",
+        "headline": "CAG says one cash transfer took the women's welfare budget up roughly 12,700% in a year",
+        "summary": "The State Finances Audit Report tabled in the legislature on 10 July 2026 records the women and child development budget rising from ₹261.7 crore in 2023-24 to ₹33,554.3 crore in 2024-25, the year Ladki Bahin began. The auditor also reported a revenue deficit of ₹29,994 crore and a fiscal deficit of about ₹1.2 lakh crore, and noted capital spending at roughly 14% of total expenditure.",
+        "outlet": "Scroll.in",
+        "url": "https://scroll.in/latest/1094210/maharashtras-ladki-bahin-scheme-could-put-a-strain-on-states-finances-says-cag-report",
+        "published_on": "2026-07-12"
+      },
+      {
+        "category": "loss",
+        "scheme_name": "Mukhyamantri Majhi Ladki Bahin Yojana",
+        "reported_amount": "about ₹14,000 crore",
+        "headline": "92 lakh names struck off Ladki Bahin, after roughly ₹14,000 crore had been paid to them",
+        "summary": "Officials running the verification drive estimated that beneficiaries later removed had drawn about ₹14,000 crore before payments stopped, on average some ten months each. The rolls fell from a peak of 2.43 crore to just over 1.5 crore: about 62 lakh failed e-KYC, 16 lakh exceeded the ₹2.5 lakh income ceiling, 4.42 lakh declared a government employee in the family, 1.8 lakh were over 65, and roughly 29,000 men had been enrolled. The CAG separately flagged ₹3,541.16 crore of spending beyond the authorised budget.",
+        "outlet": "The Federal",
+        "url": "https://thefederal.com/category/states/west/maharashtra/92-lakh-dropped-maharashtra-ladki-bahin-scheme-after-verification-drive-250012",
+        "published_on": "2026-07-13"
       }
     ],
     "karnataka": [
       {
+        "category": "budget",
         "headline": "Siddaramaiah presents a record 16th Karnataka budget",
         "summary": "The Chief Minister presented a ₹4.48 lakh crore budget for 2026-27, a deficit budget with a revenue gap of about ₹22,957 crore and capital spending of ₹74,682 crore.",
         "outlet": "Deccan Herald",
         "url": "https://www.deccanherald.com/india/karnataka/karnataka-budget-today-siddaramaiahs-record-16th-3435878",
         "published_on": "2026-03-07"
+      },
+      {
+        "category": "loss",
+        "scheme_name": "Gruha Lakshmi",
+        "reported_amount": "₹115 crore",
+        "headline": "Karnataka accepts that ₹115 crore of Gruha Lakshmi money went to dead beneficiaries",
+        "summary": "The government told the assembly that transfers had continued to 1,08,755 beneficiaries who had died, because the deaths were not reported in time. Of 1.30 crore registered beneficiaries, 2.88 lakh had died, and the families of 1,03,922 of them had re-registered the household by changing the head named on the ration card.",
+        "outlet": "Deccan Herald",
+        "url": "https://www.deccanherald.com/india/karnataka/karnataka-govt-admits-rs-115-crore-transfer-to-dead-gruha-lakshmi-beneficiaries-4052558",
+        "published_on": "2026-06-26"
+      },
+      {
+        "category": "loss",
+        "scheme_name": "Gruha Lakshmi",
+        "headline": "Nearly 6 lakh ineligible Gruha Lakshmi beneficiaries removed after a DBT audit",
+        "summary": "The women and child development department struck the names off following an audit of direct benefit transfers. A pilot study within it found 1.20 lakh beneficiaries who had died and were still being paid. No total has been put on what those payments came to.",
+        "outlet": "Deccan Herald",
+        "url": "https://www.deccanherald.com/india/karnataka/karnataka-govt-removes-nearly-6-lakh-ineligible-gruha-lakshmi-beneficiaries-4036166",
+        "published_on": "2026-06-12"
       }
     ],
     "delhi": [
       {
+        "category": "budget",
         "headline": "Delhi's BJP government tables a ₹1.03 lakh crore budget for 2026-27",
         "summary": "Chief Minister Rekha Gupta, who holds finance, presented the budget on 24 March 2026. Expenditure excluding debt repayment is about ₹99,446 crore; the ₹1.03 lakh crore headline includes debt repayment.",
         "outlet": "News on AIR",
         "url": "https://www.newsonair.gov.in/delhi-cm-rekha-gupta-presents-%E2%82%B91-03-lakh-crore-budget-for-2026-27/",
         "published_on": "2026-03-24"
+      },
+      {
+        "category": "loss",
+        "reported_amount": "about ₹600 crore",
+        "headline": "Second arrest in the ₹600 crore case over Delhi hospital purchases",
+        "summary": "The Anti-Corruption Branch arrested a former Director General of Health Services over procurement by the Central Procurement Agency for Delhi government hospitals. The FIR alleges tenders were written to fit chosen suppliers and bills inflated — by about 230% for portable X-ray machines, 340% for C-arm equipment and as much as 500% for oral rehydration solution. No single scheme is named; this is the health department's purchasing.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/delhi/delhi-acb-arrests-top-ex-health-official-dr-vatsala-aggarwal-in-multi-crore-health-scam/",
+        "published_on": "2026-06-28"
       }
     ],
     "west-bengal": [
       {
+        "category": "budget",
         "headline": "Bengal tables a ₹4.06 lakh crore interim budget ahead of the 2026 polls",
         "summary": "Finance Minister Chandrima Bhattacharya presented a vote-on-account on 5 February 2026. It raised the monthly Lakshmir Bhandar grant for women and announced Banglar Yuva Sathi, a ₹1,500 monthly allowance for unemployed youth.",
         "outlet": "BW Businessworld",
         "url": "https://www.businessworld.in/article/west-bengal-tables-rs-4-06-lakh-cr-interim-budget-ahead-elections-592913",
         "published_on": "2026-02-05"
+      },
+      {
+        "category": "loss",
+        "scheme_name": "Lakshmir Bhandar",
+        "headline": "Bengal's new government says 30 lakh Lakshmir Bhandar beneficiaries are ineligible",
+        "summary": "Chief Minister Suvendu Adhikari put the figure at about 30 lakh of the roughly 2.2 crore women on the rolls, saying they were either not Indian citizens or had been struck permanently off the electoral roll. No amount has been attached to the payments already made to them.",
+        "outlet": "Deccan Herald",
+        "url": "https://www.deccanherald.com/india/west-bengal/30-lakh-beneficiaries-of-tmc-govts-lakshmir-bhandar-scheme-for-women-ineligible-cm-adhikari-4018243",
+        "published_on": "2026-05-27"
+      },
+      {
+        "category": "loss",
+        "scheme_name": "Lakshmir Bhandar",
+        "headline": "SIT to investigate fake Lakshmir Bhandar accounts",
+        "summary": "The Chief Minister announced a special investigation team into accounts opened under the women's cash transfer scheme run by the previous government, saying men had been found among those drawing it. The figure the state is working from is the 30 lakh it announced in May; the team's own has not been published.",
+        "outlet": "Deccan Herald",
+        "url": "https://www.deccanherald.com/india/west-bengal/sit-to-probe-fake-accounts-of-lakshmir-bhandar-scheme-of-tmc-govt-wb-cm-suvendu-adhikari-4023331",
+        "published_on": "2026-06-01"
       }
     ],
     "rajasthan": [
       {
+        "category": "budget",
         "headline": "Rajasthan's ₹6.11 lakh crore budget targets Viksit Rajasthan 2047",
         "summary": "Deputy Chief Minister and Finance Minister Diya Kumari presented the budget on 11 February 2026, with a revenue deficit of ₹24,314 crore and a fiscal deficit of 3.69% of GSDP, within the permissible limit.",
         "outlet": "News on AIR",
         "url": "https://www.newsonair.gov.in/rajasthan-deputy-cm-finance-minister-diya-kumari-presents-budget-2026-27-in-assembly",
         "published_on": "2026-02-11"
+      },
+      {
+        "category": "loss",
+        "scheme_name": "Jal Jeevan Mission",
+        "reported_amount": "₹900 crore",
+        "headline": "Nine arrested over ₹900 crore of Jal Jeevan Mission tenders in Rajasthan",
+        "summary": "The Anti-Corruption Bureau put the irregularities in the tender process at ₹900 crore and arrested nine people, among them serving and retired chief engineers and an alleged middleman. Two private firms are alleged to have won tenders on forged completion certificates. The bureau sought a lookout notice against the retired IAS officer who was additional chief secretary of the Public Health and Engineering Department at the time.",
+        "outlet": "The Week",
+        "url": "https://www.theweek.in/wire-updates/national/2026/02/18/rajasthan-acb-seeks-lookout-notice-against-retd-ias-officer-in-rs-900-cr-jal-jeevan-scam.html",
+        "published_on": "2026-02-18"
+      },
+      {
+        "category": "loss",
+        "scheme_name": "Jal Jeevan Mission",
+        "headline": "Former minister arrested in the Jal Jeevan Mission case",
+        "summary": "The Anti-Corruption Bureau's special investigation team arrested Mahesh Joshi, public health engineering minister in the previous government, at his Jaipur residence. It is the same tender case the bureau valued at ₹900 crore in February.",
+        "outlet": "Deccan Herald",
+        "url": "https://www.deccanherald.com/india/rajasthan/acb-arrests-ex-rajasthan-minister-mahesh-joshi-in-jal-jeevan-mission-scam-3993989",
+        "published_on": "2026-05-07"
       }
     ],
     "kerala": [
       {
+        "category": "budget",
         "headline": "Kerala's final Pinarayi-2.0 budget nears the ₹2 trillion mark",
         "summary": "Finance Minister K N Balagopal presented the 2026-27 budget on 29 January 2026, with a ₹1,000 wage hike for anganwadi and ASHA workers and ₹14,500 crore for social security pensions.",
         "outlet": "The Week",
         "url": "https://www.theweek.in/news/biz-tech/2026/01/29/kerala-budget-2026-here-is-a-wrap-up-of-all-the-major-announcements.html",
         "published_on": "2026-01-29"
+      },
+      {
+        "category": "loss",
+        "scheme_name": "Panchayat Yuva Krida Aur Khel Abhiyan (PYKKA)",
+        "reported_amount": "₹11.91 crore",
+        "headline": "₹11.91 crore of a discontinued sports scheme cannot be traced in Kerala",
+        "summary": "An RTI reply from the Kerala Sports Council showed the state received ₹36.37 crore under the centrally sponsored scheme, spent ₹23.88 crore through local bodies, returned ₹48.29 lakh when it closed in 2014 and held ₹8.97 lakh in the account — leaving ₹11.91 crore unaccounted for. The sports minister ordered a departmental inquiry, including into the conduct of the scheme's former state coordinator.",
+        "outlet": "Onmanorama",
+        "url": "https://www.onmanorama.com/news/kerala/2026/06/08/rs-11-91-crore-unaccounted-for-kerala-pykka-fund-probe.html",
+        "published_on": "2026-06-08"
       }
     ],
     "chhattisgarh": [
       {
+        "category": "budget",
         "headline": "Chhattisgarh presents its 2026-27 budget",
         "summary": "Finance Minister O P Choudhary tabled the budget on 24 February 2026. Expenditure excluding debt repayment is estimated at about ₹1.72 lakh crore, roughly 10% over the previous year's revised estimate.",
         "outlet": "News on AIR",
         "url": "https://www.newsonair.gov.in/chhattisgarh-fm-o-p-choudhary-presents-budget-for-year-2026-27-in-state-legislative-assembly",
         "published_on": "2026-02-24"
+      },
+      {
+        "category": "loss",
+        "scheme_name": "Snakebite death compensation",
+        "reported_amount": "₹17.24 crore",
+        "headline": "₹17.24 crore of snakebite compensation in Bilaspur is under investigation",
+        "summary": "The figures came out in the budget session of the state assembly: 431 snakebite deaths recorded in one district over three years, drawing ₹17.24 crore in compensation. Police have arrested a doctor accused of writing false post-mortem reports and three revenue clerks accused of raising the files, and say that of 17 cases sent for investigation only one was genuine.",
+        "outlet": "ETV Bharat",
+        "url": "https://www.etvbharat.com/en/state/chhattisgarh-doctor-3-clerks-arrested-in-unfolding-rs-17-dot-24-crore-bilaspur-snakebite-compensation-scam-enn26072102869",
+        "published_on": "2026-07-21"
+      }
+    ],
+    "uttarakhand": [
+      {
+        "category": "loss",
+        "scheme_name": "Post-Matric Scholarship for SC and ST students",
+        "reported_amount": "₹27.98 crore disbursed",
+        "headline": "ED says nearly half of a district's SC/ST scholarship claims were fraudulent",
+        "summary": "Of 6,208 claims examined from Haridwar for 2011-12 to 2016-17, the Enforcement Directorate found 2,895 — 46.63% — to be fraudulent: students who had failed, never attended, or could not be traced in university records. Of the ₹27.98 crore the district social welfare officer disbursed, ₹19.74 crore went straight to institutions. The agency has attached ₹13.83 crore of fixed deposits, land and college buildings and filed five chargesheets.",
+        "outlet": "ETV Bharat",
+        "url": "https://www.etvbharat.com/en/state/ed-identifies-47-pc-ineligible-beneficiaries-in-uttarakhand-sc-st-scholarship-scam-enn26061506689",
+        "published_on": "2026-06-15"
       }
     ],
     "puducherry": [
       {
+        "category": "budget",
         "headline": "Puducherry presents a ₹13,600 crore tax-free budget",
         "summary": "Chief Minister N Rangasamy, who holds finance, presented the 2025-26 budget on 12 March 2025, with ₹11,624.72 crore of revenue expenditure, ₹1,975.28 crore of capital expenditure and ₹2,110 crore earmarked for welfare schemes. PRS publishes no analysis for Puducherry, so this is the only budget record the site holds for the UT.",
         "outlet": "News on AIR",

@@ -156,7 +156,8 @@ export default async function handler(req, res) {
             WHERE f.state_id = ${area.state_id}
             ORDER BY f.display_order`,
 
-        sql`SELECT headline, summary, outlet, url,
+        sql`SELECT category, scheme_name, reported_amount,
+                   headline, summary, outlet, url,
                    published_on::text AS published_on
             FROM state_budget_news
             WHERE state_id = ${area.state_id}
@@ -272,8 +273,17 @@ export default async function handler(req, res) {
          Deliberately separate from `findings` and `sources`: a finding is this
          site's own reading of a document it stands behind, a news item is a
          credited link to someone else's reporting. The page keeps them apart
-         and labels the news as news. */
+         and labels the news as news.
+
+         `category` splits that feed again, into budget coverage and stories
+         about money reported lost under a scheme (migration 005). Both are
+         someone else's reporting; they are separated because they are
+         different claims, and `reportedAmount` is the outlet's figure with its
+         own hedges kept — never one of ours. */
       news: newsRows.map((n) => ({
+        category: n.category,
+        schemeName: n.scheme_name,
+        reportedAmount: n.reported_amount,
         headline: n.headline,
         summary: n.summary,
         outlet: n.outlet,

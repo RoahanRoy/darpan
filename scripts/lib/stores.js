@@ -168,7 +168,10 @@ export const STORES = [
 
     table: 'state_budget_news',
     refs: ['states'],
-    fields: ['headline', 'summary', 'outlet', 'url', 'published_on'],
+    fields: [
+      'category', 'scheme_name', 'reported_amount',
+      'headline', 'summary', 'outlet', 'url', 'published_on',
+    ],
 
     /* The store may list items in any order; sorting here means the
        display_order written to the table is the dated order, so the API can
@@ -182,17 +185,41 @@ export const STORES = [
     appendAfterExisting: false,
 
     liveSql: `
-      SELECT st.slug, n.headline, n.summary, n.outlet, n.url, n.published_on::text
+      SELECT st.slug, n.category, n.scheme_name, n.reported_amount,
+             n.headline, n.summary, n.outlet, n.url, n.published_on::text
       FROM state_budget_news n
       JOIN states st ON st.id = n.state_id
       WHERE st.slug = ANY($1)
       ORDER BY st.slug, n.display_order
     `,
 
-    columns: ['headline', 'summary', 'outlet', 'url', 'published_on'],
-    values: (n) => [n.headline, n.summary, n.outlet, n.url, n.published_on],
+    columns: [
+      'category', 'scheme_name', 'reported_amount',
+      'headline', 'summary', 'outlet', 'url', 'published_on',
+    ],
 
-    describe: (n) => `${n.published_on}  ${n.headline}`,
+    /* `category` is written from the store rather than left to the column
+       default, so an item that forgot to declare one fails the insert instead
+       of silently filing a reported loss as ordinary budget coverage. The two
+       optional fields coalesce to NULL, which is what the database holds for
+       a story that names no scheme or carries no figure. */
+    values: (n) => [
+      n.category, n.scheme_name ?? null, n.reported_amount ?? null,
+      n.headline, n.summary, n.outlet, n.url, n.published_on,
+    ],
+
+    /* The CHECK constraint would catch this too, but only on the insert, by
+       which point the state's existing rows have already been deleted inside
+       the transaction. Refusing the whole run up front says which item is
+       wrong instead of which constraint failed. */
+    validate: (list, slug) =>
+      list
+        .filter((n) => n.category !== 'budget' && n.category !== 'loss')
+        .map((n) => `${slug}: category must be 'budget' or 'loss': ${n.url}`),
+
+    describe: (n) =>
+      `${n.published_on}  [${n.category}] ${n.headline}` +
+      (n.reported_amount ? ` (${n.reported_amount})` : ''),
   },
 ];
 

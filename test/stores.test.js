@@ -76,6 +76,64 @@ test('a state in the store with no live rows is a change; one absent from the st
   assert.deepEqual(changedStates({ store, live, fields: newsFields, sort: newestFirst }), ['goa']);
 });
 
+/* The reported-loss fields (migration 005). What these pin down is that the
+   figure and the scheme are part of what makes two items the same item: a
+   correction to an amount is exactly the kind of edit that must reach the
+   database, and it changes nothing else on the row. */
+
+test('a corrected reported_amount marks the state changed', () => {
+  const item = {
+    category: 'loss',
+    scheme_name: 'Gruha Lakshmi',
+    headline: 'A',
+    published_on: '2026-06-26',
+    summary: 's',
+    outlet: 'x',
+    url: 'u1',
+  };
+  const store = { goa: [{ ...item, reported_amount: '₹115 crore' }] };
+  const live = [{ slug: 'goa', ...item, reported_amount: '₹15 crore' }];
+  assert.deepEqual(changedStates({ store, live, fields: newsFields, sort: newestFirst }), ['goa']);
+});
+
+test('an item that names no scheme and no amount compares equal to NULL columns', () => {
+  // Not every loss story names a scheme or carries a figure. The store leaves
+  // the keys out; the database holds NULL. Those must not read as different.
+  const store = {
+    goa: [
+      { category: 'loss', headline: 'A', published_on: '2026-06-28', summary: 's', outlet: 'x', url: 'u1' },
+    ],
+  };
+  const live = [
+    {
+      slug: 'goa', category: 'loss', scheme_name: null, reported_amount: null,
+      headline: 'A', published_on: '2026-06-28', summary: 's', outlet: 'x', url: 'u1',
+    },
+  ];
+  assert.deepEqual(changedStates({ store, live, fields: newsFields, sort: newestFirst }), []);
+});
+
+test('news values() writes the declared category and NULLs the fields left out', () => {
+  const s = storeById('news');
+  const row = s.values({
+    category: 'loss',
+    headline: 'A', summary: 's', outlet: 'x', url: 'u1', published_on: '2026-06-28',
+  });
+  assert.deepEqual(row, ['loss', null, null, 'A', 's', 'x', 'u1', '2026-06-28']);
+});
+
+test('news validate() refuses a category the schema would reject', () => {
+  const s = storeById('news');
+  const bad = [
+    { category: 'scam', url: 'u1' },
+    { category: 'budget', url: 'u2' },
+    { category: 'loss', url: 'u3' },
+  ];
+  assert.deepEqual(s.validate(bad, 'goa'), [
+    "goa: category must be 'budget' or 'loss': u1",
+  ]);
+});
+
 test('findings compare without a sort, in store order', () => {
   const s = storeById('findings');
   const store = {
