@@ -4,6 +4,7 @@ import formatDate from '../lib/formatDate.js';
 import NavBar from '../components/NavBar.jsx';
 import Feed from '../components/Feed.jsx';
 import BudgetSeriesTable from '../components/BudgetSeriesTable.jsx';
+import PaperLeaks from '../components/PaperLeaks.jsx';
 import PosterBanner from '../components/PosterBanner.jsx';
 import { parliamentNavLinks } from '../data/homeContent.js';
 
@@ -139,6 +140,14 @@ export default function Parliament() {
                 </p>
               </div>
             </section>
+
+            <PaperLeaks
+              leaks={data.paperLeaks}
+              scopeName="nationally conducted exams"
+              scopeNote="Examinations run by central agencies — the NTA, CBSE, the Staff
+                Selection Commission, the Army — whose question papers leaked. These are
+                links to reporting, not records this site holds a document for."
+            />
           </>
         )}
       </div>

@@ -62,14 +62,14 @@ jobs:
 
       # One store per step, each pointed at scripts/sync.js by store id, so a
       # drifted store is named in the report rather than buried in a combined
-      # log. `db:sync --check` would check all three in one process, which is
+      # log. `db:sync --check` would check every store in one process, which is
       # the right command for a person at a terminal and the wrong shape here:
       # it exits 1 if any store differs, and the issue could then say only
       # that something drifted, not which.
       #
       # Each runs even if an earlier one failed: a forgotten gloss apply says
       # nothing about whether the findings are current, and stopping at the
-      # first would hide the other two until it was fixed.
+      # first would hide the rest until it was fixed.
       #
       # `shell: bash` is load-bearing, not decoration. The default shell is
       # `bash -e` without pipefail, so `node ... | tee` would exit with tee's
@@ -93,6 +93,12 @@ jobs:
         shell: bash
         run: node scripts/sync.js news --check 2>&1 | tee news.log
 
+      - name: Paper leaks
+        id: leaks
+        continue-on-error: true
+        shell: bash
+        run: node scripts/sync.js leaks --check 2>&1 | tee leaks.log
+
       - name: Report
         uses: actions/github-script@v7
         with:
@@ -103,6 +109,7 @@ jobs:
               { name: 'Glosses',  log: 'glosses.log',  store: 'ingest/glosses.json',      fix: 'npm run gloss:apply',    ok: '${{ steps.glosses.outcome }}' === 'success' },
               { name: 'Findings', log: 'findings.log', store: 'ingest/findings.json',     fix: 'npm run findings:apply', ok: '${{ steps.findings.outcome }}' === 'success' },
               { name: 'News',     log: 'news.log',     store: 'ingest/budget-news.json',  fix: 'npm run news:apply',     ok: '${{ steps.news.outcome }}' === 'success' },
+              { name: 'Leaks',    log: 'leaks.log',    store: 'ingest/paper-leaks.json',  fix: 'npm run leaks:apply',    ok: '${{ steps.leaks.outcome }}' === 'success' },
             ];
 
             // A check can also fail before it compares anything — an
@@ -139,7 +146,7 @@ jobs:
                 await github.rest.issues.createComment({
                   owner: context.repo.owner, repo: context.repo.repo,
                   issue_number: existing.number,
-                  body: 'All three stores now match the database. Closing.',
+                  body: `All ${checks.length} stores now match the database. Closing.`,
                 });
                 await github.rest.issues.update({
                   owner: context.repo.owner, repo: context.repo.repo,
@@ -150,7 +157,7 @@ jobs:
             }
 
             const body = [
-              `${drifted.length} of 3 stores disagree with the database.`,
+              `${drifted.length} of ${checks.length} stores disagree with the database.`,
               '',
               'These columns hold sentences no adapter regenerates, so the file',
               'is authoritative and the database is the copy. A difference means',

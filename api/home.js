@@ -51,6 +51,23 @@ function serialiseSource(row) {
   };
 }
 
+/* One leaked examination. `candidatesAffected` stays the string the outlet
+   used ("nearly 48 lakh") rather than becoming a number: it is reported, not
+   counted here, and two incidents' figures must never be added — the same
+   candidate sits the re-held exam. */
+function serialiseLeak(row) {
+  return {
+    exam: row.exam_name,
+    body: row.conducting_body,
+    year: row.occurred_year,
+    candidatesAffected: row.candidates_affected,
+    outcome: row.outcome,
+    summary: row.summary,
+    outlet: row.outlet,
+    href: row.url,
+  };
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
     res.setHeader('Allow', 'GET');
@@ -122,7 +139,7 @@ export default async function handler(req, res) {
     const FY = area.budget_fiscal_year;
     const schemeFY = area.scheme_fiscal_year;
 
-    const [headlines, sectors, allocations, progress, findingRows, newsRows, sourceRows] =
+    const [headlines, sectors, allocations, progress, findingRows, newsRows, leakRows, sourceRows] =
       await Promise.all([
         sql`SELECT label, amount_cr, qualifier FROM state_budget_headlines
             WHERE state_id = ${area.state_id} AND fiscal_year = ${FY}
@@ -160,6 +177,15 @@ export default async function handler(req, res) {
                    headline, summary, outlet, url,
                    published_on::text AS published_on
             FROM state_budget_news
+            WHERE state_id = ${area.state_id}
+            ORDER BY display_order`,
+
+        // Exams this state conducted. A nationally conducted exam carries
+        // state_id IS NULL and belongs to /api/parliament — filing NEET under
+        // the state where an arrest happened would name the wrong government.
+        sql`SELECT exam_name, conducting_body, occurred_year,
+                   candidates_affected, outcome, summary, outlet, url
+            FROM exam_paper_leaks
             WHERE state_id = ${area.state_id}
             ORDER BY display_order`,
 
@@ -290,6 +316,11 @@ export default async function handler(req, res) {
         href: n.url,
         publishedOn: n.published_on,
       })),
+
+      /* Examinations this state ran whose papers leaked. Cited to an outlet
+         like the news, not to `sources`, because each one is a pointer to
+         reporting rather than a document this project parsed. */
+      paperLeaks: leakRows.map(serialiseLeak),
 
       sources: sourceRows.map(serialiseSource),
     };

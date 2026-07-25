@@ -20,12 +20,13 @@ bundle, which would publish the credential.
 | `npm run gloss:check` / `gloss:apply` | Just the glosses (`db:sync glosses`). |
 | `npm run findings:check` / `findings:apply` | Just the computed findings. |
 | `npm run news:check` / `news:apply` | Just the budget news. |
+| `npm run leaks:check` / `leaks:apply` | Just the paper leaks. |
 
 ## Prose that lives in git
 
-Three stores hold sentences no adapter can regenerate, so each is kept in a
+Four stores hold sentences no adapter can regenerate, so each is kept in a
 file and applied from there. `scripts/lib/stores.js` is the registry that
-names them; `npm run db:sync` applies all three and `scripts/sync.js` is the
+names them; `npm run db:sync` applies all four and `scripts/sync.js` is the
 one script that does the work:
 
 - `ingest/glosses.json` → `state_sector_budgets.provision_note`, the
@@ -49,15 +50,26 @@ one script that does the work:
   The page renders the two categories as separate blocks under separate
   headings, for the same reason news is separate from findings.
 
+- `ingest/paper-leaks.json` → the `exam_paper_leaks` rows: examinations whose
+  question papers leaked, cited to an outlet like the news (migration 006).
+  The only store whose scopes are not all states. An exam conducted nationally
+  belongs to no state, so it is filed under the scope key `union`, written
+  with `state_id` NULL, and shown on the Parliament page — the convention
+  `findings` already uses for central rows. `candidates_affected` is text for
+  the same reason `reported_amount` is, with one addition: these figures must
+  never be summed, because a candidate who sat a re-held exam appears twice
+  and is one person.
+
 Re-running the ingestion pipeline produces nulls for the glosses and nothing
-for the findings, and `db:reset` destroys all three. Keeping them in git makes
+for the findings, and `db:reset` destroys all four. Keeping them in git makes
 them diffable at review time and recoverable afterwards. **A rebuild is not
 finished until `npm run db:sync` has been run** — `db:sync:check` is what
 tells you it was missed.
 
 The two strategies behind that one command are worth knowing when a store
-misbehaves. Findings and news are *replaced* per state: the store owns every
-row a state has, so applying it deletes the state's rows and rewrites them
+misbehaves. Findings, news and paper leaks are *replaced* per scope: the store
+owns every row a scope has, so applying it deletes that scope's rows and
+rewrites them
 (findings only touch `computed_from_source = TRUE` — the CAG observations in
 `seed.sql` are marked FALSE and never touched). Glosses are *updated in place*:
 the sector row belongs to the adapter and only `provision_note` is ours, so
@@ -65,7 +77,7 @@ nothing is deleted and a gloss whose key matches no row is reported loudly
 rather than dropped.
 
 None of this depends on somebody remembering to type it.
-`.github/workflows/drift.yml` runs the three checks every Monday against the
+`.github/workflows/drift.yml` runs the four checks every Monday against the
 real database and opens a single standing issue when any store disagrees,
 closing it once they agree again. It needs the `DATABASE_URL` repository
 secret, and it only reads — the fix is still an apply, run deliberately by a

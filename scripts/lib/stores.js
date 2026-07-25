@@ -84,6 +84,15 @@ export function columnDiff({ store, live, column }) {
 const newestFirst = (list) =>
   [...list].sort((a, b) => b.published_on.localeCompare(a.published_on));
 
+/* Leaks are dated to the year, so year alone does not order them. Exam name
+   breaks the tie, which makes the order total and therefore stable — without
+   it two incidents from the same year could swap places between runs and the
+   diff would report a change nobody made. */
+const byYearThenName = (list) =>
+  [...list].sort(
+    (a, b) => b.occurred_year - a.occurred_year || a.exam_name.localeCompare(b.exam_name)
+  );
+
 export const STORES = [
   {
     id: 'glosses',
@@ -220,6 +229,68 @@ export const STORES = [
     describe: (n) =>
       `${n.published_on}  [${n.category}] ${n.headline}` +
       (n.reported_amount ? ` (${n.reported_amount})` : ''),
+  },
+
+  {
+    id: 'leaks',
+    strategy: 'rows',
+    file: 'ingest/paper-leaks.json',
+    jsonKey: 'leaks',
+    noun: 'paper leak',
+    plural: 'paper leaks',
+
+    table: 'exam_paper_leaks',
+    refs: ['states'],
+
+    /* The one store whose scopes are not all states. A nationally conducted
+       exam belongs to no state — see migration 006 — so it is filed under
+       this key and written with state_id NULL. The rest of the machinery is
+       unchanged: 'union' is just another scope whose rows are replaced
+       wholesale. */
+    unscopedKey: 'union',
+
+    fields: [
+      'exam_name', 'conducting_body', 'occurred_year',
+      'candidates_affected', 'outcome', 'summary', 'outlet', 'url',
+    ],
+    sort: byYearThenName,
+
+    // No adapter writes this table either, so there is nothing to protect.
+    deleteWhere: '',
+    appendAfterExisting: false,
+
+    liveSql: `
+      SELECT COALESCE(st.slug, 'union') AS slug,
+             l.exam_name, l.conducting_body, l.occurred_year,
+             l.candidates_affected, l.outcome, l.summary, l.outlet, l.url
+      FROM exam_paper_leaks l
+      LEFT JOIN states st ON st.id = l.state_id
+      WHERE COALESCE(st.slug, 'union') = ANY($1)
+      ORDER BY 1, l.display_order
+    `,
+
+    columns: [
+      'exam_name', 'conducting_body', 'occurred_year',
+      'candidates_affected', 'outcome', 'summary', 'outlet', 'url',
+    ],
+    values: (l) => [
+      l.exam_name, l.conducting_body, l.occurred_year,
+      l.candidates_affected ?? null, l.outcome, l.summary, l.outlet, l.url,
+    ],
+
+    /* A year typed as a string would compare unequal to the integer the
+       column returns forever, and the store would report the scope changed on
+       every single run without ever converging. Cheap to check, tedious to
+       diagnose. */
+    validate: (list, slug) =>
+      list
+        .filter((l) => !Number.isInteger(l.occurred_year))
+        .map((l) => `${slug}: occurred_year must be an integer: ${l.exam_name}`),
+
+    describe: (l) =>
+      `${l.occurred_year}  ${l.exam_name}` +
+      (l.conducting_body ? ` (${l.conducting_body})` : '') +
+      (l.candidates_affected ? ` · ${l.candidates_affected}` : ''),
   },
 ];
 

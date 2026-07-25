@@ -28,6 +28,8 @@
     "findings:check": "node scripts/sync.js findings --check",
     "news:apply": "node scripts/sync.js news",
     "news:check": "node scripts/sync.js news --check",
+    "leaks:apply": "node scripts/sync.js leaks",
+    "leaks:check": "node scripts/sync.js leaks --check",
     "ingest:review": "node ingest/review.js",
     "ingest:verify": "node ingest/verify.js",
     "dev:full": "vercel dev",

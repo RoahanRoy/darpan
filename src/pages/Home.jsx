@@ -11,6 +11,7 @@ import SpendingRail from '../components/SpendingRail.jsx';
 import SchemeGrid from '../components/SchemeGrid.jsx';
 import StatusTable from '../components/StatusTable.jsx';
 import BudgetNews from '../components/BudgetNews.jsx';
+import PaperLeaks from '../components/PaperLeaks.jsx';
 import PosterBanner from '../components/PosterBanner.jsx';
 import { homeNavLinks } from '../data/homeContent.js';
 
@@ -164,6 +165,13 @@ export default function Home({ route }) {
               unitType={data.area.unitType}
             />
             <BudgetNews items={data.news} stateName={data.state.name} />
+            <PaperLeaks
+              leaks={data.paperLeaks}
+              scopeName={data.state.name}
+              scopeNote={`Recruitment and entrance examinations ${data.state.name} conducted
+                whose question papers leaked. Exams run nationally are on the Parliament
+                page instead, because no state conducted them.`}
+            />
           </>
         )}
       </div>

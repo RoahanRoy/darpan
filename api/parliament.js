@@ -24,6 +24,23 @@ function serialiseSource(row) {
   };
 }
 
+/* One leaked examination, as /api/home serialises it. `candidatesAffected`
+   stays the string the outlet used ("more than 23 lakh") rather than becoming
+   a number: it is reported, not counted here, and two incidents' figures must
+   never be added — the same candidate sits the re-held exam. */
+function serialiseLeak(row) {
+  return {
+    exam: row.exam_name,
+    body: row.conducting_body,
+    year: row.occurred_year,
+    candidatesAffected: row.candidates_affected,
+    outcome: row.outcome,
+    summary: row.summary,
+    outlet: row.outlet,
+    href: row.url,
+  };
+}
+
 /** The budget → revised → next-budget series every money row on this page shares. */
 function serialiseSeries(row, name, totalCr) {
   return {
@@ -61,7 +78,7 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: 'No union budget records published' });
     }
 
-    const [headlines, ministries, schemes, findingRows, sourceRows, [presented]] =
+    const [headlines, ministries, schemes, findingRows, leakRows, sourceRows, [presented]] =
       await Promise.all([
       sql`SELECT label, amount_cr, qualifier FROM union_budget_headlines
           WHERE fiscal_year = ${FY} ORDER BY display_order`,
@@ -79,6 +96,15 @@ export default async function handler(req, res) {
           FROM findings f JOIN sources src ON src.id = f.source_id
           WHERE f.state_id IS NULL
           ORDER BY f.display_order`,
+
+      // Same convention as the findings above: state_id IS NULL is what makes
+      // an exam central. NEET and the SSC papers were conducted by no state
+      // and belong here; a state's own recruitment exams never appear.
+      sql`SELECT exam_name, conducting_body, occurred_year,
+                 candidates_affected, outcome, summary, outlet, url
+          FROM exam_paper_leaks
+          WHERE state_id IS NULL
+          ORDER BY display_order`,
 
       sql`SELECT src.slug, src.title, src.publisher, src.url, src.note,
                  src.document_date_is_inferred,
@@ -149,6 +175,10 @@ export default async function handler(req, res) {
         publisher: f.publisher,
         href: f.source_url,
       })),
+
+      /* Nationally conducted examinations whose papers leaked. Cited to an
+         outlet rather than to `sources`, like the state pages' copy. */
+      paperLeaks: leakRows.map(serialiseLeak),
 
       sources: sourceRows.map(serialiseSource),
     };

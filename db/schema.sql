@@ -39,6 +39,27 @@ CREATE SEQUENCE public.districts_id_seq
     NO MAXVALUE
     CACHE 1;
 ALTER SEQUENCE public.districts_id_seq OWNED BY public.districts.id;
+CREATE TABLE public.exam_paper_leaks (
+    id integer NOT NULL,
+    state_id integer,
+    exam_name text NOT NULL,
+    conducting_body text,
+    occurred_year integer NOT NULL,
+    candidates_affected text,
+    outcome text NOT NULL,
+    summary text NOT NULL,
+    outlet text NOT NULL,
+    url text NOT NULL,
+    display_order integer DEFAULT 0 NOT NULL
+);
+CREATE SEQUENCE public.exam_paper_leaks_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE public.exam_paper_leaks_id_seq OWNED BY public.exam_paper_leaks.id;
 CREATE TABLE public.findings (
     id integer NOT NULL,
     state_id integer,
@@ -295,6 +316,7 @@ CREATE SEQUENCE public.union_scheme_allocations_id_seq
 ALTER SEQUENCE public.union_scheme_allocations_id_seq OWNED BY public.union_scheme_allocations.id;
 ALTER TABLE ONLY public.district_scheme_progress ALTER COLUMN id SET DEFAULT nextval('public.district_scheme_progress_id_seq'::regclass);
 ALTER TABLE ONLY public.districts ALTER COLUMN id SET DEFAULT nextval('public.districts_id_seq'::regclass);
+ALTER TABLE ONLY public.exam_paper_leaks ALTER COLUMN id SET DEFAULT nextval('public.exam_paper_leaks_id_seq'::regclass);
 ALTER TABLE ONLY public.findings ALTER COLUMN id SET DEFAULT nextval('public.findings_id_seq'::regclass);
 ALTER TABLE ONLY public.ingestion_runs ALTER COLUMN id SET DEFAULT nextval('public.ingestion_runs_id_seq'::regclass);
 ALTER TABLE ONLY public.raw_documents ALTER COLUMN id SET DEFAULT nextval('public.raw_documents_id_seq'::regclass);
@@ -316,6 +338,8 @@ ALTER TABLE ONLY public.districts
     ADD CONSTRAINT districts_pkey PRIMARY KEY (id);
 ALTER TABLE ONLY public.districts
     ADD CONSTRAINT districts_state_slug_key UNIQUE (state_id, slug);
+ALTER TABLE ONLY public.exam_paper_leaks
+    ADD CONSTRAINT exam_paper_leaks_pkey PRIMARY KEY (id);
 ALTER TABLE ONLY public.findings
     ADD CONSTRAINT findings_pkey PRIMARY KEY (id);
 ALTER TABLE ONLY public.ingestion_runs
@@ -364,6 +388,8 @@ ALTER TABLE ONLY public.union_scheme_allocations
     ADD CONSTRAINT union_scheme_allocations_scheme_name_key UNIQUE (scheme_name);
 CREATE UNIQUE INDEX districts_lgd_code_idx ON public.districts USING btree (lgd_code);
 CREATE INDEX districts_state_idx ON public.districts USING btree (state_id, display_order);
+CREATE INDEX exam_paper_leaks_state_idx ON public.exam_paper_leaks USING btree (state_id, occurred_year DESC);
+CREATE INDEX exam_paper_leaks_union_idx ON public.exam_paper_leaks USING btree (occurred_year DESC) WHERE (state_id IS NULL);
 CREATE INDEX findings_state_idx ON public.findings USING btree (state_id, display_order);
 CREATE INDEX progress_district_idx ON public.district_scheme_progress USING btree (district_id);
 CREATE UNIQUE INDEX raw_documents_run_url_idx ON public.raw_documents USING btree (run_id, url);
@@ -381,6 +407,8 @@ ALTER TABLE ONLY public.district_scheme_progress
     ADD CONSTRAINT district_scheme_progress_source_id_fkey FOREIGN KEY (source_id) REFERENCES public.sources(id);
 ALTER TABLE ONLY public.districts
     ADD CONSTRAINT districts_state_id_fkey FOREIGN KEY (state_id) REFERENCES public.states(id) ON DELETE CASCADE;
+ALTER TABLE ONLY public.exam_paper_leaks
+    ADD CONSTRAINT exam_paper_leaks_state_id_fkey FOREIGN KEY (state_id) REFERENCES public.states(id) ON DELETE CASCADE;
 ALTER TABLE ONLY public.findings
     ADD CONSTRAINT findings_source_id_fkey FOREIGN KEY (source_id) REFERENCES public.sources(id);
 ALTER TABLE ONLY public.findings

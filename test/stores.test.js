@@ -154,6 +154,63 @@ test('findings compare without a sort, in store order', () => {
   assert.deepEqual(changedStates({ store, live: swapped, fields: s.fields, sort: s.sort }), ['goa']);
 });
 
+/* Paper leaks (migration 006). The store's own shape is ordinary; what is
+   worth pinning is the sort, because these are dated only to the year and a
+   year alone does not order two incidents. */
+
+test('leaks sort newest year first, ties broken by exam name', () => {
+  const s = storeById('leaks');
+  const sorted = s.sort([
+    { occurred_year: 2021, exam_name: 'REET' },
+    { occurred_year: 2024, exam_name: 'UGC-NET' },
+    { occurred_year: 2021, exam_name: 'JEE (Main)' },
+  ]);
+  assert.deepEqual(
+    sorted.map((l) => `${l.occurred_year} ${l.exam_name}`),
+    ['2024 UGC-NET', '2021 JEE (Main)', '2021 REET']
+  );
+});
+
+test('two leaks from one year compare equal however the store lists them', () => {
+  // Without the exam-name tiebreak this is the failure: a total order that
+  // is not total lets equal rows swap and reports a change nobody made.
+  const s = storeById('leaks');
+  const a = { exam_name: 'A', conducting_body: 'x', occurred_year: 2022, outcome: 'o', summary: 's', outlet: 'p', url: 'u1' };
+  const b = { exam_name: 'B', conducting_body: 'x', occurred_year: 2022, outcome: 'o', summary: 's', outlet: 'p', url: 'u2' };
+  const live = [{ slug: 'goa', ...a }, { slug: 'goa', ...b }];
+
+  assert.deepEqual(changedStates({ store: { goa: [a, b] }, live, fields: s.fields, sort: s.sort }), []);
+  assert.deepEqual(changedStates({ store: { goa: [b, a] }, live, fields: s.fields, sort: s.sort }), []);
+});
+
+test('the union scope is just another key, and its rows are not a state\'s', () => {
+  const s = storeById('leaks');
+  assert.equal(s.unscopedKey, 'union');
+
+  const union = { exam_name: 'NEET-UG', conducting_body: 'NTA', occurred_year: 2026, outcome: 'Cancelled', summary: 's', outlet: 'p', url: 'u1' };
+  const state = { exam_name: 'REET', conducting_body: 'BSER', occurred_year: 2021, outcome: 'Cancelled', summary: 's', outlet: 'p', url: 'u2' };
+
+  // liveSql labels a NULL state_id 'union', so a scope that differs is
+  // reported on its own without touching the other.
+  const live = [{ slug: 'union', ...union }, { slug: 'rajasthan', ...state }];
+  const store = { union: [union], rajasthan: [{ ...state, outcome: 'Held' }] };
+  assert.deepEqual(
+    changedStates({ store, live, fields: s.fields, sort: s.sort }),
+    ['rajasthan']
+  );
+});
+
+test('leaks validate() refuses a year that is not an integer', () => {
+  const s = storeById('leaks');
+  const bad = [
+    { exam_name: 'REET', occurred_year: '2021' },
+    { exam_name: 'UPTET', occurred_year: 2021 },
+  ];
+  assert.deepEqual(s.validate(bad, 'rajasthan'), [
+    'rajasthan: occurred_year must be an integer: REET',
+  ]);
+});
+
 test('columnDiff separates a stale value from a missing row and a missing gloss', () => {
   const store = {
     'goa|Health': 'the health gloss',

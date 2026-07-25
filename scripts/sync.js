@@ -67,9 +67,15 @@ async function syncRows(store) {
   // Every reference in the whole store is checked before a single row is
   // written. Landing the states that happen to resolve would leave the
   // database in a state no file describes.
+  /* Most stores are keyed by state slug throughout. `leaks` has one scope
+     that is not a state — the centre — and it resolves to a NULL state_id
+     rather than to a row (scripts/lib/stores.js, `unscopedKey`). */
+  const isUnscoped = (slug) => slug === store.unscopedKey;
+  const stateIdFor = (slug) => (isUnscoped(slug) ? null : refs.states.get(slug));
+
   const unresolved = [];
   for (const [slug, list] of Object.entries(data)) {
-    if (!refs.states.has(slug)) unresolved.push(`no such state: ${slug}`);
+    if (!isUnscoped(slug) && !refs.states.has(slug)) unresolved.push(`no such state: ${slug}`);
     if (store.validate) unresolved.push(...store.validate(list, slug, refs));
   }
   if (unresolved.length) {
@@ -112,17 +118,22 @@ async function syncRows(store) {
   const written = await withTransaction(async (client) => {
     let n = 0;
     for (const slug of changed) {
-      const stateId = refs.states.get(slug);
+      const stateId = stateIdFor(slug);
 
+      /* IS NOT DISTINCT FROM, not `=`. For every state this is the same
+         comparison; for the centre's NULL state_id, `= NULL` matches no row,
+         so the delete would quietly do nothing and the insert that follows
+         would double the scope on every run. */
       await client.query(
-        `DELETE FROM ${store.table} WHERE state_id = $1 ${store.deleteWhere}`,
+        `DELETE FROM ${store.table} WHERE state_id IS NOT DISTINCT FROM $1 ${store.deleteWhere}`,
         [stateId]
       );
 
       let order = 0;
       if (store.appendAfterExisting) {
         const { rows } = await client.query(
-          `SELECT COALESCE(max(display_order), 0) AS n FROM ${store.table} WHERE state_id = $1`,
+          `SELECT COALESCE(max(display_order), 0) AS n FROM ${store.table}
+           WHERE state_id IS NOT DISTINCT FROM $1`,
           [stateId]
         );
         order = Number(rows[0].n);

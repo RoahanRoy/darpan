@@ -1,0 +1,329 @@
+{
+  "_comment": "Examinations whose question papers leaked, applied to exam_paper_leaks by `npm run leaks:apply` (scripts/sync.js, store id 'leaks'). Like the other prose stores this lives in git, because every row is a sentence a person wrote and no adapter can regenerate one. Keyed by states.slug, plus the scope key 'union' for exams conducted nationally, which are written with state_id NULL and appear on the Parliament page rather than any state's (migration 006).",
+  "_sourcing": "Each row cites the one report it was written from and is limited to what that report says. Where a report names the exam but not who conducted it, or gives no figure, or does not say what happened afterwards, the field is left out or reads 'Not reported' rather than being filled in from elsewhere. `candidates_affected` keeps the outlet's own phrasing and must never be summed: a candidate who sat NEET twice after two cancellations is one person.",
+  "_completeness": "This is not every incident. The Tribune counts more than 90 paper leaks and examination irregularities over two decades, of which its own compilations name these individually; the remainder are counted but not itemised anywhere this project could cite. Treat the list as the incidents that have been named in reporting, not as a census.",
+  "_kaggle": "Asked for on 25 July 2026 against a Kaggle dataset (mauryansshivam/india-question-paper-leaks-incidents-details). That file is behind a login and could not be read, and an uploaded CSV with no per-row provenance would not have cleared this project's sourcing bar anyway. The list was rebuilt from reporting instead, one citation per incident.",
+  "leaks": {
+    "union": [
+      {
+        "exam_name": "NEET-UG",
+        "conducting_body": "National Testing Agency",
+        "occurred_year": 2026,
+        "candidates_affected": "nearly 22.79 lakh",
+        "outcome": "Cancelled on 12 May 2026; a re-test was announced",
+        "summary": "A whistleblower told the agency on 7 May that the paper was circulating beforehand as a 'guess paper' of important questions. Rajasthan's Special Operations Group traced a multi-state network before the CBI took the case over; investigators suspect the leak began at Nashik, with high-definition scanners and a shadow server, and spread through coaching networks and WhatsApp groups.",
+        "outlet": "Deccan Herald",
+        "url": "https://www.deccanherald.com/education/a-guess-paper-whistleblower-tip-off-and-cancellation-how-neet-ug-2026-paper-leak-unraveled-4000994"
+      },
+      {
+        "exam_name": "NEET-UG",
+        "conducting_body": "National Testing Agency",
+        "occurred_year": 2024,
+        "candidates_affected": "more than 23 lakh",
+        "outcome": "Held; the Supreme Court declined to cancel it nationwide",
+        "summary": "Allegations that the paper leaked in Bihar, and results showing 67 candidates on a perfect 720. The CBI traced the leak to a school in Hazaribagh, Jharkhand and arrested about 50 people, but the court accepted that there was no evidence of a breach affecting every candidate.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/india/vyapam-to-reet-to-neet-heres-a-10-year-timeline-of-paper-leak-scandals"
+      },
+      {
+        "exam_name": "UGC-NET",
+        "conducting_body": "National Testing Agency",
+        "occurred_year": 2024,
+        "outcome": "Cancelled the day after it was held",
+        "summary": "Scrapped on cybercrime inputs that its integrity may have been compromised, and referred to the CBI. The agency's director general was removed.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/india/not-just-2026-neet-over-90-exam-leaks-irregularities-reported-in-two-decades/"
+      },
+      {
+        "exam_name": "NEET-UG",
+        "conducting_body": "National Testing Agency",
+        "occurred_year": 2021,
+        "outcome": "Held; the Supreme Court declined to order a re-test",
+        "summary": "Leak allegations surfaced and several arrests were made in Jaipur, but the exam was allowed to stand.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/india/not-just-2026-neet-over-90-exam-leaks-irregularities-reported-in-two-decades/"
+      },
+      {
+        "exam_name": "JEE (Main)",
+        "conducting_body": "National Testing Agency",
+        "occurred_year": 2021,
+        "outcome": "CBI case registered",
+        "summary": "The CBI booked a private company, its directors and examination-centre staff over the online exam being manipulated: candidates were allegedly helped by remote access from a centre at Sonepat, in exchange for large sums, to win places at premier NITs.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/india/not-just-2026-neet-over-90-exam-leaks-irregularities-reported-in-two-decades/"
+      },
+      {
+        "exam_name": "Common Entrance Examination for Soldier (General Duty)",
+        "conducting_body": "Indian Army",
+        "occurred_year": 2021,
+        "outcome": "Cancelled",
+        "summary": "The Army scrapped its pan-India recruitment exam after papers leaked. A joint Military Intelligence and Pune Police operation broke up the racket and led to the arrest of serving officers, soldiers and civilians.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/india/not-just-2026-neet-over-90-exam-leaks-irregularities-reported-in-two-decades/"
+      },
+      {
+        "exam_name": "Class X Mathematics and Class XII Economics board papers",
+        "conducting_body": "Central Board of Secondary Education",
+        "occurred_year": 2018,
+        "candidates_affected": "more than 20 lakh",
+        "outcome": "Not reported",
+        "summary": "School board papers leaked too: both subjects went out before the exams, in the largest school-level incident in this tally.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/india/not-just-2026-neet-over-90-exam-leaks-irregularities-reported-in-two-decades/"
+      },
+      {
+        "exam_name": "Combined Graduate Level Examination",
+        "conducting_body": "Staff Selection Commission",
+        "occurred_year": 2018,
+        "outcome": "CBI probe; cases against 17 people",
+        "summary": "Screenshots of papers and answer keys circulated online and the commission called the allegations baseless. Protests spread from its Delhi headquarters to Patna and Bareilly, in one of the country's largest examination protests, before the case went to the CBI — which alleged answer keys had leaked and that some candidates' computers were remotely accessed. Those booked included site supervisors and a question paper custodian.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/india/vyapam-to-reet-to-neet-heres-a-10-year-timeline-of-paper-leak-scandals"
+      },
+      {
+        "exam_name": "NEET-UG",
+        "conducting_body": "Central Board of Secondary Education",
+        "occurred_year": 2017,
+        "candidates_affected": "more than 11 lakh registered",
+        "outcome": "Held; arrests made",
+        "summary": "Organised cheating rackets and repeated attempts at leaking the paper. Five people, two of them medical students, were arrested in Patna and four in Panaji for impersonating candidates. Responsibility for the exam passed to the National Testing Agency the following year.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/india/not-just-2026-neet-over-90-exam-leaks-irregularities-reported-in-two-decades/"
+      },
+      {
+        "exam_name": "All-India Pre-Medical Test (AIPMT)",
+        "conducting_body": "Central Board of Secondary Education",
+        "occurred_year": 2015,
+        "candidates_affected": "more than 6.3 lakh",
+        "outcome": "Cancelled by the Supreme Court",
+        "summary": "The court scrapped the exam in June after investigators uncovered a multi-state racket transmitting answer keys over WhatsApp and Bluetooth.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/india/not-just-2026-neet-over-90-exam-leaks-irregularities-reported-in-two-decades/"
+      },
+      {
+        "exam_name": "AIEEE",
+        "conducting_body": "Central Board of Secondary Education",
+        "occurred_year": 2011,
+        "outcome": "Postponed",
+        "summary": "Question papers leaked in Uttar Pradesh and were reported sold for ₹6 lakh, forcing the board to put the exam off.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/india/not-just-2026-neet-over-90-exam-leaks-irregularities-reported-in-two-decades/"
+      },
+      {
+        "exam_name": "AIIMS postgraduate entrance examination",
+        "conducting_body": "AIIMS, New Delhi",
+        "occurred_year": 2011,
+        "outcome": "Two doctors arrested",
+        "summary": "A high-tech cheating racket: images of the paper were smuggled out of the hall and answers relayed back through Bluetooth earpieces. Candidates were said to have paid between ₹25 lakh and ₹35 lakh.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/india/not-just-2026-neet-over-90-exam-leaks-irregularities-reported-in-two-decades/"
+      },
+      {
+        "exam_name": "All-India Post-Graduate Medical Entrance Examination",
+        "conducting_body": "AIIMS, New Delhi",
+        "occurred_year": 2006,
+        "outcome": "CBI chargesheeted 52 people",
+        "summary": "The CBI charged 52 people, several of them doctors, with leaking question papers using a DocuPen — a scanner the size of a pen.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/india/not-just-2026-neet-over-90-exam-leaks-irregularities-reported-in-two-decades/"
+      },
+      {
+        "exam_name": "All-India Pre-Medical Test (AIPMT)",
+        "conducting_body": "Central Board of Secondary Education",
+        "occurred_year": 2004,
+        "outcome": "Cancelled",
+        "summary": "Cancelled after question papers leaked — the earliest national medical entrance leak in this tally.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/india/not-just-2026-neet-over-90-exam-leaks-irregularities-reported-in-two-decades/"
+      },
+      {
+        "exam_name": "Common Admission Test (CAT)",
+        "conducting_body": "Indian Institutes of Management",
+        "occurred_year": 2003,
+        "outcome": "Not reported",
+        "summary": "The leak of the IIMs' entrance paper, and the point at which the tally of national examination scandals begins.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/india/not-just-2026-neet-over-90-exam-leaks-irregularities-reported-in-two-decades/"
+      }
+    ],
+    "maharashtra": [
+      {
+        "exam_name": "Maharashtra Teacher Eligibility Test (TET)",
+        "conducting_body": "Maharashtra State Council of Examination, Pune",
+        "occurred_year": 2026,
+        "outcome": "Postponed the day before; a fresh date awaited",
+        "summary": "Police raided a Bhiwandi hotel on 27 June, the day before the exam, and arrested three men allegedly distributing the paper to candidates; the council confirmed the seized papers matched the originals. Investigators say all four sets came out of the Agra press that printed them, on a deal put at about ₹1.5 crore, through a network running across Uttar Pradesh, Delhi, Haryana, Maharashtra and Bihar.",
+        "outlet": "ETV Bharat",
+        "url": "https://www.etvbharat.com/en/bharat/explainer-how-a-bihar-based-gang-leaked-maharashtra-tet-paper-from-an-agra-printing-press-enn26070106139"
+      }
+    ],
+    "uttar-pradesh": [
+      {
+        "exam_name": "Police Constable recruitment examination",
+        "conducting_body": "Uttar Pradesh Police",
+        "occurred_year": 2024,
+        "candidates_affected": "nearly 48 lakh",
+        "outcome": "Cancelled in February 2024; re-held",
+        "summary": "Scrapped after allegations that question papers leaked before the test. Investigations led to hundreds of reported arrests and the state ordered a fresh examination.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/india/vyapam-to-reet-to-neet-heres-a-10-year-timeline-of-paper-leak-scandals"
+      },
+      {
+        "exam_name": "Review Officer and Assistant Review Officer preliminary examination",
+        "conducting_body": "Uttar Pradesh Public Service Commission",
+        "occurred_year": 2024,
+        "outcome": "Cancelled",
+        "summary": "Cancelled days after the constable exam, candidates having said the paper went viral on social media before it began.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/india/vyapam-to-reet-to-neet-heres-a-10-year-timeline-of-paper-leak-scandals"
+      },
+      {
+        "exam_name": "Uttar Pradesh Teacher Eligibility Test (UPTET)",
+        "conducting_body": "Government of Uttar Pradesh",
+        "occurred_year": 2021,
+        "candidates_affected": "nearly 21 lakh",
+        "outcome": "Cancelled hours before it began; re-held",
+        "summary": "Called off with hours to go after reports that question papers had leaked through messaging platforms. Several arrests followed and the state ordered a fresh examination.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/india/vyapam-to-reet-to-neet-heres-a-10-year-timeline-of-paper-leak-scandals"
+      }
+    ],
+    "rajasthan": [
+      {
+        "exam_name": "Rajasthan Public Service Commission examination",
+        "conducting_body": "Rajasthan Public Service Commission",
+        "occurred_year": 2022,
+        "outcome": "Not reported",
+        "summary": "Named among the major state-level leaks of this period. The compilation does not say which paper it was or what followed.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/india/not-just-2026-neet-over-90-exam-leaks-irregularities-reported-in-two-decades/"
+      },
+      {
+        "exam_name": "Rajasthan Eligibility Examination for Teachers (REET)",
+        "occurred_year": 2021,
+        "candidates_affected": "more than 16 lakh, for about 31,000 posts",
+        "outcome": "Level-2 paper cancelled in February 2022",
+        "summary": "Leak allegations brought protests, internet shutdowns and heavy police deployment across several districts. After weeks of demonstrations the state cancelled the Level-2 examination.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/india/vyapam-to-reet-to-neet-heres-a-10-year-timeline-of-paper-leak-scandals"
+      },
+      {
+        "exam_name": "Rajasthan Pre-Medical Test",
+        "occurred_year": 2006,
+        "outcome": "Not reported",
+        "summary": "One of the early state medical entrance controversies this two-decade tally traces the pattern back to.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/india/not-just-2026-neet-over-90-exam-leaks-irregularities-reported-in-two-decades/"
+      }
+    ],
+    "bihar": [
+      {
+        "exam_name": "Constable recruitment examination",
+        "occurred_year": 2023,
+        "outcome": "Cancelled",
+        "summary": "Cancelled over allegations that question papers had circulated digitally before the exam.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/india/vyapam-to-reet-to-neet-heres-a-10-year-timeline-of-paper-leak-scandals"
+      },
+      {
+        "exam_name": "67th Combined Preliminary Examination",
+        "conducting_body": "Bihar Public Service Commission",
+        "occurred_year": 2022,
+        "outcome": "Cancelled",
+        "summary": "Cancelled after question papers allegedly surfaced on social media before the test — an incident that put the printing, transport and digital circulation of papers under scrutiny.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/india/vyapam-to-reet-to-neet-heres-a-10-year-timeline-of-paper-leak-scandals"
+      }
+    ],
+    "madhya-pradesh": [
+      {
+        "exam_name": "Vyapam examinations (13 exams)",
+        "conducting_body": "Madhya Pradesh Professional Examination Board (Vyapam)",
+        "occurred_year": 2013,
+        "candidates_affected": "nearly 32 lakh a year",
+        "outcome": "634 doctors' degrees cancelled by the Supreme Court in 2017",
+        "summary": "The scandal the rest are measured against: impersonators, leaked answer keys and tampered answer sheets across medical admissions and recruitment exams from the mid-2000s. Probe records referred to at least 23 unnatural deaths linked to the case; more than 2,000 people had been arrested by 2015 and the Supreme Court moved the investigation to the CBI. Convictions are still coming more than a decade on.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/india/vyapam-to-reet-to-neet-heres-a-10-year-timeline-of-paper-leak-scandals"
+      }
+    ],
+    "uttarakhand": [
+      {
+        "exam_name": "Graduate-level recruitment examination",
+        "conducting_body": "Uttarakhand Subordinate Service Selection Commission",
+        "occurred_year": 2022,
+        "outcome": "Multiple arrests; the state passed an anti-copying law",
+        "summary": "The probe into the leak led to arrests and allegations of organised networks, intermediaries and officials, and pushed the state to bring in a stringent anti-copying law.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/india/vyapam-to-reet-to-neet-heres-a-10-year-timeline-of-paper-leak-scandals"
+      }
+    ],
+    "telangana": [
+      {
+        "exam_name": "Telangana Public Service Commission examination",
+        "conducting_body": "Telangana Public Service Commission",
+        "occurred_year": 2023,
+        "candidates_affected": "more than 25,000",
+        "outcome": "Not reported",
+        "summary": "A question paper leak at the state public service commission in March 2023 hit more than 25,000 candidates who had already sat the exam.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/india/50-cases-of-public-exam-paper-leak-since-2015-588102"
+      }
+    ],
+    "gujarat": [
+      {
+        "exam_name": "Forest Guard recruitment examination",
+        "occurred_year": 2022,
+        "outcome": "Not reported",
+        "summary": "One of 14 question paper leaks counted in Gujarat since 2015, and the most recent named in that count.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/india/50-cases-of-public-exam-paper-leak-since-2015-588102"
+      },
+      {
+        "exam_name": "Talati examinations, Surendranagar and Gandhinagar",
+        "occurred_year": 2016,
+        "outcome": "Not reported",
+        "summary": "Village accountant recruitment papers leaked in two districts, among the 14 Gujarat leaks counted since 2015.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/india/50-cases-of-public-exam-paper-leak-since-2015-588102"
+      },
+      {
+        "exam_name": "Talati examination",
+        "occurred_year": 2015,
+        "outcome": "Not reported",
+        "summary": "The village accountant recruitment paper leaked, the first of the 14 Gujarat incidents counted from 2015 onwards.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/india/50-cases-of-public-exam-paper-leak-since-2015-588102"
+      },
+      {
+        "exam_name": "Chief Officer examination",
+        "conducting_body": "Gujarat Public Service Commission",
+        "occurred_year": 2014,
+        "outcome": "Not reported",
+        "summary": "A leak in the commission's chief officer recruitment, named among Gujarat's repeated examination failures.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/india/50-cases-of-public-exam-paper-leak-since-2015-588102"
+      }
+    ],
+    "chhattisgarh": [
+      {
+        "exam_name": "Chhattisgarh Pre-Medical Test",
+        "occurred_year": 2014,
+        "outcome": "Not reported",
+        "summary": "Came under scrutiny over alleged irregularities, in the same run of state medical entrance controversies as Vyapam next door.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/india/not-just-2026-neet-over-90-exam-leaks-irregularities-reported-in-two-decades/"
+      }
+    ],
+    "punjab": [
+      {
+        "exam_name": "Punjab Medical Entrance Test",
+        "occurred_year": 2007,
+        "outcome": "Not reported",
+        "summary": "One of the earlier state medical entrance leaks named in this two-decade tally.",
+        "outlet": "The Tribune",
+        "url": "https://www.tribuneindia.com/news/india/not-just-2026-neet-over-90-exam-leaks-irregularities-reported-in-two-decades/"
+      }
+    ]
+  }
+}
